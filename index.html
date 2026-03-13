@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WojakMeter — Crypto sentiment, visualized</title>
+    <meta
+      name="description"
+      content="WojakMeter turns crypto market context into a simple visual sentiment experience for traders, meme lovers, and Crypto Twitter."
+    />
+    <meta property="og:title" content="WojakMeter" />
+    <meta
+      property="og:description"
+      content="Crypto sentiment, visualized. Built for X, memes, and market context."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="./assets/og-cover.svg" />
+    <meta name="theme-color" content="#0b0f19" />
+    <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page-glow glow-1"></div>
+    <div class="page-glow glow-2"></div>
+
+    <header class="site-header">
+      <div class="container nav">
+        <a class="brand" href="#top" aria-label="WojakMeter home">
+          <span class="brand-mark">WM</span>
+          <span class="brand-text">WojakMeter</span>
+        </a>
+
+        <nav class="nav-links">
+          <a href="#dashboard">Dashboard</a>
+          <a href="#signals">Signals</a>
+          <a href="#memes">Memes</a>
+          <a href="#faq">FAQ</a>
+        </nav>
+
+        <a
+          class="button button-outline"
+          href="https://x.com/wojakmeter"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Follow on X
+        </a>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero container">
+        <div class="hero-copy">
+          <div class="badge">
+            <span class="badge-dot"></span>
+            Live market mood layer for crypto
+          </div>
+
+          <h1>Crypto sentiment, visualized like the internet actually talks.</h1>
+
+          <p class="hero-text">
+            WojakMeter transforms macro context, price action and social mood into
+            a meme-native market signal built for traders, creators and Crypto Twitter.
+          </p>
+
+          <div class="hero-actions">
+            <a class="button button-primary" href="#dashboard">View live-style demo</a>
+            <a
+              class="button button-secondary"
+              href="https://x.com/wojakmeter"
+              target="_blank"
+              rel="noreferrer"
+            >
+              @wojakmeter
+            </a>
+          </div>
+
+          <ul class="hero-points">
+            <li>BTC move framing</li>
+            <li>Macro narrative overlays</li>
+            <li>Shareable meme-ready output</li>
+          </ul>
+        </div>
+
+        <div class="hero-visual">
+          <div class="phone-card">
+            <div class="phone-topbar">
+              <span></span><span></span><span></span>
+            </div>
+
+            <div class="meter-card">
+              <div class="meter-header">
+                <p>Current Mode</p>
+                <span id="moodPill" class="pill neutral">Content</span>
+              </div>
+
+              <div class="face-wrap">
+                <div id="face" class="wojak-face mood-content" aria-hidden="true">
+                  <div class="eye left"></div>
+                  <div class="eye right"></div>
+                  <div class="brow brow-left"></div>
+                  <div class="brow brow-right"></div>
+                  <div class="mouth"></div>
+                </div>
+              </div>
+
+              <div class="meter-grid">
+                <div class="metric">
+                  <span class="metric-label">BTC</span>
+                  <strong id="btcMove">+2.1%</strong>
+                </div>
+                <div class="metric">
+                  <span class="metric-label">Macro</span>
+                  <strong id="macroDriver">Rate cut hopes</strong>
+                </div>
+                <div class="metric">
+                  <span class="metric-label">Social</span>
+                  <strong id="socialMood">Content</strong>
+                </div>
+                <div class="metric">
+                  <span class="metric-label">Risk</span>
+                  <strong id="riskMode">Balanced</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="ticker">
+              <span>BTC +2.1%</span>
+              <span>Liquidity optimism</span>
+              <span>Memes turning bullish</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="dashboard" class="section container">
+        <div class="section-heading">
+          <p class="eyebrow">Demo dashboard</p>
+          <h2>Built to feel native to crypto Twitter / X.</h2>
+          <p>
+            A clean landing page now, with room to grow into a real sentiment dashboard,
+            meme feed and API later.
+          </p>
+        </div>
+
+        <div class="cards three-up">
+          <article class="card">
+            <p class="card-label">Technical mood</p>
+            <h3>Content</h3>
+            <p>Trend is constructive, price is moving, but the market still looks measured.</p>
+          </article>
+
+          <article class="card">
+            <p class="card-label">Macro driver</p>
+            <h3 id="macroNarrativeTitle">Rate cut hopes</h3>
+            <p id="macroNarrativeText">
+              Liquidity optimism improves appetite for risk assets and keeps sentiment stable.
+            </p>
+          </article>
+
+          <article class="card">
+            <p class="card-label">Social read</p>
+            <h3>Shareable</h3>
+            <p>Designed for meme circulation, branded screenshots and daily signal posts.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="signals" class="section container">
+        <div class="split-grid">
+          <div class="panel panel-dark">
+            <p class="eyebrow">Signal engine</p>
+            <h2>Simple inputs. Clear output.</h2>
+            <div class="signal-list">
+              <div class="signal-row">
+                <span>Technical mood</span>
+                <strong>Content</strong>
+              </div>
+              <div class="signal-row">
+                <span>Social mood</span>
+                <strong>Content</strong>
+              </div>
+              <div class="signal-row">
+                <span>Macro narrative</span>
+                <strong>Liquidity optimism</strong>
+              </div>
+              <div class="signal-row">
+                <span>BTC move reference</span>
+                <strong>+2.1%</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <p class="eyebrow">Roadmap</p>
+            <h2>Ready for the next phase.</h2>
+            <ol class="roadmap">
+              <li>Publish landing page</li>
+              <li>Connect brand and X profile</li>
+              <li>Add daily mood updates</li>
+              <li>Generate meme cards automatically</li>
+              <li>Launch dashboard + API</li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <section id="memes" class="section container">
+        <div class="section-heading">
+          <p class="eyebrow">Use cases</p>
+          <h2>What WojakMeter can become</h2>
+        </div>
+
+        <div class="cards three-up">
+          <article class="card">
+            <h3>Daily market post</h3>
+            <p>Summarize BTC move, macro driver and mood in one screenshot-ready card.</p>
+          </article>
+
+          <article class="card">
+            <h3>Meme image generator</h3>
+            <p>Create shareable Wojak-based market images for content distribution on X.</p>
+          </article>
+
+          <article class="card">
+            <h3>Sentiment dashboard</h3>
+            <p>Track mood shifts from euphoric to panic and map them to macro events.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section container cta-block">
+        <div class="cta-card">
+          <div>
+            <p class="eyebrow">Launch WojakMeter</p>
+            <h2>Start with the page. Expand into the product.</h2>
+            <p>
+              This starter is GitHub and Vercel ready, so you can publish now and keep building.
+            </p>
+          </div>
+          <a
+            class="button button-primary"
+            href="https://x.com/wojakmeter"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Open X profile
+          </a>
+        </div>
+      </section>
+
+      <section id="faq" class="section container">
+        <div class="section-heading">
+          <p class="eyebrow">FAQ</p>
+          <h2>Quick answers</h2>
+        </div>
+
+        <div class="faq-list">
+          <details class="faq-item">
+            <summary>Is this ready for GitHub?</summary>
+            <p>Yes. It is a static site with a clean folder structure and no build step required.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Is this ready for Vercel?</summary>
+            <p>Yes. Import the repository and deploy it as a static site.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Can it become a real app later?</summary>
+            <p>Yes. You can migrate this into React or Next.js when you add live data and automation.</p>
+          </details>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-wrap">
+        <div>
+          <strong>WojakMeter</strong>
+          <p>Crypto sentiment, visualized.</p>
+        </div>
+
+        <div class="footer-links">
+          <a href="https://x.com/wojakmeter" target="_blank" rel="noreferrer">@wojakmeter</a>
+          <a href="https://www.wojakmeter.com" target="_blank" rel="noreferrer">wojakmeter.com</a>
+        </div>
+      </div>
+    </footer>
+
+    <script src="./script.js"></script>
+  </body>
+</html>

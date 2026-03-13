@@ -1,27 +1,86 @@
-# WojakMeter starter site
+What is WojakMeter?
 
-Static landing page ready to upload to GitHub and deploy on Vercel.
+WOJAKMETER is a **visual sentiment dashboard for the crypto market**.
 
-## Files
-- `index.html`
-- `styles.css`
-- `script.js`
-- `assets/`
+Instead of traditional technical indicators, it translates market behavior into **emotional states represented by a Wojak-style character**.
 
-## Local preview
-Open `index.html` in your browser.
+The goal is to create a **viral, intuitive, and meme-native crypto sentiment index**.
 
-## Upload to GitHub
-1. Create a new repository on GitHub
-2. Upload all files from this folder
-3. Commit to `main`
+Think of it as:
 
-## Deploy to Vercel
-1. Log in to Vercel
-2. Import the GitHub repository
-3. Deploy
-4. Add your custom domain: `wojakmeter.com`
+> Fear & Greed Index meets Wojak memes.
 
-## Notes
-- Update links if your X handle changes
-- Replace placeholder SVG assets if you want a custom logo later
+---
+
+# Live Concept
+
+The platform shows the **current emotional state of the market** using:
+
+- Market price data
+- Social sentiment
+- Macro / fundamental drivers
+
+All translated into a **Wojak emotion score from 0 to 100**.
+
+---
+
+# Emotional Scale
+
+| Score | Emotion |
+|------|------|
+| 90 – 100 | Euphoria |
+| 75 – 89 | Content |
+| 60 – 74 | Optimism |
+| 45 – 59 | Neutral |
+| 30 – 44 | Doubt |
+| 15 – 29 | Concern |
+| 0 – 14 | Frustration |
+
+---
+
+# Features
+
+### Crypto Market Mood
+
+Displays the overall emotional state of the market.
+
+---
+
+### Top 10 Coins Dashboard
+
+Each coin shows:
+
+- price
+- % change
+- emotion reaction
+
+---
+
+### Social Sentiment
+
+Tracks mood from crypto discussions on **X (Twitter)**.
+
+---
+
+### Macro / Fundamental Drivers
+
+News and events affecting the market:
+
+- war escalation
+- regulation
+- climate events
+- interest rate changes
+- institutional adoption
+- crypto hacks
+
+---
+
+### Meme Prompt Generator
+
+Automatically generates **AI meme prompts** based on:
+
+- market mood
+- social sentiment
+- macro drivers
+
+Each generated meme includes branding:

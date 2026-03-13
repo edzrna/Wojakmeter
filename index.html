@@ -1,120 +1,233 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WOJAKMETER</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WojakMeter Preview</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Rajdhani:wght@500;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
+  <link rel="stylesheet" href="style.css" />
 </head>
+<body class="style-classic">
+  <div class="app-shell">
 
-<body>
+    <header class="topbar card">
+      <div class="brand">
+        <div class="brand-badge" id="brandBadge">😊</div>
+        <div class="brand-copy">
+          <h1>WOJAKMETER</h1>
+          <p>The Crypto Emotion Index</p>
+        </div>
+      </div>
 
-<div class="container">
+      <div class="topbar-right">
+        <div class="market-stats">
+          <span>BTC.D <strong>54.2%</strong></span>
+          <span>Market Cap <strong>$2.41T</strong></span>
+          <span>24H Volume <strong>$91B</strong></span>
+        </div>
 
-<header>
-<h1>WOJAKMETER</h1>
-<p>The Crypto Emotion Index</p>
-</header>
+        <div class="style-selector">
+          <label for="styleSelector">Style</label>
+          <select id="styleSelector">
+            <option value="classic">Classic</option>
+            <option value="3d">3D</option>
+            <option value="anime">Anime</option>
+            <option value="minimal">Minimal</option>
+          </select>
+        </div>
+      </div>
+    </header>
 
-<section class="hero">
+    <nav class="coin-nav card">
+      <button class="coin-tab active">BTC</button>
+      <button class="coin-tab">ETH</button>
+      <button class="coin-tab">SOL</button>
+      <button class="coin-tab">XRP</button>
+      <button class="coin-tab">BNB</button>
+      <button class="coin-tab">ADA</button>
+      <button class="coin-tab">DOGE</button>
+      <button class="coin-tab">TON</button>
+      <button class="coin-tab">AVAX</button>
+      <button class="coin-tab">TRX</button>
+    </nav>
 
-<img id="heroWojak" src="assets/wojaks/optimism.svg" class="hero-img">
+    <main class="dashboard">
+      <section class="hero card">
+        <h2>CRYPTO MARKET MOOD</h2>
 
-<h2 id="heroMood">Optimism</h2>
+        <div class="hero-grid">
+          <div class="hero-main">
+            <div class="wojak-stage" id="wojakStage">
+              <div class="sweat hidden" id="sweatFx">💧</div>
+              <div class="hero-face anim-float" id="heroFace">😊</div>
+            </div>
 
-<div class="score">
-Score <span id="heroScore">64</span>/100
-</div>
+            <div class="hero-mood" id="heroMood">Optimism</div>
+            <div class="hero-score">
+              Score: <span id="heroScore">64</span> / 100
+            </div>
 
-<input id="scoreSlider" type="range" min="0" max="100" value="64">
+            <div class="timeframes">
+              <button>1m</button>
+              <button>5m</button>
+              <button>15m</button>
+              <button class="active">1h</button>
+              <button>4h</button>
+              <button>24h</button>
+              <button>7d</button>
+            </div>
 
-</section>
+            <div class="slider-wrap">
+              <label for="scoreSlider">Preview score</label>
+              <input id="scoreSlider" type="range" min="0" max="100" value="64" />
+            </div>
+          </div>
 
-<section class="coins">
+          <aside class="social-card mini-card">
+            <h3>𝕏 Social Sentiment</h3>
+            <div class="social-row">
+              <div class="social-icon anim-float" id="socialIcon">😌</div>
+              <div class="social-copy">
+                <div class="social-mood" id="socialMood">Content</div>
+                <div class="muted">Score: <span id="socialScore">68</span></div>
+                <div class="muted">Positive: 62%</div>
+                <div class="muted">Negative: 20%</div>
+                <div class="muted">Mentions: 5.8K</div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
 
-<h3>Top Coins Mood</h3>
+      <section class="drivers-grid">
+        <section class="drivers-card card">
+          <div class="section-head">
+            <h3>MARKET DRIVERS</h3>
+          </div>
 
-<div class="coin-grid">
+          <div class="drivers-controls">
+            <label for="macroDriver">Main macro driver</label>
+            <select id="macroDriver">
+              <option value="war_escalation">War escalation</option>
+              <option value="extreme_weather">Extreme weather</option>
+              <option value="rate_hike">Rate hike fears</option>
+              <option value="rate_cut">Rate cut hopes</option>
+              <option value="regulation_crackdown">Regulation crackdown</option>
+              <option value="etf_adoption">ETF / institutional adoption</option>
+              <option value="energy_disruption">Energy disruption</option>
+              <option value="crypto_hack">Crypto hack / insolvency</option>
+              <option value="neutral_macro">Neutral macro environment</option>
+            </select>
+          </div>
 
-<div class="coin">
-<img src="assets/wojaks/euphoria.svg">
-<p>BTC</p>
-</div>
+          <div class="driver-list">
+            <div class="driver-item">
+              <span>Technical Mood</span>
+              <strong id="driverTechnical">Optimism</strong>
+            </div>
+            <div class="driver-item">
+              <span>Social Mood</span>
+              <strong id="driverSocial">Content</strong>
+            </div>
+            <div class="driver-item">
+              <span>Macro Driver</span>
+              <strong id="driverMacro">War escalation</strong>
+            </div>
+            <div class="driver-item">
+              <span>Main Narrative</span>
+              <strong id="driverNarrative">Risk-off sentiment from geopolitical tension.</strong>
+            </div>
+          </div>
+        </section>
 
-<div class="coin">
-<img src="assets/wojaks/content.svg">
-<p>ETH</p>
-</div>
+        <section class="share-card card">
+          <div class="section-head">
+            <h3>SHARE MARKET SENTIMENT</h3>
+          </div>
 
-<div class="coin">
-<img src="assets/wojaks/optimism.svg">
-<p>SOL</p>
-</div>
+          <div class="action-buttons">
+            <button id="generateTweetBtn" class="action-btn primary">Generate Sentiment Post</button>
+            <button id="copyTweetBtn" class="action-btn">Copy Post</button>
+          </div>
 
-<div class="coin">
-<img src="assets/wojaks/neutral.svg">
-<p>XRP</p>
-</div>
+          <textarea id="tweetOutput" class="output-box" readonly></textarea>
+        </section>
 
-<div class="coin">
-<img src="assets/wojaks/doubt.svg">
-<p>ADA</p>
-</div>
+        <section class="share-card card">
+          <div class="section-head">
+            <h3>GENERATE MEME PROMPT</h3>
+          </div>
 
-<div class="coin">
-<img src="assets/wojaks/concern.svg">
-<p>AVAX</p>
-</div>
+          <div class="action-buttons">
+            <button id="generateMemeBtn" class="action-btn primary">Generate Meme Prompt</button>
+            <button id="copyMemeBtn" class="action-btn">Copy Prompt</button>
+          </div>
 
-<div class="coin">
-<img src="assets/wojaks/frustration.svg">
-<p>DOGE</p>
-</div>
+          <textarea id="memePromptOutput" class="output-box" readonly></textarea>
+        </section>
+      </section>
 
-</div>
+      <section class="top-coins card">
+        <div class="section-head">
+          <h3>TOP 10 COINS</h3>
+        </div>
+        <div class="coins-grid" id="coinsGrid"></div>
+      </section>
 
-</section>
+      <section class="detail-grid">
+        <section class="chart-card card">
+          <div class="section-head">
+            <h3>BTC / Bitcoin</h3>
+            <span class="muted">Live chart preview</span>
+          </div>
 
-<section class="drivers">
+          <div class="chart-placeholder">
+            <div class="grid-lines"></div>
+            <div class="chart-line"></div>
+          </div>
+        </section>
 
-<h3>Macro Driver</h3>
+        <aside class="side-stack">
+          <section class="side-card card">
+            <h3>BTC Mood</h3>
+            <div class="mood-row">
+              <div class="mood-icon anim-float" id="coinMoodIcon">😊</div>
+              <div class="mood-copy">
+                <div class="big-label" id="coinMoodLabel">Optimism</div>
+                <div class="muted">Score: <span id="coinMoodScore">64</span></div>
+              </div>
+            </div>
+          </section>
 
-<select id="macroDriver">
+          <section class="side-card card">
+            <h3>Social Mood</h3>
+            <div class="mood-row">
+              <div class="mood-icon anim-float" id="detailSocialIcon">😌</div>
+              <div class="mood-copy">
+                <div class="big-label" id="detailSocialLabel">Content</div>
+                <div class="muted">Score: <span id="detailSocialScore">68</span></div>
+              </div>
+            </div>
+          </section>
+        </aside>
+      </section>
 
-<option value="war">War escalation</option>
-<option value="weather">Extreme weather</option>
-<option value="rates">Interest rate fears</option>
-<option value="regulation">Regulation pressure</option>
-<option value="adoption">Institutional adoption</option>
+      <section class="scale-card card">
+        <h3>EMOTIONAL SCALE</h3>
+        <div class="scale-grid" id="scaleGrid"></div>
+      </section>
+    </main>
 
-</select>
+    <footer class="footer">
+      <a href="#">About</a>
+      <a href="#">Terms</a>
+      <a href="#">X</a>
+      <a href="#">Contact</a>
+    </footer>
+  </div>
 
-</section>
-
-<section class="actions">
-
-<button id="tweetBtn">Generate Tweet</button>
-<button id="memeBtn">Generate Meme Prompt</button>
-
-<textarea id="tweetOutput"></textarea>
-<textarea id="memeOutput"></textarea>
-
-</section>
-
-<footer>
-
-<p>wojakmeter.com</p>
-<p>@WojakMeter</p>
-
-</footer>
-
-</div>
-
-<script src="script.js"></script>
-
+  <script src="script.js"></script>
 </body>
 </html>

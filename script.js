@@ -1,31 +1,67 @@
 const moods = [
-  { name: "Euphoria", score: 90, emoji: "🤩", anim: "anim-pulse" },
-  { name: "Content", score: 75, emoji: "😌", anim: "anim-float" },
-  { name: "Optimism", score: 60, emoji: "😊", anim: "anim-float" },
-  { name: "Neutral", score: 45, emoji: "😐", anim: "anim-blink" },
-  { name: "Doubt", score: 30, emoji: "🤨", anim: "anim-tilt" },
-  { name: "Concern", score: 15, emoji: "😟", anim: "anim-shake" },
-  { name: "Frustration", score: 0, emoji: "😡", anim: "anim-shake" }
+  { key: "euphoria", name: "Euphoria", score: 90, anim: "anim-pulse" },
+  { key: "content", name: "Content", score: 75, anim: "anim-float" },
+  { key: "optimism", name: "Optimism", score: 60, anim: "anim-float" },
+  { key: "neutral", name: "Neutral", score: 45, anim: "anim-blink" },
+  { key: "doubt", name: "Doubt", score: 30, anim: "anim-tilt" },
+  { key: "concern", name: "Concern", score: 15, anim: "anim-shake" },
+  { key: "frustration", name: "Frustration", score: 0, anim: "anim-shake" }
 ];
 
 const topCoins = [
-  { symbol: "BTC", price: "$67,240", change: "+2.1%", mood: 2 },
-  { symbol: "ETH", price: "$3,420", change: "+1.4%", mood: 2 },
-  { symbol: "SOL", price: "$182", change: "+4.8%", mood: 0 },
-  { symbol: "XRP", price: "$0.63", change: "-0.8%", mood: 4 },
-  { symbol: "BNB", price: "$590", change: "+1.9%", mood: 1 },
-  { symbol: "ADA", price: "$0.48", change: "-1.1%", mood: 4 },
-  { symbol: "DOGE", price: "$0.12", change: "+3.6%", mood: 1 },
-  { symbol: "TON", price: "$6.10", change: "+0.7%", mood: 2 },
-  { symbol: "AVAX", price: "$41", change: "-2.3%", mood: 5 },
-  { symbol: "TRX", price: "$0.13", change: "+0.4%", mood: 3 }
+  { symbol: "BTC", price: "$67,240", change: "+2.1%", mood: "optimism" },
+  { symbol: "ETH", price: "$3,420", change: "+1.4%", mood: "optimism" },
+  { symbol: "SOL", price: "$182", change: "+4.8%", mood: "euphoria" },
+  { symbol: "XRP", price: "$0.63", change: "-0.8%", mood: "doubt" },
+  { symbol: "BNB", price: "$590", change: "+1.9%", mood: "content" },
+  { symbol: "ADA", price: "$0.48", change: "-1.1%", mood: "doubt" },
+  { symbol: "DOGE", price: "$0.12", change: "+3.6%", mood: "content" },
+  { symbol: "TON", price: "$6.10", change: "+0.7%", mood: "optimism" },
+  { symbol: "AVAX", price: "$41", change: "-2.3%", mood: "concern" },
+  { symbol: "TRX", price: "$0.13", change: "+0.4%", mood: "neutral" }
 ];
 
-const styleEmojiMap = {
-  classic: ["🤩","😌","😊","😐","🤨","😟","😡"],
-  "3d": ["🟢","🟩","💚","⚪","🟠","🔴","❤️"],
-  anime: ["✨","🌸","🌼","◕_◕","❓","💧","💢"],
-  minimal: ["●","◐","◔","○","◌","◍","⬤"]
+const coinPerformanceData = {
+  BTC: {
+    name: "Bitcoin",
+    performance: { "1m": 0.2, "5m": 0.5, "15m": 0.9, "1h": 2.1, "4h": -1.3, "24h": 3.4, "7d": -4.8 }
+  },
+  ETH: {
+    name: "Ethereum",
+    performance: { "1m": 0.1, "5m": 0.3, "15m": 0.7, "1h": 1.4, "4h": 0.8, "24h": 2.9, "7d": -2.2 }
+  },
+  SOL: {
+    name: "Solana",
+    performance: { "1m": 0.3, "5m": 0.8, "15m": 1.1, "1h": 4.8, "4h": 2.2, "24h": 6.1, "7d": 8.5 }
+  },
+  XRP: {
+    name: "XRP",
+    performance: { "1m": -0.1, "5m": -0.2, "15m": -0.3, "1h": -0.8, "4h": -1.1, "24h": -0.4, "7d": 1.8 }
+  },
+  BNB: {
+    name: "BNB",
+    performance: { "1m": 0.1, "5m": 0.4, "15m": 0.7, "1h": 1.9, "4h": 1.2, "24h": 2.3, "7d": 3.0 }
+  },
+  ADA: {
+    name: "Cardano",
+    performance: { "1m": -0.1, "5m": -0.3, "15m": -0.5, "1h": -1.1, "4h": -1.7, "24h": -0.9, "7d": -2.6 }
+  },
+  DOGE: {
+    name: "Dogecoin",
+    performance: { "1m": 0.2, "5m": 0.9, "15m": 1.5, "1h": 3.6, "4h": 2.8, "24h": 5.2, "7d": 7.9 }
+  },
+  TON: {
+    name: "Toncoin",
+    performance: { "1m": 0.0, "5m": 0.1, "15m": 0.3, "1h": 0.7, "4h": 0.4, "24h": 1.2, "7d": 2.7 }
+  },
+  AVAX: {
+    name: "Avalanche",
+    performance: { "1m": -0.2, "5m": -0.7, "15m": -1.0, "1h": -2.3, "4h": -3.5, "24h": -1.6, "7d": -4.1 }
+  },
+  TRX: {
+    name: "TRON",
+    performance: { "1m": 0.0, "5m": 0.1, "15m": 0.2, "1h": 0.4, "4h": 0.6, "24h": 0.9, "7d": 1.4 }
+  }
 };
 
 const macroDrivers = {
@@ -67,16 +103,46 @@ const macroDrivers = {
   }
 };
 
-function getMoodIndex(score) {
+let activeCoin = "BTC";
+let activeTimeframe = "1h";
+
+function getMoodByScore(score) {
   for (let i = 0; i < moods.length; i++) {
-    if (score >= moods[i].score) return i;
+    if (score >= moods[i].score) return moods[i];
   }
-  return moods.length - 1;
+  return moods[moods.length - 1];
 }
 
-function getStyleFace(index, style) {
-  const map = styleEmojiMap[style] || styleEmojiMap.classic;
-  return map[index] || moods[index].emoji;
+function getMoodByKey(key) {
+  return moods.find(m => m.key === key) || moods[2];
+}
+
+function getCurrentStyle() {
+  const body = document.body.className || "style-classic";
+  return body.replace("style-", "") || "classic";
+}
+
+function getHeroImagePath(style, moodKey) {
+  return `assets/hero/${style}/${moodKey}.png`;
+}
+
+function getIconImagePath(style, moodKey) {
+  return `assets/icons/${style}/${moodKey}.png`;
+}
+
+function getLogoPath(style) {
+  return `assets/logo/logo-${style}.png`;
+}
+
+function setImage(el, path, fallback = "") {
+  if (!el) return;
+  el.src = path;
+  if (fallback) {
+    el.onerror = () => {
+      el.onerror = null;
+      el.src = fallback;
+    };
+  }
 }
 
 function getCurrentMacro() {
@@ -84,17 +150,32 @@ function getCurrentMacro() {
   return macroDrivers[macroKey];
 }
 
-function buildSentimentPost(score, style) {
-  const moodIndex = getMoodIndex(score);
-  const mood = moods[moodIndex];
-  const face = getStyleFace(moodIndex, style);
+function performanceToScore(value) {
+  if (value >= 4) return 95;
+  if (value >= 2) return 78;
+  if (value >= 0.5) return 64;
+  if (value >= -0.5) return 48;
+  if (value >= -2) return 30;
+  if (value >= -4) return 18;
+  return 8;
+}
+
+function formatPercent(value) {
+  return `${value >= 0 ? "+" : ""}${value.toFixed(1)}%`;
+}
+
+function buildSentimentPost(score) {
+  const style = getCurrentStyle();
+  const mood = getMoodByScore(score);
   const macro = getCurrentMacro();
 
   return `🚨 WojakMeter Alert
 
-Market Mood: ${mood.name} ${face}
+Market Mood: ${mood.name}
 Score: ${score}/100
-BTC: +2.1%
+${activeCoin}: ${formatPercent(coinPerformanceData[activeCoin].performance[activeTimeframe])}
+Selected Timeframe: ${activeTimeframe}
+Style: ${style}
 Social Mood: ${document.getElementById("socialMood").textContent}
 Macro Driver: ${macro.label}
 
@@ -104,11 +185,12 @@ ${macro.narrative}
 #WojakMeter #Crypto #Bitcoin`;
 }
 
-function buildMemePrompt(score, style) {
-  const moodIndex = getMoodIndex(score);
-  const mood = moods[moodIndex];
+function buildMemePrompt(score) {
+  const style = getCurrentStyle();
+  const mood = getMoodByScore(score);
   const socialMood = document.getElementById("socialMood").textContent;
   const macro = getCurrentMacro();
+  const activePerformance = formatPercent(coinPerformanceData[activeCoin].performance[activeTimeframe]);
 
   return `Create a high-quality meme-style crypto image based on the current market context.
 
@@ -117,16 +199,22 @@ Technical mood: ${mood.name}
 Social mood: ${socialMood}
 Macro driver: ${macro.label}
 Macro narrative: ${macro.narrative}
-BTC move reference: +2.1%
+Coin focus: ${activeCoin}
+Selected timeframe: ${activeTimeframe}
+Performance: ${activePerformance}
 
 Main scene:
-- A Wojak-inspired character reacting in ${mood.name.toLowerCase()} mode
+- A large Wojak main character in ${mood.name.toLowerCase()} mode
+- Use the hero-style artwork as the main visual focus
 - A crypto trading dashboard in the background
-- Bitcoin price action visible
+- ${activeCoin} price action visible
 - Visual hints of ${macro.label.toLowerCase()}
 - Emotional expression must match ${mood.name}
-- Composition must feel native to crypto Twitter / X
-- Image should be dramatic, clean, readable, and shareable
+
+UI/icon layer:
+- Use smaller emoticon-style Wojak icons for compact UI elements
+- Small icon-style moods should be used for side widgets, coin reactions and emotional scale
+- Keep the main hero Wojak more important than the small icons
 
 Bottom-right branding:
 - Add the website text: "wojakmeter.com"
@@ -134,19 +222,19 @@ Bottom-right branding:
 - Add the X logo beside "@WojakMeter"
 - Put all branding in the bottom-right corner
 - Use the same digital elegant typography style as the website
-- Font style should feel similar to Space Grotesk / Rajdhani aesthetic
-- Branding should be subtle, premium, sharp, and fully readable
-- Keep the website and X handle aligned visually
-- Make the branding look integrated into the image UI, not like random pasted text
-- Do not let the branding overpower the main image
-- Keep the logo and text crisp and social-media-ready
+- Branding should be subtle, premium, sharp, and readable
 
 Tone:
 viral, crypto-native, meme-friendly, market-aware, contextual, social-media-ready.`;
 }
 
+function updateBrand(style) {
+  const brandBadgeImg = document.getElementById("brandBadgeImg");
+  setImage(brandBadgeImg, getLogoPath(style), getLogoPath("classic"));
+}
+
 function updateDriverPanel(score) {
-  const technicalMood = moods[getMoodIndex(score)].name;
+  const technicalMood = getMoodByScore(score).name;
   const socialMood = document.getElementById("socialMood").textContent;
   const macro = getCurrentMacro();
 
@@ -157,45 +245,48 @@ function updateDriverPanel(score) {
 }
 
 function updateHero(score, style) {
-  const moodIndex = getMoodIndex(score);
-  const mood = moods[moodIndex];
-  const face = getStyleFace(moodIndex, style);
+  const mood = getMoodByScore(score);
 
-  const heroFace = document.getElementById("heroFace");
+  const heroFaceImg = document.getElementById("heroFaceImg");
   const heroMood = document.getElementById("heroMood");
   const heroScore = document.getElementById("heroScore");
   const sweat = document.getElementById("sweatFx");
-  const brandBadge = document.getElementById("brandBadge");
 
-  heroFace.textContent = face;
-  heroFace.className = `hero-face ${mood.anim}`;
+  heroFaceImg.className = `hero-face-img ${mood.anim}`;
+  setImage(heroFaceImg, getHeroImagePath(style, mood.key), getHeroImagePath("classic", mood.key));
+
   heroMood.textContent = mood.name;
   heroScore.textContent = score;
-  brandBadge.textContent = face;
 
-  if (mood.name === "Concern" || mood.name === "Frustration") {
+  updateBrand(style);
+
+  if (mood.key === "concern" || mood.key === "frustration") {
     sweat.classList.remove("hidden");
   } else {
     sweat.classList.add("hidden");
   }
 
-  document.getElementById("coinMoodIcon").textContent = face;
-  document.getElementById("coinMoodIcon").className = `mood-icon ${mood.anim}`;
+  const coinMoodIconImg = document.getElementById("coinMoodIconImg");
+  coinMoodIconImg.className = `mood-icon-img ${mood.anim}`;
+  setImage(coinMoodIconImg, getIconImagePath(style, mood.key), getIconImagePath("classic", mood.key));
+
   document.getElementById("coinMoodLabel").textContent = mood.name;
   document.getElementById("coinMoodScore").textContent = score;
 
   const socialScore = Math.max(0, Math.min(100, score + 4));
-  const socialMoodIndex = getMoodIndex(socialScore);
-  const socialMood = moods[socialMoodIndex];
-  const socialFace = getStyleFace(socialMoodIndex, style);
+  const socialMood = getMoodByScore(socialScore);
 
-  document.getElementById("socialIcon").textContent = socialFace;
-  document.getElementById("socialIcon").className = `social-icon ${socialMood.anim}`;
+  const socialIconImg = document.getElementById("socialIconImg");
+  socialIconImg.className = `mood-icon-img ${socialMood.anim}`;
+  setImage(socialIconImg, getIconImagePath(style, socialMood.key), getIconImagePath("classic", socialMood.key));
+
   document.getElementById("socialMood").textContent = socialMood.name;
   document.getElementById("socialScore").textContent = socialScore;
 
-  document.getElementById("detailSocialIcon").textContent = socialFace;
-  document.getElementById("detailSocialIcon").className = `mood-icon ${socialMood.anim}`;
+  const detailSocialIconImg = document.getElementById("detailSocialIconImg");
+  detailSocialIconImg.className = `mood-icon-img ${socialMood.anim}`;
+  setImage(detailSocialIconImg, getIconImagePath(style, socialMood.key), getIconImagePath("classic", socialMood.key));
+
   document.getElementById("detailSocialLabel").textContent = socialMood.name;
   document.getElementById("detailSocialScore").textContent = socialScore;
 
@@ -207,8 +298,7 @@ function renderCoins(style) {
   coinsGrid.innerHTML = "";
 
   topCoins.forEach((coin) => {
-    const mood = moods[coin.mood];
-    const emoji = getStyleFace(coin.mood, style);
+    const mood = getMoodByKey(coin.mood);
     const negative = coin.change.includes("-");
 
     const card = document.createElement("div");
@@ -219,8 +309,8 @@ function renderCoins(style) {
         <div class="price">${coin.price}</div>
         <div class="change ${negative ? "negative" : "positive"}">${coin.change}</div>
       </div>
-      <div class="coin-emoji ${mood.anim}">
-        ${emoji}
+      <div class="coin-emoji">
+        <img src="${getIconImagePath(style, mood.key)}" alt="${coin.symbol} mood" />
       </div>
     `;
     coinsGrid.appendChild(card);
@@ -231,18 +321,66 @@ function renderScale(style) {
   const scaleGrid = document.getElementById("scaleGrid");
   scaleGrid.innerHTML = "";
 
-  moods.forEach((mood, index) => {
-    const face = getStyleFace(index, style);
-
+  moods.forEach((mood) => {
     const item = document.createElement("div");
     item.className = "scale-item";
     item.innerHTML = `
-      <div class="scale-face ${mood.anim}">
-        ${face}
+      <div class="scale-face">
+        <img src="${getIconImagePath(style, mood.key)}" alt="${mood.name}" />
       </div>
       <strong>${mood.name}</strong>
     `;
     scaleGrid.appendChild(item);
+  });
+}
+
+function updateIntervalBoxes(symbol) {
+  const perf = coinPerformanceData[symbol].performance;
+
+  const map = {
+    "1m": "perf1m",
+    "5m": "perf5m",
+    "15m": "perf15m",
+    "1h": "perf1h",
+    "4h": "perf4h",
+    "24h": "perf24h",
+    "7d": "perf7d"
+  };
+
+  Object.entries(map).forEach(([tf, id]) => {
+    const el = document.getElementById(id);
+    const value = perf[tf];
+    el.textContent = formatPercent(value);
+    el.className = value >= 0 ? "positive" : "negative";
+  });
+}
+
+function updateChartSection(symbol, timeframe, style) {
+  const coin = coinPerformanceData[symbol];
+  const value = coin.performance[timeframe];
+  const score = performanceToScore(value);
+
+  document.getElementById("chartTitle").textContent = `${symbol} / ${coin.name}`;
+  document.getElementById("chartChangePill").textContent = formatPercent(value);
+  document.getElementById("chartChangePill").className = `pill ${value >= 0 ? "positive" : "negative"}`;
+  document.getElementById("selectedTimeframe").textContent = timeframe;
+  document.getElementById("selectedPerformance").textContent = formatPercent(value);
+  document.getElementById("selectedPerformance").className = value >= 0 ? "positive" : "negative";
+
+  updateIntervalBoxes(symbol);
+  updateHero(score, style);
+
+  const line = document.getElementById("chartLine");
+  if (value >= 0) {
+    line.style.borderBottomColor = "var(--green)";
+    line.style.transform = "skewX(-10deg) translateY(0)";
+  } else {
+    line.style.borderBottomColor = "var(--red)";
+    line.style.transform = "skewX(10deg) translateY(8px)";
+  }
+
+  document.querySelectorAll("#chartTimeframes button").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.timeframe === timeframe);
   });
 }
 
@@ -254,9 +392,9 @@ async function copyText(value) {
   }
 }
 
-function refreshOutputs(score, style) {
-  document.getElementById("tweetOutput").value = buildSentimentPost(score, style);
-  document.getElementById("memePromptOutput").value = buildMemePrompt(score, style);
+function refreshOutputs(score) {
+  document.getElementById("tweetOutput").value = buildSentimentPost(score);
+  document.getElementById("memePromptOutput").value = buildMemePrompt(score);
 }
 
 function init() {
@@ -277,38 +415,63 @@ function init() {
   document.body.className = `style-${currentStyle}`;
   styleSelector.value = currentStyle;
 
-  updateHero(currentScore, currentStyle);
+  updateBrand(currentStyle);
   renderCoins(currentStyle);
   renderScale(currentStyle);
-  refreshOutputs(currentScore, currentStyle);
+  updateChartSection(activeCoin, activeTimeframe, currentStyle);
+  refreshOutputs(currentScore);
 
   slider.addEventListener("input", () => {
     currentScore = Number(slider.value);
     updateHero(currentScore, currentStyle);
-    refreshOutputs(currentScore, currentStyle);
+    refreshOutputs(currentScore);
   });
 
   styleSelector.addEventListener("change", () => {
     currentStyle = styleSelector.value;
     localStorage.setItem("wojakStyle", currentStyle);
     document.body.className = `style-${currentStyle}`;
-    updateHero(currentScore, currentStyle);
+
+    updateBrand(currentStyle);
     renderCoins(currentStyle);
     renderScale(currentStyle);
-    refreshOutputs(currentScore, currentStyle);
+    updateChartSection(activeCoin, activeTimeframe, currentStyle);
+    refreshOutputs(Number(document.getElementById("heroScore").textContent || slider.value));
   });
 
   macroDriver.addEventListener("change", () => {
-    updateDriverPanel(currentScore);
-    refreshOutputs(currentScore, currentStyle);
+    updateDriverPanel(Number(document.getElementById("heroScore").textContent || slider.value));
+    updateChartSection(activeCoin, activeTimeframe, currentStyle);
+    refreshOutputs(Number(document.getElementById("heroScore").textContent || slider.value));
+  });
+
+  document.querySelectorAll("#chartTimeframes button").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      activeTimeframe = btn.dataset.timeframe;
+      updateChartSection(activeCoin, activeTimeframe, currentStyle);
+      refreshOutputs(Number(document.getElementById("heroScore").textContent || slider.value));
+    });
+  });
+
+  document.querySelectorAll(".coin-tab").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".coin-tab").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      activeCoin = btn.textContent.trim();
+      if (!coinPerformanceData[activeCoin]) activeCoin = "BTC";
+
+      updateChartSection(activeCoin, activeTimeframe, currentStyle);
+      refreshOutputs(Number(document.getElementById("heroScore").textContent || slider.value));
+    });
   });
 
   generateTweetBtn.addEventListener("click", () => {
-    tweetOutput.value = buildSentimentPost(currentScore, currentStyle);
+    tweetOutput.value = buildSentimentPost(Number(document.getElementById("heroScore").textContent || slider.value));
   });
 
   generateMemeBtn.addEventListener("click", () => {
-    memePromptOutput.value = buildMemePrompt(currentScore, currentStyle);
+    memePromptOutput.value = buildMemePrompt(Number(document.getElementById("heroScore").textContent || slider.value));
   });
 
   copyTweetBtn.addEventListener("click", () => {

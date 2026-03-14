@@ -16,7 +16,6 @@
   --red:#ff5b6e;
   --gray:#cfd7e3;
   --blue:#66b8ff;
-  --pink:#ffb8d2;
 
   --shadow:0 16px 40px rgba(0,0,0,.35);
   --radius:20px;
@@ -52,6 +51,11 @@ textarea{
   font:inherit;
 }
 
+img{
+  display:block;
+  max-width:100%;
+}
+
 .app-shell{
   width:min(1220px, calc(100% - 20px));
   margin:18px auto 30px;
@@ -84,15 +88,20 @@ textarea{
 }
 
 .brand-badge{
-  width:46px;
-  height:46px;
+  width:54px;
+  height:54px;
   border-radius:14px;
   display:grid;
   place-items:center;
-  font-size:22px;
-  color:white;
   background:linear-gradient(180deg, #1f3d60 0%, #122235 100%);
   border:1px solid rgba(255,255,255,.08);
+  overflow:hidden;
+}
+
+.brand-badge-img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
 }
 
 .brand-copy h1{
@@ -257,11 +266,12 @@ textarea{
   background:linear-gradient(180deg, #162535 0%, #0d1825 100%);
 }
 
-.hero-face{
+.hero-face-img{
   position:relative;
   z-index:2;
-  font-size:clamp(86px, 17vw, 140px);
-  line-height:1;
+  width:min(260px, 82%);
+  height:auto;
+  object-fit:contain;
 }
 
 .sweat{
@@ -297,6 +307,10 @@ textarea{
   justify-content:center;
   flex-wrap:wrap;
   gap:8px;
+}
+
+.timeframes.compact{
+  justify-content:flex-start;
 }
 
 .slider-wrap{
@@ -338,10 +352,16 @@ textarea{
   border-radius:20px;
   display:grid;
   place-items:center;
-  font-size:42px;
   background:var(--panel-3);
   border:1px solid var(--line);
   flex-shrink:0;
+  overflow:hidden;
+}
+
+.mood-icon-img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
 }
 
 .social-mood,
@@ -461,8 +481,15 @@ textarea{
   border-radius:50%;
   display:grid;
   place-items:center;
-  font-size:30px;
   flex-shrink:0;
+  overflow:hidden;
+}
+
+.coin-emoji img,
+.scale-face img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
 }
 
 .detail-grid{
@@ -499,6 +526,52 @@ textarea{
   border-bottom:4px solid var(--green);
   border-radius:0 0 160px 160px;
   transform:skewX(-10deg);
+  transition:all .25s ease;
+}
+
+.chart-footer{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-top:12px;
+}
+
+.pill{
+  padding:10px 14px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  font-weight:700;
+  background:var(--panel-3);
+  font-family:var(--font-ui);
+}
+
+.market-intervals{
+  display:grid;
+  grid-template-columns:repeat(4, 1fr);
+  gap:10px;
+  margin-top:14px;
+}
+
+.interval-box{
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:var(--panel);
+  text-align:center;
+}
+
+.interval-box span{
+  display:block;
+  color:var(--muted);
+  font-family:var(--font-ui);
+  margin-bottom:6px;
+}
+
+.interval-box strong{
+  font-family:var(--font-ui);
+  font-size:1rem;
 }
 
 .side-stack{
@@ -530,6 +603,7 @@ textarea{
   color:var(--text);
   font-family:var(--font-ui);
   font-weight:700;
+  margin-top:8px;
 }
 
 .footer{
@@ -558,38 +632,28 @@ textarea{
   color:var(--red);
 }
 
-body.style-classic .hero-face,
-body.style-classic .coin-emoji,
-body.style-classic .scale-face,
-body.style-classic .social-icon,
-body.style-classic .mood-icon{
-  filter:none;
+body.style-3d .hero-face-img,
+body.style-3d .mood-icon-img,
+body.style-3d .coin-emoji img,
+body.style-3d .scale-face img,
+body.style-3d .brand-badge-img{
+  filter:drop-shadow(0 6px 10px rgba(255,255,255,.08));
 }
 
-body.style-3d .hero-face,
-body.style-3d .coin-emoji,
-body.style-3d .scale-face,
-body.style-3d .social-icon,
-body.style-3d .mood-icon{
-  text-shadow:
-    0 2px 0 rgba(0,0,0,.18),
-    0 10px 18px rgba(255,255,255,.05);
+body.style-anime .hero-face-img,
+body.style-anime .mood-icon-img,
+body.style-anime .coin-emoji img,
+body.style-anime .scale-face img,
+body.style-anime .brand-badge-img{
+  filter:saturate(1.12) contrast(1.04);
 }
 
-body.style-anime .hero-face,
-body.style-anime .coin-emoji,
-body.style-anime .scale-face,
-body.style-anime .social-icon,
-body.style-anime .mood-icon{
-  filter:saturate(1.22) contrast(1.05);
-}
-
-body.style-minimal .hero-face,
-body.style-minimal .coin-emoji,
-body.style-minimal .scale-face,
-body.style-minimal .social-icon,
-body.style-minimal .mood-icon{
-  filter:grayscale(.08) brightness(1.04);
+body.style-minimal .hero-face-img,
+body.style-minimal .mood-icon-img,
+body.style-minimal .coin-emoji img,
+body.style-minimal .scale-face img,
+body.style-minimal .brand-badge-img{
+  filter:grayscale(.06) brightness(1.02);
 }
 
 .anim-float{ animation:float 3s infinite ease-in-out; }
@@ -604,7 +668,7 @@ body.style-minimal .mood-icon{
 }
 @keyframes pulse{
   0%,100%{transform:scale(1)}
-  50%{transform:scale(1.08)}
+  50%{transform:scale(1.04)}
 }
 @keyframes shake{
   0%{transform:translate(0,0)}
@@ -691,6 +755,9 @@ body.style-classic .sweat{
   .scale-grid{
     grid-template-columns:repeat(3, 1fr);
   }
+  .market-intervals{
+    grid-template-columns:repeat(2, 1fr);
+  }
   .section-head{
     flex-direction:column;
     align-items:flex-start;
@@ -717,14 +784,12 @@ body.style-classic .sweat{
   .mood-icon{
     width:74px;
     height:74px;
-    font-size:36px;
     border-radius:16px;
   }
   .coin-emoji,
   .scale-face{
     width:54px;
     height:54px;
-    font-size:24px;
   }
   .coins-grid{
     grid-template-columns:1fr;
@@ -737,5 +802,8 @@ body.style-classic .sweat{
   }
   .chart-placeholder{
     height:220px;
+  }
+  .hero-face-img{
+    width:min(220px, 80%);
   }
 }

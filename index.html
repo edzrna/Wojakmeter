@@ -1,809 +1,319 @@
-:root{
-  --bg:#071018;
-  --bg-2:#0b1622;
-  --panel:#101c2b;
-  --panel-2:#132235;
-  --panel-3:#182a40;
-  --line:rgba(255,255,255,.08);
-  --line-soft:rgba(255,255,255,.04);
-
-  --text:#f5f7fb;
-  --muted:#9eacbf;
-  --title:#ffffff;
-
-  --green:#4dff88;
-  --green-2:#2bd96b;
-  --red:#ff5b6e;
-  --gray:#cfd7e3;
-  --blue:#66b8ff;
-
-  --shadow:0 16px 40px rgba(0,0,0,.35);
-  --radius:20px;
-
-  --font-display:'Space Grotesk', sans-serif;
-  --font-ui:'Rajdhani', sans-serif;
-  --font-body:'Inter', sans-serif;
-}
-
-*{
-  box-sizing:border-box;
-}
-
-html, body{
-  margin:0;
-  padding:0;
-  font-family:var(--font-body);
-  color:var(--text);
-  background:
-    radial-gradient(circle at top center, rgba(102,184,255,.08), transparent 24%),
-    radial-gradient(circle at 20% 20%, rgba(77,255,136,.05), transparent 18%),
-    linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
-}
-
-body{
-  min-height:100vh;
-}
-
-button,
-select,
-input,
-textarea{
-  font:inherit;
-}
-
-img{
-  display:block;
-  max-width:100%;
-}
-
-.app-shell{
-  width:min(1220px, calc(100% - 20px));
-  margin:18px auto 30px;
-}
-
-.card{
-  position:relative;
-  overflow:hidden;
-  border-radius:var(--radius);
-  border:1px solid var(--line);
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)),
-    linear-gradient(180deg, var(--panel-2) 0%, var(--panel) 100%);
-  box-shadow:var(--shadow);
-}
-
-.topbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:18px;
-  padding:18px 22px;
-  margin-bottom:10px;
-}
-
-.brand{
-  display:flex;
-  align-items:center;
-  gap:14px;
-}
-
-.brand-badge{
-  width:54px;
-  height:54px;
-  border-radius:14px;
-  display:grid;
-  place-items:center;
-  background:linear-gradient(180deg, #1f3d60 0%, #122235 100%);
-  border:1px solid rgba(255,255,255,.08);
-  overflow:hidden;
-}
-
-.brand-badge-img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-}
-
-.brand-copy h1{
-  margin:0;
-  color:var(--title);
-  font-family:var(--font-display);
-  font-size:1.9rem;
-  line-height:1;
-  font-weight:700;
-  letter-spacing:.08em;
-}
-
-.brand-copy p{
-  margin:5px 0 0;
-  color:var(--muted);
-  font-size:.92rem;
-}
-
-.topbar-right{
-  display:flex;
-  align-items:center;
-  gap:16px;
-  flex-wrap:wrap;
-  justify-content:flex-end;
-}
-
-.market-stats{
-  display:flex;
-  gap:14px;
-  flex-wrap:wrap;
-  color:var(--muted);
-  font-size:.92rem;
-  font-family:var(--font-ui);
-  font-weight:600;
-}
-
-.market-stats strong{
-  color:var(--text);
-  font-weight:700;
-}
-
-.style-selector,
-.drivers-controls{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding:10px 12px;
-  border-radius:14px;
-  border:1px solid var(--line);
-  background:var(--panel-3);
-  font-family:var(--font-ui);
-}
-
-.style-selector label,
-.drivers-controls label{
-  color:var(--muted);
-  font-weight:600;
-}
-
-.style-selector select,
-.drivers-controls select{
-  border:0;
-  outline:none;
-  background:transparent;
-  color:var(--title);
-  font-weight:700;
-  width:100%;
-}
-
-.coin-nav{
-  display:flex;
-  gap:10px;
-  overflow-x:auto;
-  padding:14px 16px;
-  margin-bottom:14px;
-}
-
-.coin-tab,
-.timeframes button,
-.action-btn{
-  border:1px solid var(--line);
-  background:var(--panel-3);
-  color:var(--text);
-  padding:10px 14px;
-  border-radius:999px;
-  cursor:pointer;
-  white-space:nowrap;
-  transition:.22s ease;
-  font-family:var(--font-ui);
-  font-weight:700;
-}
-
-.coin-tab:hover,
-.timeframes button:hover,
-.action-btn:hover{
-  filter:brightness(1.08);
-}
-
-.coin-tab.active,
-.timeframes button.active{
-  background:#143022;
-  border-color:rgba(77,255,136,.32);
-  color:#dffff0;
-}
-
-.action-btn.primary{
-  background:#133154;
-  border-color:rgba(102,184,255,.35);
-  color:#d8efff;
-}
-
-.dashboard{
-  display:grid;
-  gap:14px;
-}
-
-.hero,
-.share-card,
-.drivers-card{
-  padding:18px;
-}
-
-.hero h2,
-.section-head h3,
-.side-card h3,
-.scale-card h3,
-.social-card h3{
-  font-family:var(--font-display);
-  letter-spacing:.04em;
-}
-
-.hero h2{
-  margin:0 0 18px;
-  text-align:center;
-  font-size:2rem;
-  font-weight:700;
-  color:var(--title);
-}
-
-.hero-grid{
-  display:grid;
-  grid-template-columns:1fr;
-  gap:18px;
-  align-items:center;
-}
-
-.hero-main{
-  text-align:center;
-}
-
-.wojak-stage{
-  width:min(340px, 100%);
-  aspect-ratio:1 / 1;
-  margin:0 auto 16px;
-  border-radius:28px;
-  position:relative;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  overflow:hidden;
-  border:1px solid rgba(255,255,255,.08);
-  background:linear-gradient(180deg, #162535 0%, #0d1825 100%);
-}
-
-.hero-face-img{
-  position:relative;
-  z-index:2;
-  width:min(260px, 82%);
-  height:auto;
-  object-fit:contain;
-}
-
-.sweat{
-  position:absolute;
-  right:18%;
-  top:18%;
-  font-size:26px;
-  z-index:3;
-}
-
-.hidden{
-  display:none;
-}
-
-.hero-mood{
-  font-family:var(--font-display);
-  font-size:clamp(1.7rem, 5vw, 2.5rem);
-  font-weight:700;
-  color:var(--green);
-  margin-bottom:4px;
-}
-
-.hero-score{
-  font-family:var(--font-ui);
-  color:#9fe9ff;
-  font-size:1.1rem;
-  margin-bottom:14px;
-  font-weight:700;
-}
-
-.timeframes{
-  display:flex;
-  justify-content:center;
-  flex-wrap:wrap;
-  gap:8px;
-}
-
-.timeframes.compact{
-  justify-content:flex-start;
-}
-
-.slider-wrap{
-  margin-top:18px;
-}
-
-.slider-wrap label{
-  display:block;
-  color:var(--muted);
-  margin-bottom:8px;
-  font-weight:600;
-  font-family:var(--font-ui);
-}
-
-.slider-wrap input{
-  width:min(340px, 92%);
-  accent-color:var(--green);
-}
-
-.mini-card,
-.top-coins,
-.chart-card,
-.side-card,
-.scale-card{
-  padding:18px;
-}
-
-.social-row,
-.mood-row{
-  display:flex;
-  gap:14px;
-  align-items:center;
-}
-
-.social-icon,
-.mood-icon{
-  width:88px;
-  height:88px;
-  border-radius:20px;
-  display:grid;
-  place-items:center;
-  background:var(--panel-3);
-  border:1px solid var(--line);
-  flex-shrink:0;
-  overflow:hidden;
-}
-
-.mood-icon-img{
-  width:100%;
-  height:100%;
-  object-fit:contain;
-}
-
-.social-mood,
-.big-label{
-  font-family:var(--font-display);
-  font-size:1.5rem;
-  font-weight:700;
-  color:var(--title);
-  margin-bottom:4px;
-}
-
-.muted{
-  color:var(--muted);
-}
-
-.section-head{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  flex-wrap:wrap;
-  margin-bottom:14px;
-}
-
-.drivers-grid{
-  display:grid;
-  grid-template-columns:1fr;
-  gap:14px;
-}
-
-.driver-list{
-  margin-top:14px;
-  display:grid;
-  gap:10px;
-}
-
-.driver-item{
-  display:flex;
-  justify-content:space-between;
-  gap:12px;
-  padding:12px 0;
-  border-top:1px solid var(--line-soft);
-}
-
-.driver-item span{
-  color:var(--muted);
-  font-family:var(--font-ui);
-}
-
-.driver-item strong{
-  color:var(--text);
-  text-align:right;
-  font-family:var(--font-ui);
-}
-
-.action-buttons{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-bottom:12px;
-}
-
-.output-box{
-  width:100%;
-  min-height:150px;
-  resize:vertical;
-  border-radius:16px;
-  border:1px solid var(--line);
-  background:#0d1724;
-  color:var(--text);
-  padding:14px;
-  font-family:var(--font-body);
-  line-height:1.5;
-}
-
-.coins-grid{
-  display:grid;
-  grid-template-columns:repeat(2, 1fr);
-  gap:12px;
-}
-
-.coin-card{
-  border:1px solid var(--line);
-  border-radius:18px;
-  padding:14px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-  background:var(--panel);
-}
-
-.symbol{
-  font-size:1.2rem;
-  font-weight:700;
-  color:var(--title);
-  font-family:var(--font-ui);
-}
-
-.price{
-  margin-top:4px;
-  color:var(--gray);
-  font-size:.98rem;
-  font-family:var(--font-ui);
-}
-
-.change{
-  margin-top:6px;
-  font-weight:700;
-  font-family:var(--font-ui);
-}
-
-.coin-emoji,
-.scale-face{
-  width:62px;
-  height:62px;
-  border-radius:50%;
-  display:grid;
-  place-items:center;
-  flex-shrink:0;
-  overflow:hidden;
-}
-
-.coin-emoji img,
-.scale-face img{
-  width:100%;
-  height:100%;
-  object-fit:contain;
-}
-
-.detail-grid{
-  display:grid;
-  grid-template-columns:1fr;
-  gap:14px;
-}
-
-.chart-placeholder{
-  height:280px;
-  border-radius:18px;
-  border:1px solid var(--line);
-  position:relative;
-  overflow:hidden;
-  background:linear-gradient(180deg, #0e1824 0%, #0b141e 100%);
-}
-
-.grid-lines{
-  position:absolute;
-  inset:0;
-  background-image:
-    linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
-  background-size:46px 46px;
-  opacity:.24;
-}
-
-.chart-line{
-  position:absolute;
-  left:5%;
-  right:5%;
-  bottom:18%;
-  height:120px;
-  border-bottom:4px solid var(--green);
-  border-radius:0 0 160px 160px;
-  transform:skewX(-10deg);
-  transition:all .25s ease;
-}
-
-.chart-footer{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  flex-wrap:wrap;
-  margin-top:12px;
-}
-
-.pill{
-  padding:10px 14px;
-  border-radius:999px;
-  border:1px solid var(--line);
-  font-weight:700;
-  background:var(--panel-3);
-  font-family:var(--font-ui);
-}
-
-.market-intervals{
-  display:grid;
-  grid-template-columns:repeat(4, 1fr);
-  gap:10px;
-  margin-top:14px;
-}
-
-.interval-box{
-  padding:12px;
-  border:1px solid var(--line);
-  border-radius:14px;
-  background:var(--panel);
-  text-align:center;
-}
-
-.interval-box span{
-  display:block;
-  color:var(--muted);
-  font-family:var(--font-ui);
-  margin-bottom:6px;
-}
-
-.interval-box strong{
-  font-family:var(--font-ui);
-  font-size:1rem;
-}
-
-.side-stack{
-  display:grid;
-  gap:14px;
-}
-
-.scale-card h3{
-  text-align:center;
-}
-
-.scale-grid{
-  display:grid;
-  grid-template-columns:repeat(4, 1fr);
-  gap:12px;
-}
-
-.scale-item{
-  text-align:center;
-  padding:12px 10px;
-  border:1px solid var(--line);
-  border-radius:18px;
-  background:var(--panel);
-}
-
-.scale-item strong{
-  display:block;
-  font-size:.92rem;
-  color:var(--text);
-  font-family:var(--font-ui);
-  font-weight:700;
-  margin-top:8px;
-}
-
-.footer{
-  text-align:center;
-  padding:14px 0 22px;
-  color:var(--muted);
-}
-
-.footer a{
-  color:var(--muted);
-  text-decoration:none;
-  margin:0 8px;
-  font-weight:600;
-  font-family:var(--font-ui);
-}
-
-.footer a:hover{
-  color:var(--text);
-}
-
-.positive{
-  color:var(--green);
-}
-
-.negative{
-  color:var(--red);
-}
-
-body.style-3d .hero-face-img,
-body.style-3d .mood-icon-img,
-body.style-3d .coin-emoji img,
-body.style-3d .scale-face img,
-body.style-3d .brand-badge-img{
-  filter:drop-shadow(0 6px 10px rgba(255,255,255,.08));
-}
-
-body.style-anime .hero-face-img,
-body.style-anime .mood-icon-img,
-body.style-anime .coin-emoji img,
-body.style-anime .scale-face img,
-body.style-anime .brand-badge-img{
-  filter:saturate(1.12) contrast(1.04);
-}
-
-body.style-minimal .hero-face-img,
-body.style-minimal .mood-icon-img,
-body.style-minimal .coin-emoji img,
-body.style-minimal .scale-face img,
-body.style-minimal .brand-badge-img{
-  filter:grayscale(.06) brightness(1.02);
-}
-
-.anim-float{ animation:float 3s infinite ease-in-out; }
-.anim-pulse{ animation:pulse 2s infinite ease-in-out; }
-.anim-shake{ animation:shake .55s infinite linear; }
-.anim-tilt{ animation:tilt 2s infinite ease-in-out; }
-.anim-blink{ animation:blink 4s infinite ease-in-out; }
-
-@keyframes float{
-  0%,100%{transform:translateY(0)}
-  50%{transform:translateY(-10px)}
-}
-@keyframes pulse{
-  0%,100%{transform:scale(1)}
-  50%{transform:scale(1.04)}
-}
-@keyframes shake{
-  0%{transform:translate(0,0)}
-  25%{transform:translate(-3px,1px)}
-  50%{transform:translate(3px,-1px)}
-  75%{transform:translate(-3px,-1px)}
-  100%{transform:translate(0,0)}
-}
-@keyframes tilt{
-  0%,100%{transform:rotate(0deg)}
-  25%{transform:rotate(-3deg)}
-  75%{transform:rotate(3deg)}
-}
-@keyframes blink{
-  0%,96%,100%{opacity:1}
-  97%,99%{opacity:.88}
-}
-@keyframes sweatDrop{
-  0%{transform:translateY(0);opacity:.9}
-  60%{transform:translateY(8px);opacity:1}
-  100%{transform:translateY(14px);opacity:0}
-}
-
-body.style-classic .sweat{
-  animation:sweatDrop 1.4s infinite ease-in-out;
-}
-
-@media (min-width:900px){
-  .hero-grid{
-    grid-template-columns:1.2fr .8fr;
-  }
-  .coins-grid{
-    grid-template-columns:repeat(5, 1fr);
-  }
-  .detail-grid{
-    grid-template-columns:1.5fr .9fr;
-  }
-  .scale-grid{
-    grid-template-columns:repeat(7, 1fr);
-  }
-  .drivers-grid{
-    grid-template-columns:1fr 1fr 1fr;
-  }
-}
-
-@media (max-width:899px){
-  .coins-grid{
-    grid-template-columns:repeat(3, 1fr);
-  }
-  .scale-grid{
-    grid-template-columns:repeat(4, 1fr);
-  }
-}
-
-@media (max-width:780px){
-  .app-shell{
-    width:min(100% - 14px, 1220px);
-  }
-  .topbar{
-    flex-direction:column;
-    align-items:flex-start;
-  }
-  .topbar-right{
-    width:100%;
-    justify-content:space-between;
-    align-items:flex-start;
-  }
-  .market-stats{
-    width:100%;
-    gap:10px;
-  }
-  .style-selector,
-  .drivers-controls{
-    width:100%;
-    justify-content:space-between;
-  }
-  .social-row,
-  .mood-row{
-    align-items:flex-start;
-  }
-  .coins-grid{
-    grid-template-columns:repeat(2, 1fr);
-  }
-  .scale-grid{
-    grid-template-columns:repeat(3, 1fr);
-  }
-  .market-intervals{
-    grid-template-columns:repeat(2, 1fr);
-  }
-  .section-head{
-    flex-direction:column;
-    align-items:flex-start;
-  }
-  .wojak-stage{
-    width:min(100%, 270px);
-  }
-}
-
-@media (max-width:560px){
-  .brand-copy h1{
-    font-size:1.5rem;
-  }
-  .brand-copy p{
-    font-size:.82rem;
-  }
-  .hero{
-    padding:16px;
-  }
-  .hero h2{
-    font-size:1.45rem;
-  }
-  .social-icon,
-  .mood-icon{
-    width:74px;
-    height:74px;
-    border-radius:16px;
-  }
-  .coin-emoji,
-  .scale-face{
-    width:54px;
-    height:54px;
-  }
-  .coins-grid{
-    grid-template-columns:1fr;
-  }
-  .scale-grid{
-    grid-template-columns:repeat(2, 1fr);
-  }
-  .timeframes{
-    justify-content:flex-start;
-  }
-  .chart-placeholder{
-    height:220px;
-  }
-  .hero-face-img{
-    width:min(220px, 80%);
-  }
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WojakMeter Preview</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="style-classic">
+  <div class="app-shell">
+
+    <header class="topbar card">
+      <div class="brand">
+        <div class="brand-badge" id="brandBadge">
+          <img
+            id="brandBadgeImg"
+            src="assets/logo/logo-classic.png"
+            alt="WojakMeter logo"
+            class="brand-badge-img"
+          />
+        </div>
+
+        <div class="brand-copy">
+          <h1>WOJAKMETER</h1>
+          <p>The Crypto Emotion Index</p>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <div class="market-stats">
+          <span>BTC.D <strong>54.2%</strong></span>
+          <span>Market Cap <strong>$2.41T</strong></span>
+          <span>24H Volume <strong>$91B</strong></span>
+        </div>
+
+        <div class="style-selector">
+          <label for="styleSelector">Style</label>
+          <select id="styleSelector">
+            <option value="classic">Classic</option>
+            <option value="3d">3D</option>
+            <option value="anime">Anime</option>
+            <option value="minimal">Minimal</option>
+          </select>
+        </div>
+      </div>
+    </header>
+
+    <nav class="coin-nav card">
+      <button class="coin-tab active">BTC</button>
+      <button class="coin-tab">ETH</button>
+      <button class="coin-tab">SOL</button>
+      <button class="coin-tab">XRP</button>
+      <button class="coin-tab">BNB</button>
+      <button class="coin-tab">ADA</button>
+      <button class="coin-tab">DOGE</button>
+      <button class="coin-tab">TON</button>
+      <button class="coin-tab">AVAX</button>
+      <button class="coin-tab">TRX</button>
+    </nav>
+
+    <main class="dashboard">
+      <section class="hero card">
+        <h2>CRYPTO MARKET MOOD</h2>
+
+        <div class="hero-grid">
+          <div class="hero-main">
+            <div class="wojak-stage" id="wojakStage">
+              <div class="sweat hidden" id="sweatFx">💧</div>
+
+              <img
+                id="heroFaceImg"
+                class="hero-face-img anim-float"
+                src="assets/hero/classic/optimism.png"
+                alt="Main market Wojak"
+              />
+            </div>
+
+            <div class="hero-mood" id="heroMood">Optimism</div>
+
+            <div class="hero-score">
+              Score: <span id="heroScore">64</span> / 100
+            </div>
+
+            <div class="timeframes">
+              <button>1m</button>
+              <button>5m</button>
+              <button>15m</button>
+              <button class="active">1h</button>
+              <button>4h</button>
+              <button>24h</button>
+              <button>7d</button>
+            </div>
+
+            <div class="slider-wrap">
+              <label for="scoreSlider">Preview score</label>
+              <input id="scoreSlider" type="range" min="0" max="100" value="64" />
+            </div>
+          </div>
+
+          <aside class="social-card mini-card">
+            <h3>𝕏 Social Sentiment</h3>
+
+            <div class="social-row">
+              <div class="social-icon" id="socialIcon">
+                <img
+                  id="socialIconImg"
+                  class="mood-icon-img anim-float"
+                  src="assets/icons/classic/content.png"
+                  alt="Social mood icon"
+                />
+              </div>
+
+              <div class="social-copy">
+                <div class="social-mood" id="socialMood">Content</div>
+                <div class="muted">Score: <span id="socialScore">68</span></div>
+                <div class="muted">Positive: 62%</div>
+                <div class="muted">Negative: 20%</div>
+                <div class="muted">Mentions: 5.8K</div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="drivers-grid">
+        <section class="drivers-card card">
+          <div class="section-head">
+            <h3>MARKET DRIVERS</h3>
+          </div>
+
+          <div class="drivers-controls">
+            <label for="macroDriver">Main macro driver</label>
+            <select id="macroDriver">
+              <option value="war_escalation">War escalation</option>
+              <option value="extreme_weather">Extreme weather</option>
+              <option value="rate_hike">Rate hike fears</option>
+              <option value="rate_cut">Rate cut hopes</option>
+              <option value="regulation_crackdown">Regulation crackdown</option>
+              <option value="etf_adoption">ETF / institutional adoption</option>
+              <option value="energy_disruption">Energy disruption</option>
+              <option value="crypto_hack">Crypto hack / insolvency</option>
+              <option value="neutral_macro">Neutral macro environment</option>
+            </select>
+          </div>
+
+          <div class="driver-list">
+            <div class="driver-item">
+              <span>Technical Mood</span>
+              <strong id="driverTechnical">Optimism</strong>
+            </div>
+            <div class="driver-item">
+              <span>Social Mood</span>
+              <strong id="driverSocial">Content</strong>
+            </div>
+            <div class="driver-item">
+              <span>Macro Driver</span>
+              <strong id="driverMacro">War escalation</strong>
+            </div>
+            <div class="driver-item">
+              <span>Main Narrative</span>
+              <strong id="driverNarrative">Risk-off sentiment from geopolitical tension.</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="share-card card">
+          <div class="section-head">
+            <h3>SHARE MARKET SENTIMENT</h3>
+          </div>
+
+          <div class="action-buttons">
+            <button id="generateTweetBtn" class="action-btn primary">Generate Sentiment Post</button>
+            <button id="copyTweetBtn" class="action-btn">Copy Post</button>
+          </div>
+
+          <textarea id="tweetOutput" class="output-box" readonly></textarea>
+        </section>
+
+        <section class="share-card card">
+          <div class="section-head">
+            <h3>GENERATE MEME PROMPT</h3>
+          </div>
+
+          <div class="action-buttons">
+            <button id="generateMemeBtn" class="action-btn primary">Generate Meme Prompt</button>
+            <button id="copyMemeBtn" class="action-btn">Copy Prompt</button>
+          </div>
+
+          <textarea id="memePromptOutput" class="output-box" readonly></textarea>
+        </section>
+      </section>
+
+      <section class="top-coins card">
+        <div class="section-head">
+          <h3>TOP 10 COINS</h3>
+        </div>
+        <div class="coins-grid" id="coinsGrid"></div>
+      </section>
+
+      <section class="detail-grid">
+        <section class="chart-card card">
+          <div class="section-head">
+            <h3 id="chartTitle">BTC / Bitcoin</h3>
+            <span class="muted">Live chart preview</span>
+          </div>
+
+          <div class="chart-placeholder">
+            <div class="grid-lines"></div>
+            <div class="chart-line" id="chartLine"></div>
+          </div>
+
+          <div class="chart-footer">
+            <div class="timeframes compact" id="chartTimeframes">
+              <button data-timeframe="1m">1m</button>
+              <button data-timeframe="5m">5m</button>
+              <button data-timeframe="15m">15m</button>
+              <button data-timeframe="1h" class="active">1h</button>
+              <button data-timeframe="4h">4h</button>
+              <button data-timeframe="24h">24h</button>
+              <button data-timeframe="7d">7d</button>
+            </div>
+
+            <div class="pill positive" id="chartChangePill">+2.1%</div>
+          </div>
+
+          <div class="market-intervals" id="marketIntervals">
+            <div class="interval-box">
+              <span>1m</span>
+              <strong id="perf1m">+0.2%</strong>
+            </div>
+            <div class="interval-box">
+              <span>5m</span>
+              <strong id="perf5m">+0.5%</strong>
+            </div>
+            <div class="interval-box">
+              <span>15m</span>
+              <strong id="perf15m">+0.9%</strong>
+            </div>
+            <div class="interval-box">
+              <span>1h</span>
+              <strong id="perf1h">+2.1%</strong>
+            </div>
+            <div class="interval-box">
+              <span>4h</span>
+              <strong id="perf4h">-1.3%</strong>
+            </div>
+            <div class="interval-box">
+              <span>24h</span>
+              <strong id="perf24h">+3.4%</strong>
+            </div>
+            <div class="interval-box">
+              <span>7d</span>
+              <strong id="perf7d">-4.8%</strong>
+            </div>
+          </div>
+        </section>
+
+        <aside class="side-stack">
+          <section class="side-card card">
+            <h3>BTC Mood</h3>
+            <div class="mood-row">
+              <div class="mood-icon" id="coinMoodIcon">
+                <img
+                  id="coinMoodIconImg"
+                  class="mood-icon-img anim-float"
+                  src="assets/icons/classic/optimism.png"
+                  alt="BTC mood icon"
+                />
+              </div>
+
+              <div class="mood-copy">
+                <div class="big-label" id="coinMoodLabel">Optimism</div>
+                <div class="muted">Score: <span id="coinMoodScore">64</span></div>
+                <div class="muted">Selected timeframe: <span id="selectedTimeframe">1h</span></div>
+                <div class="muted">Performance: <span id="selectedPerformance">+2.1%</span></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="side-card card">
+            <h3>Social Mood</h3>
+            <div class="mood-row">
+              <div class="mood-icon" id="detailSocialIcon">
+                <img
+                  id="detailSocialIconImg"
+                  class="mood-icon-img anim-float"
+                  src="assets/icons/classic/content.png"
+                  alt="Social mood icon detail"
+                />
+              </div>
+
+              <div class="mood-copy">
+                <div class="big-label" id="detailSocialLabel">Content</div>
+                <div class="muted">Score: <span id="detailSocialScore">68</span></div>
+              </div>
+            </div>
+          </section>
+        </aside>
+      </section>
+
+      <section class="scale-card card">
+        <h3>EMOTIONAL SCALE</h3>
+        <div class="scale-grid" id="scaleGrid"></div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <a href="#">About</a>
+      <a href="#">Terms</a>
+      <a href="#">X</a>
+      <a href="#">Contact</a>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

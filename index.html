@@ -96,11 +96,6 @@
               <button data-timeframe="24h">24h</button>
               <button data-timeframe="7d">7d</button>
             </div>
-
-            <div class="slider-wrap">
-              <label for="scoreSlider">Preview score</label>
-              <input id="scoreSlider" class="mood-slider" type="range" min="0" max="100" value="64" />
-            </div>
           </div>
 
           <aside class="social-card mini-card">
@@ -143,7 +138,8 @@
             <div class="emotion-segment seg-content">Content</div>
             <div class="emotion-segment seg-euphoria">Euphoria</div>
 
-            <div class="emotion-pointer" id="emotionPointer">
+            <div class="emotion-pointer" id="emotionPointer" aria-label="WojakMeter indicator">
+              <div class="emotion-pointer-arrow"></div>
               <div class="emotion-pointer-face">
                 <img
                   id="emotionPointerImg"

@@ -22,13 +22,52 @@ const coinPerformanceData = {
 };
 
 const globalMarketData = {
-  "1m":  { change: 0.1,  volume: "$1.2B" },
-  "5m":  { change: 0.3,  volume: "$4.8B" },
-  "15m": { change: 0.7,  volume: "$12.6B" },
-  "1h":  { change: 1.4,  volume: "$91B" },
-  "4h":  { change: -0.8, volume: "$214B" },
-  "24h": { change: 2.6,  volume: "$628B" },
-  "7d":  { change: -3.2, volume: "$3.1T" }
+  "1m": { change: 0.1, volume: "$1.2B" },
+  "5m": { change: 0.3, volume: "$4.8B" },
+  "15m": { change: 0.7, volume: "$12.6B" },
+  "1h": { change: 1.4, volume: "$91B" },
+  "4h": { change: -0.8, volume: "$214B" },
+  "24h": { change: 2.6, volume: "$628B" },
+  "7d": { change: -3.2, volume: "$3.1T" }
+};
+
+const macroDrivers = {
+  war_escalation: {
+    label: "War escalation",
+    narrative: "Risk-off sentiment from geopolitical tension and uncertainty."
+  },
+  extreme_weather: {
+    label: "Extreme weather",
+    narrative: "Climate disruption raises supply, infrastructure and risk concerns."
+  },
+  rate_hike: {
+    label: "Rate hike fears",
+    narrative: "Tighter liquidity expectations pressure speculative assets."
+  },
+  rate_cut: {
+    label: "Rate cut hopes",
+    narrative: "Liquidity optimism improves appetite for risk assets."
+  },
+  regulation_crackdown: {
+    label: "Regulation crackdown",
+    narrative: "Regulatory pressure weighs on confidence across crypto markets."
+  },
+  etf_adoption: {
+    label: "ETF / institutional adoption",
+    narrative: "Institutional inflows and adoption headlines support bullish sentiment."
+  },
+  energy_disruption: {
+    label: "Energy disruption",
+    narrative: "Energy stress adds uncertainty to production and macro stability."
+  },
+  crypto_hack: {
+    label: "Crypto hack / insolvency",
+    narrative: "Security and solvency fears weaken confidence in the sector."
+  },
+  neutral_macro: {
+    label: "Neutral macro environment",
+    narrative: "No dominant macro shock; market is driven mostly by internal momentum."
+  }
 };
 
 let activeCoin = "BTC";
@@ -44,20 +83,6 @@ function getMoodByScore(score) {
     if (score >= mood.score) return mood;
   }
   return moods[moods.length - 1];
-}
-
-function performanceToScore(value) {
-  if (value >= 4) return 95;
-  if (value >= 2) return 78;
-  if (value >= 0.5) return 64;
-  if (value >= -0.5) return 48;
-  if (value >= -2) return 30;
-  if (value >= -4) return 18;
-  return 8;
-}
-
-function formatPercent(value) {
-  return `${value >= 0 ? "+" : ""}${value.toFixed(1)}%`;
 }
 
 function getCurrentStyle() {
@@ -83,10 +108,18 @@ function setImage(el, path, fallback = "") {
   }
 }
 
-function updateHeroMoodColor(moodKey) {
-  const heroMood = byId("heroMood");
-  if (!heroMood) return;
-  heroMood.className = `hero-mood mood-${moodKey}`;
+function formatPercent(value) {
+  return `${value >= 0 ? "+" : ""}${value.toFixed(1)}%`;
+}
+
+function performanceToScore(value) {
+  if (value >= 4) return 95;
+  if (value >= 2) return 78;
+  if (value >= 0.5) return 64;
+  if (value >= -0.5) return 48;
+  if (value >= -2) return 30;
+  if (value >= -4) return 18;
+  return 8;
 }
 
 function scoreToSliderGradient(score) {
@@ -97,6 +130,70 @@ function scoreToSliderGradient(score) {
   if (score >= 30) return "linear-gradient(90deg,#ffb347 0%, #ffd166 100%)";
   if (score >= 15) return "linear-gradient(90deg,#ff7a59 0%, #ffb347 100%)";
   return "linear-gradient(90deg,#ff3b30 0%, #ff5b6e 100%)";
+}
+
+function updateHeroMoodColor(moodKey) {
+  const heroMood = byId("heroMood");
+  if (!heroMood) return;
+  heroMood.className = `hero-mood mood-${moodKey}`;
+}
+
+function getMoodRangeLabel(moodKey) {
+  const ranges = {
+    euphoria: "90–100",
+    content: "75–89",
+    optimism: "60–74",
+    neutral: "45–59",
+    doubt: "30–44",
+    concern: "15–29",
+    frustration: "0–14"
+  };
+  return ranges[moodKey] || "—";
+}
+
+function getPointerLeftFromScore(score) {
+  const clamped = Math.max(0, Math.min(100, score));
+  return `${clamped}%`;
+}
+
+function updateEmotionBar(score, style) {
+  const mood = getMoodByScore(score);
+
+  const pointer = byId("emotionPointer");
+  const pointerImg = byId("emotionPointerImg");
+  const moodEl = byId("emotionBarMood");
+  const scoreEl = byId("emotionBarScore");
+  const rangeEl = byId("emotionBarRange");
+
+  if (pointer) pointer.style.left = getPointerLeftFromScore(score);
+
+  if (pointerImg) {
+    setImage(
+      pointerImg,
+      getIconImagePath(style, mood.key),
+      getIconImagePath("classic", mood.key)
+    );
+  }
+
+  if (moodEl) moodEl.textContent = mood.name;
+  if (scoreEl) scoreEl.textContent = score;
+  if (rangeEl) rangeEl.textContent = getMoodRangeLabel(mood.key);
+}
+
+function getCurrentMacro() {
+  const select = byId("macroDriver");
+  return macroDrivers[select?.value] || macroDrivers.war_escalation;
+}
+
+function updateDriverPanel(score) {
+  const mood = getMoodByScore(score);
+  const socialMood = byId("socialMood")?.textContent || "Content";
+  const macro = getCurrentMacro();
+
+  if (byId("driverTechnical")) byId("driverTechnical").textContent = mood.name;
+  if (byId("driverSocial")) byId("driverSocial").textContent = socialMood;
+  if (byId("driverMacro")) byId("driverMacro").textContent = macro.label;
+  if (byId("driverNarrative")) byId("driverNarrative").textContent = macro.narrative;
 }
 
 function updateGlobalHero() {
@@ -147,6 +244,9 @@ function updateGlobalHero() {
     slider.value = score;
     slider.style.background = scoreToSliderGradient(score);
   }
+
+  updateEmotionBar(score, style);
+  updateDriverPanel(score);
 }
 
 function updateCoinSideTitles(symbol) {
@@ -410,6 +510,7 @@ function init() {
     }
 
     scoreSlider.style.background = scoreToSliderGradient(customScore);
+    updateEmotionBar(customScore, style);
 
     clearTimeout(window.__wmReset);
     window.__wmReset = setTimeout(() => {

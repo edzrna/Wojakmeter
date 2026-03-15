@@ -122,14 +122,8 @@ function performanceToScore(value) {
   return 8;
 }
 
-function scoreToSliderGradient(score) {
-  if (score >= 90) return "linear-gradient(90deg,#ff3b30 0%, #ff5b5b 100%)";
-  if (score >= 75) return "linear-gradient(90deg,#34c759 0%, #8cff66 100%)";
-  if (score >= 60) return "linear-gradient(90deg,#7dff9b 0%, #baff66 100%)";
-  if (score >= 45) return "linear-gradient(90deg,#d0d7e2 0%, #ffffff 100%)";
-  if (score >= 30) return "linear-gradient(90deg,#ffb347 0%, #ffd166 100%)";
-  if (score >= 15) return "linear-gradient(90deg,#ff7a59 0%, #ffb347 100%)";
-  return "linear-gradient(90deg,#ff3b30 0%, #ff5b6e 100%)";
+function clampScore(score) {
+  return Math.max(0, Math.min(100, score));
 }
 
 function updateHeroMoodColor(moodKey) {
@@ -152,32 +146,18 @@ function getMoodRangeLabel(moodKey) {
 }
 
 function getPointerLeftFromScore(score) {
-  const clamped = Math.max(0, Math.min(100, score));
+  const clamped = clampScore(score);
   return `${clamped}%`;
 }
 
-function updateEmotionBar(score, style) {
-  const mood = getMoodByScore(score);
+function getScoreFromPointerClientX(clientX) {
+  const track = byId("emotionTrack");
+  if (!track) return 50;
 
-  const pointer = byId("emotionPointer");
-  const pointerImg = byId("emotionPointerImg");
-  const moodEl = byId("emotionBarMood");
-  const scoreEl = byId("emotionBarScore");
-  const rangeEl = byId("emotionBarRange");
-
-  if (pointer) pointer.style.left = getPointerLeftFromScore(score);
-
-  if (pointerImg) {
-    setImage(
-      pointerImg,
-      getIconImagePath(style, mood.key),
-      getIconImagePath("classic", mood.key)
-    );
-  }
-
-  if (moodEl) moodEl.textContent = mood.name;
-  if (scoreEl) scoreEl.textContent = score;
-  if (rangeEl) rangeEl.textContent = getMoodRangeLabel(mood.key);
+  const rect = track.getBoundingClientRect();
+  const x = Math.max(rect.left, Math.min(clientX, rect.right));
+  const ratio = (x - rect.left) / rect.width;
+  return Math.round(ratio * 100);
 }
 
 function getCurrentMacro() {
@@ -196,6 +176,75 @@ function updateDriverPanel(score) {
   if (byId("driverNarrative")) byId("driverNarrative").textContent = macro.narrative;
 }
 
+function updateEmotionBar(score, style) {
+  const mood = getMoodByScore(score);
+
+  const pointer = byId("emotionPointer");
+  const pointerImg = byId("emotionPointerImg");
+  const moodEl = byId("emotionBarMood");
+  const scoreEl = byId("emotionBarScore");
+  const rangeEl = byId("emotionBarRange");
+
+  if (pointer) {
+    pointer.style.left = getPointerLeftFromScore(score);
+  }
+
+  if (pointerImg) {
+    setImage(
+      pointerImg,
+      getIconImagePath(style, mood.key),
+      getIconImagePath("classic", mood.key)
+    );
+  }
+
+  if (moodEl) moodEl.textContent = mood.name;
+  if (scoreEl) scoreEl.textContent = score;
+  if (rangeEl) rangeEl.textContent = getMoodRangeLabel(mood.key);
+}
+
+function updateGlobalPreview(score) {
+  const style = getCurrentStyle();
+  const mood = getMoodByScore(score);
+
+  const heroFaceImg = byId("heroFaceImg");
+  const heroMood = byId("heroMood");
+  const heroScore = byId("heroScore");
+  const socialMood = byId("socialMood");
+  const socialScore = byId("socialScore");
+  const socialIconImg = byId("socialIconImg");
+
+  if (heroScore) heroScore.textContent = score;
+  if (heroMood) heroMood.textContent = mood.name;
+  updateHeroMoodColor(mood.key);
+
+  if (heroFaceImg) {
+    heroFaceImg.className = `hero-face-img ${mood.anim}`;
+    setImage(
+      heroFaceImg,
+      getHeroImagePath(style, mood.key),
+      getHeroImagePath("classic", mood.key)
+    );
+  }
+
+  const socialMoodScoreValue = Math.max(0, Math.min(100, score + 4));
+  const socialMoodData = getMoodByScore(socialMoodScoreValue);
+
+  if (socialMood) socialMood.textContent = socialMoodData.name;
+  if (socialScore) socialScore.textContent = socialMoodScoreValue;
+
+  if (socialIconImg) {
+    socialIconImg.className = `mood-icon-img ${socialMoodData.anim}`;
+    setImage(
+      socialIconImg,
+      getIconImagePath(style, socialMoodData.key),
+      getIconImagePath("classic", socialMoodData.key)
+    );
+  }
+
+  updateEmotionBar(score, style);
+  updateDriverPanel(score);
+}
+
 function updateGlobalHero() {
   const style = getCurrentStyle();
   const data = globalMarketData[globalTimeframe];
@@ -208,7 +257,6 @@ function updateGlobalHero() {
   const socialMood = byId("socialMood");
   const socialScore = byId("socialScore");
   const socialIconImg = byId("socialIconImg");
-  const slider = byId("scoreSlider");
 
   setImage(heroFaceImg, getHeroImagePath(style, mood.key), getHeroImagePath("classic", mood.key));
   if (heroFaceImg) heroFaceImg.className = `hero-face-img ${mood.anim}`;
@@ -238,11 +286,6 @@ function updateGlobalHero() {
       getIconImagePath(style, socialMoodData.key),
       getIconImagePath("classic", socialMoodData.key)
     );
-  }
-
-  if (slider) {
-    slider.value = score;
-    slider.style.background = scoreToSliderGradient(score);
   }
 
   updateEmotionBar(score, style);
@@ -438,6 +481,64 @@ function refreshOutputs() {
   if (byId("memePromptOutput")) byId("memePromptOutput").value = buildMemePrompt();
 }
 
+function setupEmotionPointerDrag() {
+  const pointer = byId("emotionPointer");
+  const track = byId("emotionTrack");
+  if (!pointer || !track) return;
+
+  let dragging = false;
+  let dragResetTimeout = null;
+
+  const movePreview = (clientX) => {
+    const previewScore = getScoreFromPointerClientX(clientX);
+    updateGlobalPreview(previewScore);
+  };
+
+  const resetToMarket = () => {
+    pointer.classList.remove("dragging");
+    updateGlobalHero();
+    refreshOutputs();
+  };
+
+  const onPointerMove = (event) => {
+    if (!dragging) return;
+    movePreview(event.clientX);
+  };
+
+  const onPointerUp = () => {
+    if (!dragging) return;
+    dragging = false;
+
+    if (dragResetTimeout) clearTimeout(dragResetTimeout);
+    dragResetTimeout = setTimeout(() => {
+      resetToMarket();
+    }, 250);
+  };
+
+  pointer.addEventListener("pointerdown", (event) => {
+    dragging = true;
+    pointer.classList.add("dragging");
+    if (pointer.setPointerCapture) {
+      pointer.setPointerCapture(event.pointerId);
+    }
+    movePreview(event.clientX);
+  });
+
+  window.addEventListener("pointermove", onPointerMove);
+  window.addEventListener("pointerup", onPointerUp);
+  window.addEventListener("pointercancel", onPointerUp);
+
+  track.addEventListener("click", (event) => {
+    if (dragging) return;
+    movePreview(event.clientX);
+
+    if (dragResetTimeout) clearTimeout(dragResetTimeout);
+    dragResetTimeout = setTimeout(() => {
+      resetToMarket();
+    }, 700);
+  });
+}
+
 async function copyText(value) {
   try {
     await navigator.clipboard.writeText(value);
@@ -448,9 +549,8 @@ async function copyText(value) {
 
 function init() {
   const styleSelector = byId("styleSelector");
-  const scoreSlider = byId("scoreSlider");
 
-  if (!styleSelector || !scoreSlider) return;
+  if (!styleSelector) return;
 
   const savedStyle = localStorage.getItem("wojakStyle") || "classic";
   document.body.className = `style-${savedStyle}`;
@@ -461,6 +561,7 @@ function init() {
   renderCoins();
   renderScale();
   refreshOutputs();
+  setupEmotionPointerDrag();
 
   document.querySelectorAll("#heroTimeframes button").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -488,35 +589,6 @@ function init() {
     renderCoins();
     renderScale();
     refreshOutputs();
-  });
-
-  scoreSlider.addEventListener("input", () => {
-    const customScore = Number(scoreSlider.value);
-    const mood = getMoodByScore(customScore);
-    const style = getCurrentStyle();
-
-    if (byId("heroScore")) byId("heroScore").textContent = customScore;
-    if (byId("heroMood")) byId("heroMood").textContent = mood.name;
-    updateHeroMoodColor(mood.key);
-
-    const heroFaceImg = byId("heroFaceImg");
-    if (heroFaceImg) {
-      heroFaceImg.className = `hero-face-img ${mood.anim}`;
-      setImage(
-        heroFaceImg,
-        getHeroImagePath(style, mood.key),
-        getHeroImagePath("classic", mood.key)
-      );
-    }
-
-    scoreSlider.style.background = scoreToSliderGradient(customScore);
-    updateEmotionBar(customScore, style);
-
-    clearTimeout(window.__wmReset);
-    window.__wmReset = setTimeout(() => {
-      updateGlobalHero();
-      refreshOutputs();
-    }, 1200);
   });
 
   const generateTweetBtn = byId("generateTweetBtn");

@@ -58,19 +58,6 @@
       <span>TON <strong>$6.84</strong></span>
     </div>
 
-    <nav class="coin-nav card">
-      <button class="coin-tab active">BTC</button>
-      <button class="coin-tab">ETH</button>
-      <button class="coin-tab">SOL</button>
-      <button class="coin-tab">XRP</button>
-      <button class="coin-tab">BNB</button>
-      <button class="coin-tab">ADA</button>
-      <button class="coin-tab">DOGE</button>
-      <button class="coin-tab">TON</button>
-      <button class="coin-tab">AVAX</button>
-      <button class="coin-tab">TRX</button>
-    </nav>
-
     <main class="dashboard">
       <section class="hero card">
         <h2>CRYPTO MARKET MOOD</h2>
@@ -88,25 +75,25 @@
               />
             </div>
 
-            <div class="hero-mood" id="heroMood">Optimism</div>
+            <div class="hero-mood mood-optimism" id="heroMood">Optimism</div>
 
             <div class="hero-score">
               Score: <span id="heroScore">64</span> / 100
             </div>
 
-            <div class="timeframes hero-timeframes">
-              <button>1m</button>
-              <button>5m</button>
-              <button>15m</button>
-              <button class="active">1h</button>
-              <button>4h</button>
-              <button>24h</button>
-              <button>7d</button>
+            <div class="timeframes hero-timeframes" id="heroTimeframes">
+              <button data-timeframe="1m">1m</button>
+              <button data-timeframe="5m">5m</button>
+              <button data-timeframe="15m">15m</button>
+              <button data-timeframe="1h" class="active">1h</button>
+              <button data-timeframe="4h">4h</button>
+              <button data-timeframe="24h">24h</button>
+              <button data-timeframe="7d">7d</button>
             </div>
 
             <div class="slider-wrap">
               <label for="scoreSlider">Preview score</label>
-              <input id="scoreSlider" type="range" min="0" max="100" value="64" />
+              <input id="scoreSlider" class="mood-slider" type="range" min="0" max="100" value="64" />
             </div>
           </div>
 

@@ -304,13 +304,6 @@ function updateHero(score, style) {
     sweat.classList.add("hidden");
   }
 
-  const coinMoodIconImg = document.getElementById("coinMoodIconImg");
-  coinMoodIconImg.className = `mood-icon-img ${mood.anim}`;
-  setImage(coinMoodIconImg, getIconImagePath(style, mood.key), getIconImagePath("classic", mood.key));
-
-  document.getElementById("coinMoodLabel").textContent = mood.name;
-  document.getElementById("coinMoodScore").textContent = score;
-
   const socialScore = Math.max(0, Math.min(100, score + 4));
   const socialMood = getMoodByScore(socialScore);
 
@@ -321,14 +314,15 @@ function updateHero(score, style) {
   document.getElementById("socialMood").textContent = socialMood.name;
   document.getElementById("socialScore").textContent = socialScore;
 
-  const detailSocialIconImg = document.getElementById("detailSocialIconImg");
-  detailSocialIconImg.className = `mood-icon-img ${socialMood.anim}`;
-  setImage(detailSocialIconImg, getIconImagePath(style, socialMood.key), getIconImagePath("classic", socialMood.key));
-
-  document.getElementById("detailSocialLabel").textContent = socialMood.name;
-  document.getElementById("detailSocialScore").textContent = socialScore;
-
   updateDriverPanel(score);
+}
+
+function updateCoinSideTitles(symbol) {
+  const coinMoodTitle = document.getElementById("coinMoodTitle");
+  const coinSocialMoodTitle = document.getElementById("coinSocialMoodTitle");
+
+  coinMoodTitle.textContent = `${symbol} Mood`;
+  coinSocialMoodTitle.textContent = `${symbol} Social Mood`;
 }
 
 function renderCoins(style) {
@@ -342,7 +336,7 @@ function renderCoins(style) {
     const negative = currentValue < 0;
 
     const card = document.createElement("button");
-    card.className = "coin-card coin-card-button";
+    card.className = `coin-card coin-card-button ${activeCoin === coin.symbol ? "active-coin-card" : ""}`;
     card.type = "button";
     card.innerHTML = `
       <div>
@@ -422,13 +416,30 @@ function updateChartSection(symbol, timeframe, style) {
 
   updateIntervalBoxes(symbol);
 
-  document.getElementById("coinMoodLabel").textContent = getMoodByScore(score).name;
+  const mood = getMoodByScore(score);
+
+  document.getElementById("coinMoodLabel").textContent = mood.name;
   document.getElementById("coinMoodScore").textContent = score;
 
   const coinMoodIconImg = document.getElementById("coinMoodIconImg");
-  const mood = getMoodByScore(score);
   coinMoodIconImg.className = `mood-icon-img ${mood.anim}`;
   setImage(coinMoodIconImg, getIconImagePath(style, mood.key), getIconImagePath("classic", mood.key));
+
+  const coinSocialScore = Math.max(0, Math.min(100, score + 3));
+  const coinSocialMood = getMoodByScore(coinSocialScore);
+
+  document.getElementById("detailSocialLabel").textContent = coinSocialMood.name;
+  document.getElementById("detailSocialScore").textContent = coinSocialScore;
+
+  const detailSocialIconImg = document.getElementById("detailSocialIconImg");
+  detailSocialIconImg.className = `mood-icon-img ${coinSocialMood.anim}`;
+  setImage(
+    detailSocialIconImg,
+    getIconImagePath(style, coinSocialMood.key),
+    getIconImagePath("classic", coinSocialMood.key)
+  );
+
+  updateCoinSideTitles(symbol);
 
   const line = document.getElementById("chartLine");
   if (value >= 0) {
@@ -572,4 +583,4 @@ function init() {
   });
 }
 
-document.addEventListener("DOMContentLoaded", init);
+document.addEventListener("DOM

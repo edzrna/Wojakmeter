@@ -9,16 +9,16 @@ const moods = [
 ];
 
 const topCoins = [
-  { symbol: "BTC", price: "$67,240", change: "+2.1%", mood: "optimism" },
-  { symbol: "ETH", price: "$3,420", change: "+1.4%", mood: "optimism" },
-  { symbol: "SOL", price: "$182", change: "+4.8%", mood: "euphoria" },
-  { symbol: "XRP", price: "$0.63", change: "-0.8%", mood: "doubt" },
-  { symbol: "BNB", price: "$590", change: "+1.9%", mood: "content" },
-  { symbol: "ADA", price: "$0.48", change: "-1.1%", mood: "doubt" },
-  { symbol: "DOGE", price: "$0.12", change: "+3.6%", mood: "content" },
-  { symbol: "TON", price: "$6.10", change: "+0.7%", mood: "optimism" },
-  { symbol: "AVAX", price: "$41", change: "-2.3%", mood: "concern" },
-  { symbol: "TRX", price: "$0.13", change: "+0.4%", mood: "neutral" }
+  { symbol: "BTC", mood: "optimism" },
+  { symbol: "ETH", mood: "optimism" },
+  { symbol: "SOL", mood: "euphoria" },
+  { symbol: "XRP", mood: "doubt" },
+  { symbol: "BNB", mood: "content" },
+  { symbol: "ADA", mood: "doubt" },
+  { symbol: "DOGE", mood: "content" },
+  { symbol: "TON", mood: "optimism" },
+  { symbol: "AVAX", mood: "concern" },
+  { symbol: "TRX", mood: "neutral" }
 ];
 
 const coinPerformanceData = {
@@ -160,6 +160,25 @@ function formatPercent(value) {
   return `${value >= 0 ? "+" : ""}${value.toFixed(1)}%`;
 }
 
+function getMoodClass(moodKey) {
+  return `mood-${moodKey}`;
+}
+
+function updateHeroMoodColor(moodKey) {
+  const heroMood = document.getElementById("heroMood");
+  heroMood.className = `hero-mood ${getMoodClass(moodKey)}`;
+}
+
+function scoreToSliderGradient(score) {
+  if (score >= 90) return "linear-gradient(90deg,#ff3b30 0%, #ff5b5b 100%)";
+  if (score >= 75) return "linear-gradient(90deg,#34c759 0%, #8cff66 100%)";
+  if (score >= 60) return "linear-gradient(90deg,#7dff9b 0%, #baff66 100%)";
+  if (score >= 45) return "linear-gradient(90deg,#d0d7e2 0%, #ffffff 100%)";
+  if (score >= 30) return "linear-gradient(90deg,#ffb347 0%, #ffd166 100%)";
+  if (score >= 15) return "linear-gradient(90deg,#ff7a59 0%, #ffb347 100%)";
+  return "linear-gradient(90deg,#ff3b30 0%, #ff5b6e 100%)";
+}
+
 function buildSentimentPost(score) {
   const style = getCurrentStyle();
   const mood = getMoodByScore(score);
@@ -248,6 +267,7 @@ function updateHero(score, style) {
 
   heroMood.textContent = mood.name;
   heroScore.textContent = score;
+  updateHeroMoodColor(mood.key);
 
   if (mood.key === "concern" || mood.key === "frustration") {
     sweat.classList.remove("hidden");
@@ -288,20 +308,43 @@ function renderCoins(style) {
 
   topCoins.forEach((coin) => {
     const mood = getMoodByKey(coin.mood);
-    const negative = coin.change.includes("-");
+    const marketCoin = coinPerformanceData[coin.symbol];
+    const currentValue = marketCoin ? marketCoin.performance[activeTimeframe] : 0;
+    const negative = currentValue < 0;
 
-    const card = document.createElement("div");
-    card.className = "coin-card";
+    const card = document.createElement("button");
+    card.className = "coin-card coin-card-button";
+    card.type = "button";
     card.innerHTML = `
       <div>
         <div class="symbol">${coin.symbol}</div>
-        <div class="price">${coin.price}</div>
-        <div class="change ${negative ? "negative" : "positive"}">${coin.change}</div>
+        <div class="price">${marketCoin ? marketCoin.name : coin.symbol}</div>
+        <div class="change ${negative ? "negative" : "positive"}">${formatPercent(currentValue)}</div>
       </div>
       <div class="coin-emoji">
         <img src="${getIconImagePath(style, mood.key)}" alt="${coin.symbol} mood" />
       </div>
     `;
+
+    card.addEventListener("click", () => {
+      activeCoin = coin.symbol;
+      updateChartSection(activeCoin, activeTimeframe, style);
+
+      const marketScore = performanceToScore(coinPerformanceData[activeCoin].performance[activeTimeframe]);
+      const slider = document.getElementById("scoreSlider");
+      slider.value = marketScore;
+      slider.style.background = scoreToSliderGradient(marketScore);
+
+      updateHero(marketScore, style);
+      refreshOutputs(marketScore);
+      renderCoins(style);
+
+      document.querySelector(".chart-card")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    });
+
     coinsGrid.appendChild(card);
   });
 }
@@ -347,7 +390,6 @@ function updateIntervalBoxes(symbol) {
 function updateChartSection(symbol, timeframe, style) {
   const coin = coinPerformanceData[symbol];
   const value = coin.performance[timeframe];
-  const score = performanceToScore(value);
 
   document.getElementById("chartTitle").textContent = `${symbol} / ${coin.name}`;
   document.getElementById("chartChangePill").textContent = formatPercent(value);
@@ -357,7 +399,6 @@ function updateChartSection(symbol, timeframe, style) {
   document.getElementById("selectedPerformance").className = value >= 0 ? "positive" : "negative";
 
   updateIntervalBoxes(symbol);
-  updateHero(score, style);
 
   const line = document.getElementById("chartLine");
   if (value >= 0) {
@@ -390,6 +431,7 @@ function init() {
   const slider = document.getElementById("scoreSlider");
   const styleSelector = document.getElementById("styleSelector");
   const macroDriver = document.getElementById("macroDriver");
+  const heroTimelineButtons = document.querySelectorAll("#heroTimeframes button");
 
   const tweetOutput = document.getElementById("tweetOutput");
   const memePromptOutput = document.getElementById("memePromptOutput");
@@ -400,19 +442,61 @@ function init() {
 
   let currentScore = Number(slider.value);
   let currentStyle = localStorage.getItem("wojakStyle") || "classic";
+  let marketScore = Number(slider.value);
+  let sliderResetTimeout = null;
 
   document.body.className = `style-${currentStyle}`;
   styleSelector.value = currentStyle;
 
+  marketScore = performanceToScore(coinPerformanceData[activeCoin].performance[activeTimeframe]);
+  currentScore = marketScore;
+  slider.value = currentScore;
+
   renderCoins(currentStyle);
   renderScale(currentStyle);
   updateChartSection(activeCoin, activeTimeframe, currentStyle);
+  updateHero(currentScore, currentStyle);
   refreshOutputs(currentScore);
+
+  slider.style.background = scoreToSliderGradient(currentScore);
 
   slider.addEventListener("input", () => {
     currentScore = Number(slider.value);
+    slider.style.background = scoreToSliderGradient(currentScore);
     updateHero(currentScore, currentStyle);
     refreshOutputs(currentScore);
+
+    if (sliderResetTimeout) clearTimeout(sliderResetTimeout);
+
+    sliderResetTimeout = setTimeout(() => {
+      currentScore = marketScore;
+      slider.value = marketScore;
+      slider.style.background = scoreToSliderGradient(marketScore);
+      updateHero(marketScore, currentStyle);
+      refreshOutputs(marketScore);
+    }, 1500);
+  });
+
+  heroTimelineButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const tf = btn.dataset.timeframe;
+      const coin = coinPerformanceData[activeCoin];
+      if (!coin) return;
+
+      activeTimeframe = tf;
+      marketScore = performanceToScore(coin.performance[tf]);
+      currentScore = marketScore;
+
+      heroTimelineButtons.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      slider.value = marketScore;
+      slider.style.background = scoreToSliderGradient(marketScore);
+
+      updateHero(marketScore, currentStyle);
+      refreshOutputs(marketScore);
+      renderCoins(currentStyle);
+    });
   });
 
   styleSelector.addEventListener("change", () => {
@@ -423,12 +507,12 @@ function init() {
     renderCoins(currentStyle);
     renderScale(currentStyle);
     updateChartSection(activeCoin, activeTimeframe, currentStyle);
+    updateHero(Number(document.getElementById("heroScore").textContent || slider.value), currentStyle);
     refreshOutputs(Number(document.getElementById("heroScore").textContent || slider.value));
   });
 
   macroDriver.addEventListener("change", () => {
     updateDriverPanel(Number(document.getElementById("heroScore").textContent || slider.value));
-    updateChartSection(activeCoin, activeTimeframe, currentStyle);
     refreshOutputs(Number(document.getElementById("heroScore").textContent || slider.value));
   });
 
@@ -436,20 +520,7 @@ function init() {
     btn.addEventListener("click", () => {
       activeTimeframe = btn.dataset.timeframe;
       updateChartSection(activeCoin, activeTimeframe, currentStyle);
-      refreshOutputs(Number(document.getElementById("heroScore").textContent || slider.value));
-    });
-  });
-
-  document.querySelectorAll(".coin-tab").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".coin-tab").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-
-      activeCoin = btn.textContent.trim();
-      if (!coinPerformanceData[activeCoin]) activeCoin = "BTC";
-
-      updateChartSection(activeCoin, activeTimeframe, currentStyle);
-      refreshOutputs(Number(document.getElementById("heroScore").textContent || slider.value));
+      renderCoins(currentStyle);
     });
   });
 
@@ -470,4 +541,4 @@ function init() {
   });
 }
 
-document.addEventListener("DOMContentLoaded", init); 
+document.addEventListener("DOMContentLoaded", init);

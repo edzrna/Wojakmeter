@@ -520,11 +520,6 @@ img{
   border-color:rgba(255,255,255,.14);
 }
 
-.active-coin-card{
-  border-color:rgba(77,255,136,.45);
-  box-shadow:0 0 0 1px rgba(77,255,136,.2) inset;
-}
-
 .symbol{
   font-size:1.2rem;
   font-weight:700;

@@ -130,10 +130,6 @@ function getIconImagePath(style, moodKey) {
   return `assets/icons/${style}/${moodKey}.png`;
 }
 
-function getLogoPath(style) {
-  return `assets/logo/logo-${style}.png`;
-}
-
 function setImage(el, path, fallback = "") {
   if (!el) return;
   el.src = path;
@@ -228,11 +224,6 @@ Tone:
 viral, crypto-native, meme-friendly, market-aware, contextual, social-media-ready.`;
 }
 
-function updateBrand(style) {
-  const brandBadgeImg = document.getElementById("brandBadgeImg");
-  setImage(brandBadgeImg, getLogoPath(style), getLogoPath("classic"));
-}
-
 function updateDriverPanel(score) {
   const technicalMood = getMoodByScore(score).name;
   const socialMood = document.getElementById("socialMood").textContent;
@@ -257,8 +248,6 @@ function updateHero(score, style) {
 
   heroMood.textContent = mood.name;
   heroScore.textContent = score;
-
-  updateBrand(style);
 
   if (mood.key === "concern" || mood.key === "frustration") {
     sweat.classList.remove("hidden");
@@ -415,7 +404,6 @@ function init() {
   document.body.className = `style-${currentStyle}`;
   styleSelector.value = currentStyle;
 
-  updateBrand(currentStyle);
   renderCoins(currentStyle);
   renderScale(currentStyle);
   updateChartSection(activeCoin, activeTimeframe, currentStyle);
@@ -432,7 +420,6 @@ function init() {
     localStorage.setItem("wojakStyle", currentStyle);
     document.body.className = `style-${currentStyle}`;
 
-    updateBrand(currentStyle);
     renderCoins(currentStyle);
     renderScale(currentStyle);
     updateChartSection(activeCoin, activeTimeframe, currentStyle);

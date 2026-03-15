@@ -1,4 +1,4 @@
-const moods = [
+ const moods = [
   { key: "euphoria", name: "Euphoria", score: 90, anim: "anim-pulse" },
   { key: "content", name: "Content", score: 75, anim: "anim-float" },
   { key: "optimism", name: "Optimism", score: 60, anim: "anim-float" },

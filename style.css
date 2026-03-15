@@ -731,8 +731,8 @@ body.style-classic .sweat{
 
 @media (max-width:1024px){
   .logo-img{
-    height:50px;
-    max-width:260px;
+    height:100px;
+    max-width:500px;
   }
 
   .topbar-center{

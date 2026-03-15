@@ -12,7 +12,6 @@
   --title:#ffffff;
 
   --green:#4dff88;
-  --green-2:#2bd96b;
   --red:#ff5b6e;
   --gray:#cfd7e3;
   --blue:#66b8ff;
@@ -58,7 +57,7 @@ img{
 
 .app-shell{
   width:min(1220px, calc(100% - 20px));
-  margin:18px auto 30px;
+  margin:0 auto 30px;
 }
 
 .card{
@@ -72,103 +71,115 @@ img{
   box-shadow:var(--shadow);
 }
 
+.cardless{
+  border:none;
+  box-shadow:none;
+  background:transparent;
+}
+
 .topbar{
   display:flex;
   justify-content:space-between;
   align-items:center;
   gap:18px;
-  padding:18px 22px;
-  margin-bottom:10px;
+  padding:14px 24px;
+  background:rgba(15,20,40,0.9);
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  backdrop-filter:blur(8px);
 }
 
-.brand{
+.topbar-left{
   display:flex;
   align-items:center;
   gap:14px;
 }
 
-.brand-badge{
-  width:54px;
-  height:54px;
-  border-radius:14px;
-  display:grid;
-  place-items:center;
-  background:linear-gradient(180deg, #1f3d60 0%, #122235 100%);
-  border:1px solid rgba(255,255,255,.08);
-  overflow:hidden;
+.logo-img{
+  height:42px;
+  width:auto;
+  object-fit:contain;
 }
 
-.brand-badge-img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
+.brand-text{
+  display:flex;
+  flex-direction:column;
 }
 
-.brand-copy h1{
-  margin:0;
-  color:var(--title);
-  font-family:var(--font-display);
-  font-size:1.9rem;
-  line-height:1;
+.brand-title{
+  font-family:var(--font-ui);
   font-weight:700;
-  letter-spacing:.08em;
+  font-size:20px;
+  letter-spacing:1px;
+  color:#fff;
 }
 
-.brand-copy p{
-  margin:5px 0 0;
+.brand-sub{
+  font-size:12px;
+  opacity:.65;
   color:var(--muted);
-  font-size:.92rem;
+}
+
+.topbar-center{
+  display:flex;
+  gap:24px;
+  font-family:var(--font-body);
+  font-size:14px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+
+.market-stat{
+  color:rgba(255,255,255,.78);
+  font-family:var(--font-ui);
+}
+
+.market-stat strong{
+  margin-left:6px;
+  color:#79ffb7;
 }
 
 .topbar-right{
   display:flex;
   align-items:center;
-  gap:16px;
-  flex-wrap:wrap;
-  justify-content:flex-end;
-}
-
-.market-stats{
-  display:flex;
-  gap:14px;
-  flex-wrap:wrap;
-  color:var(--muted);
-  font-size:.92rem;
-  font-family:var(--font-ui);
-  font-weight:600;
-}
-
-.market-stats strong{
-  color:var(--text);
-  font-weight:700;
-}
-
-.style-selector,
-.drivers-controls{
-  display:flex;
-  align-items:center;
   gap:10px;
-  padding:10px 12px;
-  border-radius:14px;
-  border:1px solid var(--line);
-  background:var(--panel-3);
-  font-family:var(--font-ui);
 }
 
-.style-selector label,
-.drivers-controls label{
+.style-label{
+  font-size:13px;
+  opacity:.75;
   color:var(--muted);
-  font-weight:600;
 }
 
-.style-selector select,
-.drivers-controls select{
-  border:0;
-  outline:none;
-  background:transparent;
-  color:var(--title);
+#styleSelector{
+  background:#11172b;
+  border:1px solid rgba(255,255,255,0.1);
+  color:white;
+  padding:6px 10px;
+  border-radius:8px;
+}
+
+.ticker-bar{
+  display:flex;
+  gap:18px;
+  align-items:center;
+  overflow-x:auto;
+  white-space:nowrap;
+  padding:10px 24px;
+  background:rgba(10,14,28,0.92);
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  font-family:var(--font-ui);
+  font-size:15px;
+  margin-bottom:14px;
+}
+
+.ticker-bar span{
+  color:rgba(255,255,255,0.78);
+}
+
+.ticker-bar strong{
+  margin-left:6px;
+  color:#ffffff;
   font-weight:700;
-  width:100%;
 }
 
 .coin-nav{
@@ -636,7 +647,8 @@ body.style-3d .hero-face-img,
 body.style-3d .mood-icon-img,
 body.style-3d .coin-emoji img,
 body.style-3d .scale-face img,
-body.style-3d .brand-badge-img{
+body.style-3d .brand-badge-img,
+body.style-3d .logo-img{
   filter:drop-shadow(0 6px 10px rgba(255,255,255,.08));
 }
 
@@ -644,7 +656,7 @@ body.style-anime .hero-face-img,
 body.style-anime .mood-icon-img,
 body.style-anime .coin-emoji img,
 body.style-anime .scale-face img,
-body.style-anime .brand-badge-img{
+body.style-anime .logo-img{
   filter:saturate(1.12) contrast(1.04);
 }
 
@@ -652,7 +664,7 @@ body.style-minimal .hero-face-img,
 body.style-minimal .mood-icon-img,
 body.style-minimal .coin-emoji img,
 body.style-minimal .scale-face img,
-body.style-minimal .brand-badge-img{
+body.style-minimal .logo-img{
   filter:grayscale(.06) brightness(1.02);
 }
 
@@ -723,87 +735,123 @@ body.style-classic .sweat{
   }
 }
 
-@media (max-width:780px){
-  .app-shell{
-    width:min(100% - 14px, 1220px);
-  }
+@media (max-width:980px){
   .topbar{
     flex-direction:column;
     align-items:flex-start;
   }
+
+  .topbar-center{
+    width:100%;
+    justify-content:flex-start;
+    gap:16px;
+  }
+
   .topbar-right{
     width:100%;
-    justify-content:space-between;
-    align-items:flex-start;
   }
+}
+
+@media (max-width:780px){
+  .app-shell{
+    width:min(100% - 14px, 1220px);
+  }
+
   .market-stats{
     width:100%;
     gap:10px;
   }
+
   .style-selector,
   .drivers-controls{
     width:100%;
     justify-content:space-between;
   }
+
   .social-row,
   .mood-row{
     align-items:flex-start;
   }
+
   .coins-grid{
     grid-template-columns:repeat(2, 1fr);
   }
+
   .scale-grid{
     grid-template-columns:repeat(3, 1fr);
   }
+
   .market-intervals{
     grid-template-columns:repeat(2, 1fr);
   }
+
   .section-head{
     flex-direction:column;
     align-items:flex-start;
   }
+
   .wojak-stage{
     width:min(100%, 270px);
   }
 }
 
 @media (max-width:560px){
-  .brand-copy h1{
-    font-size:1.5rem;
+  .brand-title{
+    font-size:17px;
   }
-  .brand-copy p{
-    font-size:.82rem;
+
+  .brand-sub{
+    font-size:11px;
   }
+
+  .logo-img{
+    height:34px;
+  }
+
   .hero{
     padding:16px;
   }
+
   .hero h2{
     font-size:1.45rem;
   }
+
   .social-icon,
   .mood-icon{
     width:74px;
     height:74px;
     border-radius:16px;
   }
+
   .coin-emoji,
   .scale-face{
     width:54px;
     height:54px;
   }
+
   .coins-grid{
     grid-template-columns:1fr;
   }
+
   .scale-grid{
     grid-template-columns:repeat(2, 1fr);
   }
+
   .timeframes{
     justify-content:flex-start;
   }
+
   .chart-placeholder{
     height:220px;
   }
+
   .hero-face-img{
     width:min(220px, 80%);
+  }
+
+  .topbar,
+  .ticker-bar{
+    padding-left:14px;
+    padding-right:14px;
   }
 }

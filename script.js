@@ -64,6 +64,16 @@ const coinPerformanceData = {
   }
 };
 
+const globalMarketData = {
+  "1m":  { change: 0.1,  volume: "$1.2B" },
+  "5m":  { change: 0.3,  volume: "$4.8B" },
+  "15m": { change: 0.7,  volume: "$12.6B" },
+  "1h":  { change: 1.4,  volume: "$91B" },
+  "4h":  { change: -0.8, volume: "$214B" },
+  "24h": { change: 2.6,  volume: "$628B" },
+  "7d":  { change: -3.2, volume: "$3.1T" }
+};
+
 const macroDrivers = {
   war_escalation: {
     label: "War escalation",
@@ -104,7 +114,8 @@ const macroDrivers = {
 };
 
 let activeCoin = "BTC";
-let activeTimeframe = "1h";
+let globalTimeframe = "1h";
+let chartTimeframe = "1h";
 
 function getMoodByScore(score) {
   for (let i = 0; i < moods.length; i++) {
@@ -179,6 +190,24 @@ function scoreToSliderGradient(score) {
   return "linear-gradient(90deg,#ff3b30 0%, #ff5b6e 100%)";
 }
 
+function getGlobalMarketScore(timeframe) {
+  const value = globalMarketData[timeframe]?.change ?? 0;
+  return performanceToScore(value);
+}
+
+function updateGlobalMarketStats(timeframe) {
+  const data = globalMarketData[timeframe] || { change: 0, volume: "$0" };
+  const changeEl = document.getElementById("globalMarketChange");
+  const volumeEl = document.getElementById("globalMarketVolume");
+  const timeframeEl = document.getElementById("globalMarketTimeframe");
+
+  changeEl.textContent = formatPercent(data.change);
+  changeEl.className = data.change >= 0 ? "positive" : "negative";
+
+  volumeEl.textContent = data.volume;
+  timeframeEl.textContent = timeframe;
+}
+
 function buildSentimentPost(score) {
   const style = getCurrentStyle();
   const mood = getMoodByScore(score);
@@ -188,8 +217,9 @@ function buildSentimentPost(score) {
 
 Market Mood: ${mood.name}
 Score: ${score}/100
-${activeCoin}: ${formatPercent(coinPerformanceData[activeCoin].performance[activeTimeframe])}
-Selected Timeframe: ${activeTimeframe}
+Global Market: ${formatPercent(globalMarketData[globalTimeframe].change)}
+Volume: ${globalMarketData[globalTimeframe].volume}
+Selected Timeframe: ${globalTimeframe}
 Style: ${style}
 Social Mood: ${document.getElementById("socialMood").textContent}
 Macro Driver: ${macro.label}
@@ -205,7 +235,6 @@ function buildMemePrompt(score) {
   const mood = getMoodByScore(score);
   const socialMood = document.getElementById("socialMood").textContent;
   const macro = getCurrentMacro();
-  const activePerformance = formatPercent(coinPerformanceData[activeCoin].performance[activeTimeframe]);
 
   return `Create a high-quality meme-style crypto image based on the current market context.
 
@@ -214,15 +243,15 @@ Technical mood: ${mood.name}
 Social mood: ${socialMood}
 Macro driver: ${macro.label}
 Macro narrative: ${macro.narrative}
-Coin focus: ${activeCoin}
-Selected timeframe: ${activeTimeframe}
-Performance: ${activePerformance}
+Global market move: ${formatPercent(globalMarketData[globalTimeframe].change)}
+Global volume: ${globalMarketData[globalTimeframe].volume}
+Selected timeframe: ${globalTimeframe}
 
 Main scene:
 - A large Wojak main character in ${mood.name.toLowerCase()} mode
 - Use the hero-style artwork as the main visual focus
 - A crypto trading dashboard in the background
-- ${activeCoin} price action visible
+- Global crypto market context visible
 - Visual hints of ${macro.label.toLowerCase()}
 - Emotional expression must match ${mood.name}
 
@@ -309,7 +338,7 @@ function renderCoins(style) {
   topCoins.forEach((coin) => {
     const mood = getMoodByKey(coin.mood);
     const marketCoin = coinPerformanceData[coin.symbol];
-    const currentValue = marketCoin ? marketCoin.performance[activeTimeframe] : 0;
+    const currentValue = marketCoin ? marketCoin.performance[chartTimeframe] : 0;
     const negative = currentValue < 0;
 
     const card = document.createElement("button");
@@ -328,15 +357,7 @@ function renderCoins(style) {
 
     card.addEventListener("click", () => {
       activeCoin = coin.symbol;
-      updateChartSection(activeCoin, activeTimeframe, style);
-
-      const marketScore = performanceToScore(coinPerformanceData[activeCoin].performance[activeTimeframe]);
-      const slider = document.getElementById("scoreSlider");
-      slider.value = marketScore;
-      slider.style.background = scoreToSliderGradient(marketScore);
-
-      updateHero(marketScore, style);
-      refreshOutputs(marketScore);
+      updateChartSection(activeCoin, chartTimeframe, style);
       renderCoins(style);
 
       document.querySelector(".chart-card")?.scrollIntoView({
@@ -390,6 +411,7 @@ function updateIntervalBoxes(symbol) {
 function updateChartSection(symbol, timeframe, style) {
   const coin = coinPerformanceData[symbol];
   const value = coin.performance[timeframe];
+  const score = performanceToScore(value);
 
   document.getElementById("chartTitle").textContent = `${symbol} / ${coin.name}`;
   document.getElementById("chartChangePill").textContent = formatPercent(value);
@@ -399,6 +421,14 @@ function updateChartSection(symbol, timeframe, style) {
   document.getElementById("selectedPerformance").className = value >= 0 ? "positive" : "negative";
 
   updateIntervalBoxes(symbol);
+
+  document.getElementById("coinMoodLabel").textContent = getMoodByScore(score).name;
+  document.getElementById("coinMoodScore").textContent = score;
+
+  const coinMoodIconImg = document.getElementById("coinMoodIconImg");
+  const mood = getMoodByScore(score);
+  coinMoodIconImg.className = `mood-icon-img ${mood.anim}`;
+  setImage(coinMoodIconImg, getIconImagePath(style, mood.key), getIconImagePath("classic", mood.key));
 
   const line = document.getElementById("chartLine");
   if (value >= 0) {
@@ -448,14 +478,15 @@ function init() {
   document.body.className = `style-${currentStyle}`;
   styleSelector.value = currentStyle;
 
-  marketScore = performanceToScore(coinPerformanceData[activeCoin].performance[activeTimeframe]);
+  marketScore = getGlobalMarketScore(globalTimeframe);
   currentScore = marketScore;
   slider.value = currentScore;
 
   renderCoins(currentStyle);
   renderScale(currentStyle);
-  updateChartSection(activeCoin, activeTimeframe, currentStyle);
+  updateChartSection(activeCoin, chartTimeframe, currentStyle);
   updateHero(currentScore, currentStyle);
+  updateGlobalMarketStats(globalTimeframe);
   refreshOutputs(currentScore);
 
   slider.style.background = scoreToSliderGradient(currentScore);
@@ -473,6 +504,7 @@ function init() {
       slider.value = marketScore;
       slider.style.background = scoreToSliderGradient(marketScore);
       updateHero(marketScore, currentStyle);
+      updateGlobalMarketStats(globalTimeframe);
       refreshOutputs(marketScore);
     }, 1500);
   });
@@ -480,11 +512,9 @@ function init() {
   heroTimelineButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
       const tf = btn.dataset.timeframe;
-      const coin = coinPerformanceData[activeCoin];
-      if (!coin) return;
 
-      activeTimeframe = tf;
-      marketScore = performanceToScore(coin.performance[tf]);
+      globalTimeframe = tf;
+      marketScore = getGlobalMarketScore(globalTimeframe);
       currentScore = marketScore;
 
       heroTimelineButtons.forEach(b => b.classList.remove("active"));
@@ -494,8 +524,8 @@ function init() {
       slider.style.background = scoreToSliderGradient(marketScore);
 
       updateHero(marketScore, currentStyle);
+      updateGlobalMarketStats(globalTimeframe);
       refreshOutputs(marketScore);
-      renderCoins(currentStyle);
     });
   });
 
@@ -506,8 +536,9 @@ function init() {
 
     renderCoins(currentStyle);
     renderScale(currentStyle);
-    updateChartSection(activeCoin, activeTimeframe, currentStyle);
+    updateChartSection(activeCoin, chartTimeframe, currentStyle);
     updateHero(Number(document.getElementById("heroScore").textContent || slider.value), currentStyle);
+    updateGlobalMarketStats(globalTimeframe);
     refreshOutputs(Number(document.getElementById("heroScore").textContent || slider.value));
   });
 
@@ -518,8 +549,8 @@ function init() {
 
   document.querySelectorAll("#chartTimeframes button").forEach((btn) => {
     btn.addEventListener("click", () => {
-      activeTimeframe = btn.dataset.timeframe;
-      updateChartSection(activeCoin, activeTimeframe, currentStyle);
+      chartTimeframe = btn.dataset.timeframe;
+      updateChartSection(activeCoin, chartTimeframe, currentStyle);
       renderCoins(currentStyle);
     });
   });

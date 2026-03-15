@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WOJAKMETER</title>
+
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -21,13 +22,22 @@
 
       <div class="topbar-right-group">
         <div class="topbar-center">
-          <div class="market-stat">BTC.D <strong>54.2%</strong></div>
-          <div class="market-stat">Market Cap <strong>$2.41T</strong></div>
-          <div class="market-stat">24H Volume <strong>$91B</strong></div>
+          <div class="market-stat">
+            BTC.D <strong>54.2%</strong>
+          </div>
+
+          <div class="market-stat">
+            Market Cap <strong>$2.41T</strong>
+          </div>
+
+          <div class="market-stat">
+            24H Volume <strong>$91B</strong>
+          </div>
         </div>
 
         <div class="topbar-right">
           <label class="style-label" for="styleSelector">Style</label>
+
           <select id="styleSelector">
             <option value="classic">Classic</option>
             <option value="3d">3D</option>
@@ -54,13 +64,14 @@
 
         <div class="hero-grid">
           <div class="hero-main">
-            <div class="wojak-stage">
+            <div class="wojak-stage" id="wojakStage">
               <div class="sweat hidden" id="sweatFx">💧</div>
+
               <img
                 id="heroFaceImg"
                 class="hero-face-img anim-float"
                 src="assets/hero/classic/optimism.png"
-                alt="Global market mood"
+                alt="Main market Wojak"
               />
             </div>
 
@@ -105,8 +116,9 @@
 
           <aside class="social-card mini-card">
             <h3>𝕏 Social Sentiment</h3>
+
             <div class="social-row">
-              <div class="social-icon">
+              <div class="social-icon" id="socialIcon">
                 <img
                   id="socialIconImg"
                   class="mood-icon-img anim-float"
@@ -228,27 +240,48 @@
             <div class="pill positive" id="chartChangePill">+2.1%</div>
           </div>
 
-          <div class="market-intervals">
-            <div class="interval-box"><span>1m</span><strong id="perf1m">+0.2%</strong></div>
-            <div class="interval-box"><span>5m</span><strong id="perf5m">+0.5%</strong></div>
-            <div class="interval-box"><span>15m</span><strong id="perf15m">+0.9%</strong></div>
-            <div class="interval-box"><span>1h</span><strong id="perf1h">+2.1%</strong></div>
-            <div class="interval-box"><span>4h</span><strong id="perf4h">-1.3%</strong></div>
-            <div class="interval-box"><span>24h</span><strong id="perf24h">+3.4%</strong></div>
-            <div class="interval-box"><span>7d</span><strong id="perf7d">-4.8%</strong></div>
+          <div class="market-intervals" id="marketIntervals">
+            <div class="interval-box">
+              <span>1m</span>
+              <strong id="perf1m">+0.2%</strong>
+            </div>
+            <div class="interval-box">
+              <span>5m</span>
+              <strong id="perf5m">+0.5%</strong>
+            </div>
+            <div class="interval-box">
+              <span>15m</span>
+              <strong id="perf15m">+0.9%</strong>
+            </div>
+            <div class="interval-box">
+              <span>1h</span>
+              <strong id="perf1h">+2.1%</strong>
+            </div>
+            <div class="interval-box">
+              <span>4h</span>
+              <strong id="perf4h">-1.3%</strong>
+            </div>
+            <div class="interval-box">
+              <span>24h</span>
+              <strong id="perf24h">+3.4%</strong>
+            </div>
+            <div class="interval-box">
+              <span>7d</span>
+              <strong id="perf7d">-4.8%</strong>
+            </div>
           </div>
         </section>
 
         <aside class="side-stack">
           <section class="side-card card">
-            <h3 id="coinMoodTitle">BTC Mood</h3>
+            <h3>BTC Mood</h3>
             <div class="mood-row">
-              <div class="mood-icon">
+              <div class="mood-icon" id="coinMoodIcon">
                 <img
                   id="coinMoodIconImg"
                   class="mood-icon-img anim-float"
                   src="assets/icons/classic/optimism.png"
-                  alt="Coin mood icon"
+                  alt="BTC mood icon"
                 />
               </div>
 
@@ -262,14 +295,14 @@
           </section>
 
           <section class="side-card card">
-            <h3 id="coinSocialMoodTitle">BTC Social Mood</h3>
+            <h3>Social Mood</h3>
             <div class="mood-row">
-              <div class="mood-icon">
+              <div class="mood-icon" id="detailSocialIcon">
                 <img
                   id="detailSocialIconImg"
                   class="mood-icon-img anim-float"
                   src="assets/icons/classic/content.png"
-                  alt="Coin social mood icon"
+                  alt="Social mood icon detail"
                 />
               </div>
 

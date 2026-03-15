@@ -122,49 +122,61 @@
         </div>
       </section>
 
-      <section class="emotion-bar card">
-        <div class="section-head">
-          <h3>WOJAKMETER BAR</h3>
-          <span class="muted">Live emotional position of the crypto market</span>
-        </div>
+      <section class="emotion-bar card" id="emotionBarSection">
+        <button class="emotion-mobile-toggle" id="emotionMobileToggle" type="button" aria-expanded="false">
+          <span class="emotion-mobile-handle"></span>
+          <span class="emotion-mobile-title">WOJAKMETER</span>
+          <span class="emotion-mobile-summary">
+            <strong id="emotionMobileMood">Optimism</strong>
+            <span id="emotionMobileScore">64</span>
+          </span>
+          <span class="emotion-mobile-chevron" id="emotionMobileChevron">▲</span>
+        </button>
 
-        <div class="emotion-track-wrap">
-          <div class="emotion-track" id="emotionTrack">
-            <div class="emotion-segment seg-frustration">Frustration</div>
-            <div class="emotion-segment seg-concern">Concern</div>
-            <div class="emotion-segment seg-doubt">Doubt</div>
-            <div class="emotion-segment seg-neutral">Neutral</div>
-            <div class="emotion-segment seg-optimism">Optimism</div>
-            <div class="emotion-segment seg-content">Content</div>
-            <div class="emotion-segment seg-euphoria">Euphoria</div>
+        <div class="emotion-bar-inner" id="emotionBarInner">
+          <div class="section-head">
+            <h3>WOJAKMETER BAR</h3>
+            <span class="muted">Live emotional position of the crypto market</span>
+          </div>
 
-            <div class="emotion-pointer" id="emotionPointer" aria-label="WojakMeter indicator">
-              <div class="emotion-pointer-arrow"></div>
-              <div class="emotion-pointer-face">
-                <img
-                  id="emotionPointerImg"
-                  src="assets/icons/classic/optimism.png"
-                  alt="Current emotional state"
-                />
+          <div class="emotion-track-wrap">
+            <div class="emotion-track" id="emotionTrack">
+              <div class="emotion-segment seg-frustration">Frustration</div>
+              <div class="emotion-segment seg-concern">Concern</div>
+              <div class="emotion-segment seg-doubt">Doubt</div>
+              <div class="emotion-segment seg-neutral">Neutral</div>
+              <div class="emotion-segment seg-optimism">Optimism</div>
+              <div class="emotion-segment seg-content">Content</div>
+              <div class="emotion-segment seg-euphoria">Euphoria</div>
+
+              <div class="emotion-pointer" id="emotionPointer" aria-label="WojakMeter indicator">
+                <div class="emotion-pointer-arrow"></div>
+                <div class="emotion-pointer-face">
+                  <img
+                    id="emotionPointerImg"
+                    src="assets/icons/classic/optimism.png"
+                    alt="Current emotional state"
+                  />
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="emotion-meta">
-          <div class="emotion-meta-box">
-            <span>Current Mood</span>
-            <strong id="emotionBarMood">Optimism</strong>
-          </div>
+          <div class="emotion-meta">
+            <div class="emotion-meta-box">
+              <span>Current Mood</span>
+              <strong id="emotionBarMood">Optimism</strong>
+            </div>
 
-          <div class="emotion-meta-box">
-            <span>Score</span>
-            <strong id="emotionBarScore">64</strong>
-          </div>
+            <div class="emotion-meta-box">
+              <span>Score</span>
+              <strong id="emotionBarScore">64</strong>
+            </div>
 
-          <div class="emotion-meta-box">
-            <span>Range</span>
-            <strong id="emotionBarRange">60–74</strong>
+            <div class="emotion-meta-box">
+              <span>Range</span>
+              <strong id="emotionBarRange">60–74</strong>
+            </div>
           </div>
         </div>
       </section>

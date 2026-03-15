@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WojakMeter Preview</title>
+  <title>WOJAKMETER</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
@@ -11,41 +11,55 @@
 <body class="style-classic">
   <div class="app-shell">
 
-    <header class="topbar card">
-      <div class="brand">
-        <div class="brand-badge" id="brandBadge">
-          <img
-            id="brandBadgeImg"
-            src="assets/logo/logo-classic.png"
-            alt="WojakMeter logo"
-            class="brand-badge-img"
-          />
+    <header class="topbar cardless">
+      <div class="topbar-left">
+        <img
+          src="assets/logo/wojakmeter_logo.png"
+          alt="WojakMeter Logo"
+          class="logo-img"
+        >
+
+        <div class="brand-text">
+          <span class="brand-title">WOJAKMETER</span>
+          <span class="brand-sub">Crypto Emotion Index</span>
+        </div>
+      </div>
+
+      <div class="topbar-center">
+        <div class="market-stat">
+          BTC.D <strong>54.2%</strong>
         </div>
 
-        <div class="brand-copy">
-          <h1>WOJAKMETER</h1>
-          <p>The Crypto Emotion Index</p>
+        <div class="market-stat">
+          Market Cap <strong>$2.41T</strong>
+        </div>
+
+        <div class="market-stat">
+          24H Volume <strong>$91B</strong>
         </div>
       </div>
 
       <div class="topbar-right">
-        <div class="market-stats">
-          <span>BTC.D <strong>54.2%</strong></span>
-          <span>Market Cap <strong>$2.41T</strong></span>
-          <span>24H Volume <strong>$91B</strong></span>
-        </div>
+        <label class="style-label" for="styleSelector">Style</label>
 
-        <div class="style-selector">
-          <label for="styleSelector">Style</label>
-          <select id="styleSelector">
-            <option value="classic">Classic</option>
-            <option value="3d">3D</option>
-            <option value="anime">Anime</option>
-            <option value="minimal">Minimal</option>
-          </select>
-        </div>
+        <select id="styleSelector">
+          <option value="classic">Classic</option>
+          <option value="3d">3D</option>
+          <option value="anime">Anime</option>
+          <option value="minimal">Minimal</option>
+        </select>
       </div>
     </header>
+
+    <div class="ticker-bar">
+      <span>BTC <strong>$67,240</strong></span>
+      <span>ETH <strong>$3,420</strong></span>
+      <span>SOL <strong>$182</strong></span>
+      <span>XRP <strong>$0.52</strong></span>
+      <span>BNB <strong>$590</strong></span>
+      <span>ADA <strong>$0.71</strong></span>
+      <span>TON <strong>$6.84</strong></span>
+    </div>
 
     <nav class="coin-nav card">
       <button class="coin-tab active">BTC</button>
@@ -83,7 +97,7 @@
               Score: <span id="heroScore">64</span> / 100
             </div>
 
-            <div class="timeframes">
+            <div class="timeframes hero-timeframes">
               <button>1m</button>
               <button>5m</button>
               <button>15m</button>

@@ -176,6 +176,11 @@ function updateDriverPanel(score) {
   if (byId("driverNarrative")) byId("driverNarrative").textContent = macro.narrative;
 }
 
+function updateEmotionMobileSummary(score, moodName) {
+  if (byId("emotionMobileMood")) byId("emotionMobileMood").textContent = moodName;
+  if (byId("emotionMobileScore")) byId("emotionMobileScore").textContent = score;
+}
+
 function updateEmotionBar(score, style) {
   const mood = getMoodByScore(score);
 
@@ -200,6 +205,8 @@ function updateEmotionBar(score, style) {
   if (moodEl) moodEl.textContent = mood.name;
   if (scoreEl) scoreEl.textContent = score;
   if (rangeEl) rangeEl.textContent = getMoodRangeLabel(mood.key);
+
+  updateEmotionMobileSummary(score, mood.name);
 }
 
 function updateGlobalPreview(score) {
@@ -539,6 +546,29 @@ function setupEmotionPointerDrag() {
   });
 }
 
+function setupMobileEmotionBar() {
+  const section = byId("emotionBarSection");
+  const toggle = byId("emotionMobileToggle");
+  const chevron = byId("emotionMobileChevron");
+  if (!section || !toggle || window.innerWidth > 780) return;
+
+  section.classList.add("mobile-collapsed");
+
+  const syncToggle = (expanded) => {
+    section.classList.toggle("mobile-expanded", expanded);
+    section.classList.toggle("mobile-collapsed", !expanded);
+    toggle.setAttribute("aria-expanded", expanded ? "true" : "false");
+    if (chevron) chevron.textContent = expanded ? "▼" : "▲";
+  };
+
+  syncToggle(false);
+
+  toggle.addEventListener("click", () => {
+    const expanded = section.classList.contains("mobile-expanded");
+    syncToggle(!expanded);
+  });
+}
+
 async function copyText(value) {
   try {
     await navigator.clipboard.writeText(value);
@@ -562,6 +592,7 @@ function init() {
   renderScale();
   refreshOutputs();
   setupEmotionPointerDrag();
+  setupMobileEmotionBar();
 
   document.querySelectorAll("#heroTimeframes button").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -604,13 +635,4 @@ function init() {
     generateMemeBtn.addEventListener("click", refreshOutputs);
   }
 
-  if (copyTweetBtn) {
-    copyTweetBtn.addEventListener("click", () => copyText(byId("tweetOutput")?.value || ""));
-  }
-
-  if (copyMemeBtn) {
-    copyMemeBtn.addEventListener("click", () => copyText(byId("memePromptOutput")?.value || ""));
-  }
-}
-
-document.addEventListener("DOMContentLoaded", init);
+  if (copyTwee

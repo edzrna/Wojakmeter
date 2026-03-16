@@ -1016,4 +1016,23 @@ body.style-classic .sweat{
     width:34px;
     height:34px;
   }
+
+.about-section{
+  max-width:900px;
+  margin:80px auto;
+  text-align:center;
+  line-height:1.8;
+  color:#b8c4d6;
 }
+
+.about-section h2{
+  font-family:var(--font-display);
+  font-size:2rem;
+  color:white;
+  margin-bottom:20px;
+}
+
+.about-section p{
+  margin-bottom:18px;
+}
+

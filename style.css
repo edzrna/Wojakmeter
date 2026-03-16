@@ -998,8 +998,8 @@ body.style-classic .sweat{
 
 @media (max-width:560px){
   .logo-img{
-    height:100px;
-    max-width:360px;
+    height:70px;
+    max-width:280px;
   }
 
   .market-stat{ font-size:13px; }

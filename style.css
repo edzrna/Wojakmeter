@@ -390,7 +390,6 @@ img{
   border-right:none;
 }
 
-
 .seg-frustration{
   background:#ff3b4d;
   color:#ffffff;
@@ -465,7 +464,7 @@ img{
   user-select:none;
   touch-action:none;
   transition:left .22s ease;
-  z-index:5;
+  z-index:20;
 }
 
 .emotion-pointer.dragging{
@@ -941,6 +940,8 @@ body.style-classic .sweat{
     min-height:54px;
     grid-template-columns:repeat(7, 1fr);
     border-radius:14px;
+    overflow:visible;
+    margin-top:14px;
   }
 
   .emotion-segment{

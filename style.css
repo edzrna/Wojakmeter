@@ -854,7 +854,7 @@ body.style-classic .sweat{
 
 @media (max-width:780px){
   body{
-    padding-bottom:96px;
+    padding-bottom:110px;
   }
 
   .app-shell{
@@ -877,11 +877,13 @@ body.style-classic .sweat{
     left:10px;
     right:10px;
     bottom:10px;
-    z-index:40;
+    z-index:60;
     padding:0;
     border-radius:22px;
     overflow:hidden;
     backdrop-filter:blur(12px);
+    background:
+      linear-gradient(180deg, rgba(19,34,53,.96), rgba(16,28,43,.98));
   }
 
   .emotion-mobile-toggle{
@@ -932,12 +934,12 @@ body.style-classic .sweat{
   .emotion-bar-inner{
     max-height:0;
     overflow:hidden;
-    transition:max-height .28s ease;
+    transition:max-height .28s ease, padding .28s ease;
     padding:0 14px;
   }
 
   .emotion-bar.mobile-expanded .emotion-bar-inner{
-    max-height:420px;
+    max-height:460px;
     padding:0 14px 14px;
   }
 

@@ -275,13 +275,13 @@ img{
   transition:color .25s ease;
 }
 
-.mood-euphoria{ color:#ff4d4d; }
-.mood-content{ color:#7dff9b; }
-.mood-optimism{ color:#b7ff69; }
-.mood-neutral{ color:#edf2ff; }
-.mood-doubt{ color:#ffd166; }
-.mood-concern{ color:#ff9f43; }
-.mood-frustration{ color:#ff5b6e; }
+.mood-neutral{ color:#ffffff; }
+.mood-optimism{ color:#bfffd9; }
+.mood-content{ color:#7cffb0; }
+.mood-euphoria{ color:#4dff88; }
+.mood-doubt{ color:#ffb3b8; }
+.mood-concern{ color:#ff7f8a; }
+.mood-frustration{ color:#ff3b4d; }
 
 .hero-score{
   font-family:var(--font-ui);

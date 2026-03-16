@@ -550,23 +550,40 @@ function setupMobileEmotionBar() {
   const section = byId("emotionBarSection");
   const toggle = byId("emotionMobileToggle");
   const chevron = byId("emotionMobileChevron");
-  if (!section || !toggle || window.innerWidth > 780) return;
 
-  section.classList.add("mobile-collapsed");
+  if (!section || !toggle) return;
 
-  const syncToggle = (expanded) => {
+  const isMobile = () => window.matchMedia("(max-width: 780px)").matches;
+
+  const applyState = (expanded) => {
     section.classList.toggle("mobile-expanded", expanded);
     section.classList.toggle("mobile-collapsed", !expanded);
     toggle.setAttribute("aria-expanded", expanded ? "true" : "false");
     if (chevron) chevron.textContent = expanded ? "▼" : "▲";
   };
 
-  syncToggle(false);
+  const syncByViewport = () => {
+    if (isMobile()) {
+      if (!section.classList.contains("mobile-expanded") && !section.classList.contains("mobile-collapsed")) {
+        applyState(false);
+      }
+    } else {
+      section.classList.remove("mobile-expanded", "mobile-collapsed");
+      toggle.setAttribute("aria-expanded", "true");
+      if (chevron) chevron.textContent = "▼";
+    }
+  };
 
-  toggle.addEventListener("click", () => {
+  applyState(false);
+  syncByViewport();
+
+  toggle.onclick = () => {
+    if (!isMobile()) return;
     const expanded = section.classList.contains("mobile-expanded");
-    syncToggle(!expanded);
-  });
+    applyState(!expanded);
+  };
+
+  window.addEventListener("resize", syncByViewport);
 }
 
 async function copyText(value) {
@@ -616,23 +633,4 @@ function init() {
     document.body.className = `style-${styleSelector.value}`;
     localStorage.setItem("wojakStyle", styleSelector.value);
     updateGlobalHero();
-    updateChartSection();
-    renderCoins();
-    renderScale();
-    refreshOutputs();
-  });
-
-  const generateTweetBtn = byId("generateTweetBtn");
-  const generateMemeBtn = byId("generateMemeBtn");
-  const copyTweetBtn = byId("copyTweetBtn");
-  const copyMemeBtn = byId("copyMemeBtn");
-
-  if (generateTweetBtn) {
-    generateTweetBtn.addEventListener("click", refreshOutputs);
-  }
-
-  if (generateMemeBtn) {
-    generateMemeBtn.addEventListener("click", refreshOutputs);
-  }
-
-  if (copyTwee
+    

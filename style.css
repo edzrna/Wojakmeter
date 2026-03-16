@@ -336,10 +336,6 @@ img{
   justify-content:flex-start;
 }
 
-.emotion-mobile-toggle{
-  display:none;
-}
-
 .emotion-track-wrap{
   margin-top:10px;
 }
@@ -853,10 +849,6 @@ body.style-classic .sweat{
 }
 
 @media (max-width:780px){
-  body{
-    padding-bottom:110px;
-  }
-
   .app-shell{
     width:min(100% - 14px, 1220px);
   }
@@ -872,99 +864,25 @@ body.style-classic .sweat{
 
   .wojak-stage{ width:min(100%, 270px); }
 
-  .emotion-bar{
-    position:fixed;
-    left:10px;
-    right:10px;
-    bottom:10px;
-    z-index:60;
-    padding:0;
-    border-radius:22px;
-    overflow:hidden;
-    backdrop-filter:blur(12px);
-    background:
-      linear-gradient(180deg, rgba(19,34,53,.96), rgba(16,28,43,.98));
-  }
-
-  .emotion-mobile-toggle{
-    width:100%;
-    display:flex;
-    align-items:center;
-    gap:10px;
-    padding:12px 14px 10px;
-    background:rgba(16,28,43,.96);
-    border:none;
-    color:var(--text);
-    cursor:pointer;
-  }
-
-  .emotion-mobile-handle{
-    width:34px;
-    height:4px;
-    border-radius:999px;
-    background:rgba(255,255,255,.35);
-    flex:0 0 auto;
-  }
-
-  .emotion-mobile-title{
-    font-family:var(--font-display);
-    font-weight:700;
-    letter-spacing:.04em;
-  }
-
-  .emotion-mobile-summary{
-    margin-left:auto;
-    display:flex;
-    gap:8px;
-    align-items:center;
-    font-family:var(--font-ui);
-  }
-
-  .emotion-mobile-summary strong{
-    color:#b7ff69;
-  }
-
-  .emotion-mobile-chevron{
-    font-family:var(--font-ui);
-    font-weight:700;
-    width:18px;
-    text-align:center;
-  }
-
-  .emotion-bar-inner{
-    max-height:0;
-    overflow:hidden;
-    transition:max-height .28s ease, padding .28s ease;
-    padding:0 14px;
-  }
-
-  .emotion-bar.mobile-expanded .emotion-bar-inner{
-    max-height:460px;
-    padding:0 14px 14px;
-  }
-
-  .emotion-bar.mobile-collapsed .emotion-bar-inner{
-    max-height:0;
-    padding:0 14px;
-  }
-
   .emotion-track{
-    min-height:78px;
-    grid-template-columns:repeat(7, 1fr);
+    grid-template-columns:1fr;
+    min-height:auto;
   }
 
   .emotion-segment{
-    min-height:auto;
-    border-right:1px solid rgba(255,255,255,.08);
+    min-height:52px;
+    border-right:none;
+    border-bottom:1px solid rgba(255,255,255,.08);
+    justify-content:flex-start;
+    padding:14px 18px;
+  }
+
+  .emotion-segment:last-child{
     border-bottom:none;
-    justify-content:center;
-    padding:24px 10px 14px;
-    font-size:.8rem;
   }
 
   .emotion-pointer{
-    display:flex;
-    top:-10px;
+    display:none;
   }
 }
 
@@ -1016,28 +934,5 @@ body.style-classic .sweat{
   .ticker-bar{
     padding-left:14px;
     padding-right:14px;
-  }
-
-  .emotion-mobile-summary{
-    gap:6px;
-    font-size:.92rem;
-  }
-
-  .emotion-track{
-    min-height:70px;
-  }
-
-  .emotion-segment{
-    font-size:.72rem;
-    padding:20px 6px 12px;
-  }
-
-  .emotion-pointer{
-    width:64px;
-  }
-
-  .emotion-pointer-face{
-    width:60px;
-    height:60px;
   }
 }

@@ -85,10 +85,10 @@ img{
 }
 
 .logo-img{
-  height:58px;
+  height:90px;
   width:auto;
   object-fit:contain;
-  max-width:320px;
+  max-width:420px;
 }
 
 .topbar-right-group{

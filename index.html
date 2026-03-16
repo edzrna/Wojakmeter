@@ -3,34 +3,37 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WOJAKMETER</title>
 
-<title>WojakMeter | Crypto Market Sentiment & Emotion Index</title>
+  <title>WojakMeter | Crypto Market Sentiment & Emotion Index</title>
+  <meta name="description" content="WojakMeter tracks the emotional state of the crypto market using price momentum, social sentiment and macro events." />
+  <meta name="keywords" content="crypto sentiment, bitcoin sentiment, crypto emotion index, crypto market mood, fear and greed crypto, wojakmeter" />
 
-<meta name="description" content="WojakMeter tracks the emotional state of the crypto market using price momentum, social sentiment and macro events." />
+  <meta property="og:title" content="WojakMeter | The Crypto Emotion Index" />
+  <meta property="og:description" content="Track the emotional state of the crypto market using price momentum, social sentiment and macro events." />
+  <meta property="og:image" content="https://wojakmeter.com/assets/preview.jpg" />
+  <meta property="og:url" content="https://wojakmeter.com" />
+  <meta property="og:type" content="website" />
 
-<meta name="keywords" content="crypto sentiment, bitcoin sentiment, crypto emotion index, crypto market mood, fear and greed crypto, wojakmeter" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="WojakMeter | Crypto Emotion Index" />
+  <meta name="twitter:description" content="Track the emotional state of the crypto market with WojakMeter." />
+  <meta name="twitter:image" content="https://wojakmeter.com/assets/preview.jpg" />
 
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body class="style-classic">
   <div class="app-shell">
-
-    <header class="topbar cardless">
+    <header class="topbar cardless" id="market">
       <div class="topbar-left">
-        <img
-          src="assets/logo/wojakmeter_logo.png"
-          alt="WojakMeter Logo"
-          class="logo-img"
-        >
+        <img src="assets/logo/wojakmeter_logo.png" alt="WojakMeter Logo" class="logo-img">
       </div>
 
       <div class="topbar-right-group">
         <div class="topbar-center">
-          <div class="market-stat">BTC.D <strong>54.2%</strong></div>
-          <div class="market-stat">Market Cap <strong>$2.41T</strong></div>
-          <div class="market-stat">24H Volume <strong>$91B</strong></div>
+          <div class="market-stat">BTC.D <strong id="btcDominance">--</strong></div>
+          <div class="market-stat">Market Cap <strong id="headerMarketCap">--</strong></div>
+          <div class="market-stat">24H Volume <strong id="headerVolume">--</strong></div>
         </div>
 
         <div class="topbar-right">
@@ -45,14 +48,8 @@
       </div>
     </header>
 
-    <div class="ticker-bar">
-      <span>BTC <strong>$67,240</strong></span>
-      <span>ETH <strong>$3,420</strong></span>
-      <span>SOL <strong>$182</strong></span>
-      <span>XRP <strong>$0.52</strong></span>
-      <span>BNB <strong>$590</strong></span>
-      <span>ADA <strong>$0.71</strong></span>
-      <span>TON <strong>$6.84</strong></span>
+    <div class="ticker-bar" id="tickerBar">
+      <span>Loading market...</span>
     </div>
 
     <main class="dashboard">
@@ -66,26 +63,35 @@
               <img
                 id="heroFaceImg"
                 class="hero-face-img anim-float"
-                src="assets/hero/classic/optimism.png"
+                src="assets/hero/classic/neutral.png"
                 alt="Global market mood"
               />
             </div>
 
-            <div class="hero-mood mood-optimism" id="heroMood">Optimism</div>
+            <div class="hero-mood mood-neutral" id="heroMood">Neutral</div>
 
             <div class="hero-score">
-              Score: <span id="heroScore">64</span> / 100
+              Score: <span id="heroScore">50</span> / 100
+            </div>
+
+            <div class="heartbeat-wrap" id="heartbeatWrap">
+              <div class="heartbeat-heart" id="heartbeatHeart">❤</div>
+              <div class="heartbeat-chart">
+                <svg viewBox="0 0 320 56" preserveAspectRatio="none" aria-hidden="true">
+                  <path id="heartbeatPath" d="" />
+                </svg>
+              </div>
             </div>
 
             <div class="hero-market-stats">
               <div class="hero-stat-box">
                 <span>Market Change</span>
-                <strong id="globalMarketChange">+1.4%</strong>
+                <strong id="globalMarketChange">--</strong>
               </div>
 
               <div class="hero-stat-box">
                 <span>Volume</span>
-                <strong id="globalMarketVolume">$91B</strong>
+                <strong id="globalMarketVolume">--</strong>
               </div>
 
               <div class="hero-stat-box">
@@ -112,24 +118,66 @@
                 <img
                   id="socialIconImg"
                   class="mood-icon-img anim-float"
-                  src="assets/icons/classic/content.png"
+                  src="assets/icons/classic/neutral.png"
                   alt="Social mood icon"
                 />
               </div>
 
               <div class="social-copy">
-                <div class="social-mood" id="socialMood">Content</div>
-                <div class="muted">Score: <span id="socialScore">68</span></div>
-                <div class="muted">Positive: 62%</div>
-                <div class="muted">Negative: 20%</div>
-                <div class="muted">Mentions: 5.8K</div>
+                <div class="social-mood" id="socialMood">Neutral</div>
+                <div class="muted">Score: <span id="socialScore">50</span></div>
+                <div class="muted">Positive: <span id="socialPositive">--</span></div>
+                <div class="muted">Negative: <span id="socialNegative">--</span></div>
+                <div class="muted">Mentions: <span id="socialMentions">--</span></div>
               </div>
             </div>
           </aside>
+
+          <section class="drivers-card card">
+            <div class="section-head">
+              <h3>MARKET DRIVERS</h3>
+            </div>
+
+            <div class="drivers-controls">
+              <label for="macroDriver">Main macro driver</label>
+              <select id="macroDriver">
+                <option value="market_flow">Market flow / price action</option>
+                <option value="etf_adoption">ETF / institutional adoption</option>
+                <option value="rate_hike">Rate hike fears</option>
+                <option value="rate_cut">Rate cut hopes</option>
+                <option value="regulation_crackdown">Regulation crackdown</option>
+                <option value="crypto_hack">Crypto hack / insolvency</option>
+                <option value="war_escalation">War escalation</option>
+                <option value="neutral_macro">Neutral macro environment</option>
+              </select>
+            </div>
+
+            <div class="driver-list">
+              <div class="driver-item">
+                <span>Technical Mood</span>
+                <strong id="driverTechnical">Neutral</strong>
+              </div>
+
+              <div class="driver-item">
+                <span>Social Mood</span>
+                <strong id="driverSocial">Neutral</strong>
+              </div>
+
+              <div class="driver-item">
+                <span>Macro Driver</span>
+                <strong id="driverMacro">Market flow / price action</strong>
+              </div>
+
+              <div class="driver-item">
+                <span>Main Narrative</span>
+                <strong id="driverNarrative">Waiting for live market data.</strong>
+              </div>
+            </div>
+          </section>
         </div>
       </section>
 
-      <section class="emotion-bar card">
+      <section class="emotion-bar card" id="emotionBarSection">
         <div class="section-head">
           <h3>WOJAKMETER BAR</h3>
           <span class="muted">Live emotional position of the crypto market</span>
@@ -150,7 +198,7 @@
               <div class="emotion-pointer-face">
                 <img
                   id="emotionPointerImg"
-                  src="assets/icons/classic/optimism.png"
+                  src="assets/icons/classic/neutral.png"
                   alt="Current emotional state"
                 />
               </div>
@@ -161,62 +209,22 @@
         <div class="emotion-meta">
           <div class="emotion-meta-box">
             <span>Current Mood</span>
-            <strong id="emotionBarMood">Optimism</strong>
+            <strong id="emotionBarMood">Neutral</strong>
           </div>
 
           <div class="emotion-meta-box">
             <span>Score</span>
-            <strong id="emotionBarScore">64</strong>
+            <strong id="emotionBarScore">50</strong>
           </div>
 
           <div class="emotion-meta-box">
             <span>Range</span>
-            <strong id="emotionBarRange">60–74</strong>
+            <strong id="emotionBarRange">45–59</strong>
           </div>
         </div>
       </section>
 
       <section class="drivers-grid">
-        <section class="drivers-card card">
-          <div class="section-head">
-            <h3>MARKET DRIVERS</h3>
-          </div>
-
-          <div class="drivers-controls">
-            <label for="macroDriver">Main macro driver</label>
-            <select id="macroDriver">
-              <option value="war_escalation">War escalation</option>
-              <option value="extreme_weather">Extreme weather</option>
-              <option value="rate_hike">Rate hike fears</option>
-              <option value="rate_cut">Rate cut hopes</option>
-              <option value="regulation_crackdown">Regulation crackdown</option>
-              <option value="etf_adoption">ETF / institutional adoption</option>
-              <option value="energy_disruption">Energy disruption</option>
-              <option value="crypto_hack">Crypto hack / insolvency</option>
-              <option value="neutral_macro">Neutral macro environment</option>
-            </select>
-          </div>
-
-          <div class="driver-list">
-            <div class="driver-item">
-              <span>Technical Mood</span>
-              <strong id="driverTechnical">Optimism</strong>
-            </div>
-            <div class="driver-item">
-              <span>Social Mood</span>
-              <strong id="driverSocial">Content</strong>
-            </div>
-            <div class="driver-item">
-              <span>Macro Driver</span>
-              <strong id="driverMacro">War escalation</strong>
-            </div>
-            <div class="driver-item">
-              <span>Main Narrative</span>
-              <strong id="driverNarrative">Risk-off sentiment from geopolitical tension.</strong>
-            </div>
-          </div>
-        </section>
-
         <section class="share-card card">
           <div class="section-head">
             <h3>SHARE MARKET SENTIMENT</h3>
@@ -244,9 +252,10 @@
         </section>
       </section>
 
-      <section class="top-coins card">
+      <section class="top-coins card" id="top-coins">
         <div class="section-head">
           <h3>TOP 10 COINS</h3>
+          <span class="muted">Live CoinGecko market data</span>
         </div>
         <div class="coins-grid" id="coinsGrid"></div>
       </section>
@@ -259,8 +268,10 @@
           </div>
 
           <div class="chart-placeholder">
-            <div class="grid-lines"></div>
-            <div class="chart-line" id="chartLine"></div>
+            <svg id="coinChartSvg" viewBox="0 0 900 280" preserveAspectRatio="none" aria-hidden="true">
+              <path id="coinChartArea" d=""></path>
+              <path id="coinChartPath" d=""></path>
+            </svg>
           </div>
 
           <div class="chart-footer">
@@ -274,17 +285,17 @@
               <button data-timeframe="7d">7d</button>
             </div>
 
-            <div class="pill positive" id="chartChangePill">+2.1%</div>
+            <div class="pill positive" id="chartChangePill">--</div>
           </div>
 
           <div class="market-intervals">
-            <div class="interval-box"><span>1m</span><strong id="perf1m">+0.2%</strong></div>
-            <div class="interval-box"><span>5m</span><strong id="perf5m">+0.5%</strong></div>
-            <div class="interval-box"><span>15m</span><strong id="perf15m">+0.9%</strong></div>
-            <div class="interval-box"><span>1h</span><strong id="perf1h">+2.1%</strong></div>
-            <div class="interval-box"><span>4h</span><strong id="perf4h">-1.3%</strong></div>
-            <div class="interval-box"><span>24h</span><strong id="perf24h">+3.4%</strong></div>
-            <div class="interval-box"><span>7d</span><strong id="perf7d">-4.8%</strong></div>
+            <div class="interval-box"><span>1m</span><strong id="perf1m">--</strong></div>
+            <div class="interval-box"><span>5m</span><strong id="perf5m">--</strong></div>
+            <div class="interval-box"><span>15m</span><strong id="perf15m">--</strong></div>
+            <div class="interval-box"><span>1h</span><strong id="perf1h">--</strong></div>
+            <div class="interval-box"><span>4h</span><strong id="perf4h">--</strong></div>
+            <div class="interval-box"><span>24h</span><strong id="perf24h">--</strong></div>
+            <div class="interval-box"><span>7d</span><strong id="perf7d">--</strong></div>
           </div>
         </section>
 
@@ -296,16 +307,16 @@
                 <img
                   id="coinMoodIconImg"
                   class="mood-icon-img anim-float"
-                  src="assets/icons/classic/optimism.png"
+                  src="assets/icons/classic/neutral.png"
                   alt="Coin mood icon"
                 />
               </div>
 
               <div class="mood-copy">
-                <div class="big-label" id="coinMoodLabel">Optimism</div>
-                <div class="muted">Score: <span id="coinMoodScore">64</span></div>
+                <div class="big-label" id="coinMoodLabel">Neutral</div>
+                <div class="muted">Score: <span id="coinMoodScore">50</span></div>
                 <div class="muted">Selected timeframe: <span id="selectedTimeframe">1h</span></div>
-                <div class="muted">Performance: <span id="selectedPerformance">+2.1%</span></div>
+                <div class="muted">Performance: <span id="selectedPerformance">--</span></div>
               </div>
             </div>
           </section>
@@ -317,14 +328,14 @@
                 <img
                   id="detailSocialIconImg"
                   class="mood-icon-img anim-float"
-                  src="assets/icons/classic/content.png"
+                  src="assets/icons/classic/neutral.png"
                   alt="Coin social mood icon"
                 />
               </div>
 
               <div class="mood-copy">
-                <div class="big-label" id="detailSocialLabel">Content</div>
-                <div class="muted">Score: <span id="detailSocialScore">68</span></div>
+                <div class="big-label" id="detailSocialLabel">Neutral</div>
+                <div class="muted">Score: <span id="detailSocialScore">50</span></div>
               </div>
             </div>
           </section>
@@ -336,74 +347,52 @@
         <div class="scale-grid" id="scaleGrid"></div>
       </section>
 
-<section class="about-section">
-
-<h2>About WojakMeter</h2>
-
-<p>
-WojakMeter is a crypto market sentiment index designed to measure the emotional state of the cryptocurrency market in real time.
-The platform analyzes price momentum, social sentiment and macroeconomic drivers to identify the prevailing mood across the crypto ecosystem.
-</p>
-
-<p>
-Financial markets are strongly influenced by psychology. Fear, uncertainty, optimism and euphoria often drive market cycles more than fundamentals.
-WojakMeter translates these complex behavioral patterns into a simple visual indicator that helps traders quickly understand the emotional dynamics of the market.
-</p>
-
-<p>
-The index represents market emotions through seven emotional stages ranging from Frustration to Euphoria, helping traders interpret the emotional behavior that often drives crypto market cycles.
-</p>
-
-</section>
-
+      <section id="about" class="about-section">
+        <h2>About WojakMeter</h2>
+        <p>
+          WojakMeter is a crypto market sentiment index designed to measure the emotional state of the cryptocurrency market in real time.
+          The platform analyzes price momentum, social sentiment and macroeconomic drivers to identify the prevailing mood across the crypto ecosystem.
+        </p>
+        <p>
+          Financial markets are strongly influenced by psychology. Fear, uncertainty, optimism and euphoria often drive market cycles more than fundamentals.
+          WojakMeter translates these complex behavioral patterns into a simple visual indicator that helps traders quickly understand the emotional dynamics of the market.
+        </p>
+        <p>
+          The index represents market emotions through seven emotional stages ranging from Frustration to Euphoria, helping traders interpret the emotional behavior that often drives crypto market cycles.
+        </p>
+      </section>
     </main>
 
     <footer class="footer">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <img src="assets/logo/wojakmeter_logo.png" class="footer-logo" alt="WojakMeter Logo">
+          <p>
+            WojakMeter is a crypto market sentiment index that visualizes the emotional state of the cryptocurrency market using price momentum, social sentiment and macro drivers.
+          </p>
+        </div>
 
-<div class="footer-grid">
+        <div class="footer-links">
+          <h4>Navigation</h4>
+          <a href="#about">About</a>
+          <a href="#top-coins">Top Coins</a>
+          <a href="#market">Market Mood</a>
+          <a href="#">Terms</a>
+        </div>
 
-<div class="footer-brand">
+        <div class="footer-links">
+          <h4>Community</h4>
+          <a href="https://x.com/WojakMeter" target="_blank" rel="noopener">X / Twitter</a>
+          <a href="#">Telegram</a>
+        </div>
+      </div>
 
-<img src="assets/logo/wojakmeter_logo.png" class="footer-logo">
-
-<p>
-WojakMeter is a crypto market sentiment index that visualizes the emotional state of the cryptocurrency market using price momentum, social sentiment and macro drivers.
-</p>
-
-</div>
-
-<div class="footer-links">
-
-<h4>Navigation</h4>
-
-<a href="#about">About</a>
-<a href="#top-coins">Top Coins</a>
-<a href="#market">Market Mood</a>
-<a href="#">Terms</a>
-
-</div>
-
-<div class="footer-links">
-
-<h4>Community</h4>
-
-<a href="https://x.com/WojakMeter" target="_blank">X / Twitter</a>
-<a href="#">Telegram</a>
-
-</div>
-
-</div>
-
-<div class="footer-bottom">
-
-<p>© 2026 WojakMeter. All rights reserved.</p>
-
-</div>
-
-</footer>
+      <div class="footer-bottom">
+        <p>© 2026 WojakMeter. All rights reserved.</p>
+      </div>
+    </footer>
   </div>
 
   <script src="script.js"></script>
-
 </body>
 </html>

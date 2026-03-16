@@ -369,13 +369,40 @@ img{
   border-right:none;
 }
 
-.seg-frustration{ background:linear-gradient(180deg,#8b0000,#ff4d4d); }
-.seg-concern{ background:linear-gradient(180deg,#b84e00,#ff8f3d); }
-.seg-doubt{ background:linear-gradient(180deg,#b8860b,#ffd166); color:#1a1a1a; }
-.seg-neutral{ background:linear-gradient(180deg,#7c8798,#edf2ff); color:#16202c; }
-.seg-optimism{ background:linear-gradient(180deg,#5fae35,#b7ff69); color:#10220d; }
-.seg-content{ background:linear-gradient(180deg,#1ea85b,#7dff9b); color:#0c2516; }
-.seg-euphoria{ background:linear-gradient(180deg,#c62828,#ff5b5b); }
+.seg-neutral{
+  background:linear-gradient(180deg,#f4f7fb,#ffffff);
+  color:#16202c;
+}
+
+.seg-optimism{
+  background:linear-gradient(90deg,#4dff88 0%, #4dff88 50%, #ffffff 50%, #ffffff 100%);
+  color:#10220d;
+}
+
+.seg-content{
+  background:linear-gradient(90deg,#4dff88 0%, #4dff88 75%, #ffffff 75%, #ffffff 100%);
+  color:#10220d;
+}
+
+.seg-euphoria{
+  background:linear-gradient(180deg,#4dff88,#4dff88);
+  color:#10220d;
+}
+
+.seg-doubt{
+  background:linear-gradient(90deg,#ff4d5f 0%, #ff4d5f 50%, #ffffff 50%, #ffffff 100%);
+  color:#2a1114;
+}
+
+.seg-concern{
+  background:linear-gradient(90deg,#ff4d5f 0%, #ff4d5f 75%, #ffffff 75%, #ffffff 100%);
+  color:#2a1114;
+}
+
+.seg-frustration{
+  background:linear-gradient(180deg,#ff3b4d,#ff3b4d);
+  color:#ffffff;
+}
 
 .emotion-pointer{
   position:absolute;

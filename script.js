@@ -1,636 +1,556 @@
-const REFRESH_MS = 180000;
+const REFRESH_INTERVAL = 180000;
 
 const moods = [
-  { key: "euphoria", name: "Euphoria", min: 85, anim: "anim-pulse", range: "85–100" },
-  { key: "content", name: "Content", min: 70, anim: "anim-float", range: "70–84" },
-  { key: "optimism", name: "Optimism", min: 60, anim: "anim-float", range: "60–69" },
-  { key: "neutral", name: "Neutral", min: 45, anim: "anim-blink", range: "45–59" },
-  { key: "doubt", name: "Doubt", min: 35, anim: "anim-tilt", range: "35–44" },
-  { key: "concern", name: "Concern", min: 20, anim: "anim-shake", range: "20–34" },
-  { key: "frustration", name: "Frustration", min: 0, anim: "anim-shake", range: "0–19" }
+  { key: "frustration", name: "Frustration", min: 0, max: 19, color: "#ff4d4d", range: "0–19" },
+  { key: "concern", name: "Concern", min: 20, max: 34, color: "#ff7a3d", range: "20–34" },
+  { key: "doubt", name: "Doubt", min: 35, max: 44, color: "#ffb347", range: "35–44" },
+  { key: "neutral", name: "Neutral", min: 45, max: 59, color: "#d7d96f", range: "45–59" },
+  { key: "optimism", name: "Optimism", min: 60, max: 69, color: "#9be264", range: "60–69" },
+  { key: "content", name: "Content", min: 70, max: 84, color: "#44d66f", range: "70–84" },
+  { key: "euphoria", name: "Euphoria", min: 85, max: 100, color: "#22e8c5", range: "85–100" }
 ];
 
-const driverImpactMap = {
-  market_flow: 0,
-  etf_adoption: 10,
-  rate_cut: 8,
-  rate_hike: -10,
-  regulation_crackdown: -15,
-  crypto_hack: -20,
-  war_escalation: -12,
-  neutral_macro: 0
+const timeframeConfig = {
+  "1m": { minutes: 1, label: "1m" },
+  "5m": { minutes: 5, label: "5m" },
+  "15m": { minutes: 15, label: "15m" },
+  "1h": { minutes: 60, label: "1h" },
+  "4h": { minutes: 240, label: "4h" },
+  "24h": { minutes: 1440, label: "24h" },
+  "7d": { minutes: 10080, label: "7d" }
 };
 
-const timeframeWeightMap = {
-  "1m": 5,
-  "5m": 3,
-  "15m": 2,
-  "1h": 0,
-  "4h": -2,
-  "24h": -4,
-  "7d": -6
+const macroDrivers = {
+  market_flow: {
+    label: "Market flow / price action",
+    sentimentBias: 0,
+    socialBias: 0,
+    narrativePositive: "Price action is driving conviction and momentum.",
+    narrativeNegative: "Price weakness is dominating market psychology."
+  },
+  etf_adoption: {
+    label: "ETF / institutional adoption",
+    sentimentBias: 8,
+    socialBias: 6,
+    narrativePositive: "Institutional inflows are reinforcing bullish sentiment.",
+    narrativeNegative: "Adoption headlines remain supportive, but price is not confirming yet."
+  },
+  rate_hike: {
+    label: "Rate hike fears",
+    sentimentBias: -10,
+    socialBias: -8,
+    narrativePositive: "Markets are absorbing macro stress better than expected.",
+    narrativeNegative: "Higher-rate fears are creating a risk-off environment."
+  },
+  rate_cut: {
+    label: "Rate cut hopes",
+    sentimentBias: 7,
+    socialBias: 5,
+    narrativePositive: "Easing expectations are supporting risk appetite.",
+    narrativeNegative: "Rate-cut hopes exist, but traders remain cautious."
+  },
+  regulation_crackdown: {
+    label: "Regulation crackdown",
+    sentimentBias: -12,
+    socialBias: -10,
+    narrativePositive: "Traders are shaking off regulatory pressure better than expected.",
+    narrativeNegative: "Regulatory uncertainty is weakening confidence."
+  },
+  crypto_hack: {
+    label: "Crypto hack / insolvency",
+    sentimentBias: -15,
+    socialBias: -14,
+    narrativePositive: "The market is recovering despite event-driven fear.",
+    narrativeNegative: "Trust damage from hacks or insolvency is driving caution."
+  },
+  war_escalation: {
+    label: "War escalation",
+    sentimentBias: -9,
+    socialBias: -8,
+    narrativePositive: "Crypto is showing resilience despite geopolitical stress.",
+    narrativeNegative: "Geopolitical tension is pushing traders into risk-off mode."
+  },
+  neutral_macro: {
+    label: "Neutral macro environment",
+    sentimentBias: 0,
+    socialBias: 0,
+    narrativePositive: "With macro calm, price action is leading the story.",
+    narrativeNegative: "Macro is quiet, but sentiment is still fragile."
+  }
 };
 
-const macroNarratives = {
-  market_flow: "Price action is driving the emotional state of the global crypto market.",
-  etf_adoption: "Institutional flows and ETF headlines are boosting confidence across crypto.",
-  rate_cut: "Liquidity expectations are improving market appetite for risk assets.",
-  rate_hike: "Macro tightening pressure is making crypto sentiment more defensive.",
-  regulation_crackdown: "Regulatory pressure is weighing on market confidence.",
-  crypto_hack: "Security fears and insolvency risk are dragging sentiment lower.",
-  war_escalation: "Geopolitical stress is creating uncertainty across the market.",
-  neutral_macro: "No dominant macro event is strongly shifting crypto sentiment."
+const state = {
+  style: "classic",
+  selectedTimeframe: "1h",
+  selectedMacro: "market_flow",
+  selectedCoin: null,
+  coins: [],
+  coinChartData: new Map(),
+  globalData: null,
+  social: {
+    score: 50,
+    mood: moods[3],
+    positive: 50,
+    negative: 50,
+    mentions: "0"
+  },
+  globalMood: moods[3],
+  globalScore: 50
 };
-
-let activeCoinSymbol = "BTC";
-let globalTimeframe = "1h";
-let chartTimeframe = "1h";
-let topCoinsData = [];
-let currentGlobalMood = moods.find(m => m.key === "neutral");
-
-function byId(id) {
-  return document.getElementById(id);
-}
 
 function clamp(num, min, max) {
   return Math.max(min, Math.min(max, num));
 }
 
-function getCurrentStyle() {
-  return (document.body.className || "style-classic").replace("style-", "");
+function getMood(score) {
+  return moods.find((m) => score >= m.min && score <= m.max) || moods[3];
 }
 
-function getHeroImagePath(style, moodKey) {
-  return `assets/hero/${style}/${moodKey}.png`;
+function getMoodClass(key) {
+  return `mood-${key}`;
 }
 
-function getIconImagePath(style, moodKey) {
-  return `assets/icons/${style}/${moodKey}.png`;
-}
-
-function setImage(el, path, fallback = "") {
-  if (!el) return;
-  el.src = path;
-  if (fallback) {
-    el.onerror = () => {
-      el.onerror = null;
-      el.src = fallback;
-    };
-  }
-}
-
-function formatCurrencyCompact(value) {
+function formatMoney(value) {
   if (value == null || Number.isNaN(value)) return "--";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    notation: "compact",
-    maximumFractionDigits: 2
-  }).format(value);
-}
-
-function formatCurrency(value) {
-  if (value == null || Number.isNaN(value)) return "--";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: value >= 1000 ? 0 : 2
-  }).format(value);
+  if (value >= 1_000_000_000_000) return `$${(value / 1_000_000_000_000).toFixed(2)}T`;
+  if (value >= 1_000_000_000) return `$${(value / 1_000_000_000).toFixed(2)}B`;
+  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`;
+  if (value >= 1_000) return `$${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+  if (value >= 1) return `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `$${value.toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 6 })}`;
 }
 
 function formatPercent(value) {
   if (value == null || Number.isNaN(value)) return "--";
-  return `${value >= 0 ? "+" : ""}${value.toFixed(2)}%`;
+  const sign = value > 0 ? "+" : "";
+  return `${sign}${value.toFixed(2)}%`;
 }
 
-function getMoodByScore(score) {
-  for (const mood of moods) {
-    if (score >= mood.min) return mood;
-  }
-  return moods[moods.length - 1];
+function getPillClass(value) {
+  if (value > 0.1) return "positive";
+  if (value < -0.1) return "negative";
+  return "neutral-pill";
 }
 
-function scoreFromChange(change) {
-  return Math.round(clamp(50 + change * 10, 0, 100));
+function getAssetPath(type, moodKey) {
+  return `assets/${type}/${state.style}/${moodKey}.png`;
 }
 
-function getMoodFromChange(change) {
-  return getMoodByScore(scoreFromChange(change));
-}
-
-function getPointerLeftFromScore(score) {
-  return `${clamp(score, 0, 100)}%`;
-}
-
-function buildHeartbeatPath(moodKey) {
-  const paths = {
-    frustration: "M0 28 L28 28 L40 10 L56 46 L72 8 L86 50 L104 16 L126 28 L150 28 L170 12 L188 44 L206 8 L224 48 L244 20 L268 28 L320 28",
-    concern: "M0 28 L40 28 L56 18 L72 40 L88 14 L102 38 L124 28 L160 28 L176 18 L192 38 L208 16 L224 36 L248 28 L320 28",
-    doubt: "M0 28 L36 28 L52 22 L66 34 L82 20 L98 32 L120 28 L150 28 L168 22 L186 34 L202 24 L218 30 L250 28 L320 28",
-    neutral: "M0 28 L44 28 L56 24 L68 32 L82 24 L96 30 L120 28 L160 28 L180 26 L196 30 L214 26 L234 28 L320 28",
-    optimism: "M0 28 L36 28 L52 24 L66 20 L82 34 L98 16 L114 30 L138 28 L160 28 L178 22 L194 18 L210 30 L226 20 L246 28 L320 28",
-    content: "M0 28 L32 28 L46 20 L60 34 L74 12 L88 30 L104 18 L126 28 L150 28 L168 20 L184 34 L198 14 L214 28 L232 18 L254 28 L320 28",
-    euphoria: "M0 28 L28 28 L40 16 L52 40 L66 8 L78 46 L94 6 L108 42 L126 18 L148 28 L166 12 L182 44 L198 8 L214 42 L232 14 L252 28 L320 28"
+function safeSetImage(img, src, fallback) {
+  if (!img) return;
+  img.onerror = () => {
+    if (img.dataset.fallbackApplied === "true") return;
+    img.dataset.fallbackApplied = "true";
+    img.src = fallback;
   };
-  return paths[moodKey] || paths.neutral;
+  img.dataset.fallbackApplied = "false";
+  img.src = src;
 }
 
-function updateHeartbeat(moodKey) {
-  const wrap = byId("heartbeatWrap");
-  const path = byId("heartbeatPath");
-  if (!wrap || !path) return;
-  wrap.className = `heartbeat-wrap heartbeat-${moodKey}`;
-  path.setAttribute("d", buildHeartbeatPath(moodKey));
+async function fetchGlobalMarket() {
+  const res = await fetch("https://api.coingecko.com/api/v3/global");
+  if (!res.ok) throw new Error("Failed to fetch global market data");
+  const json = await res.json();
+  return json.data;
 }
 
-function updateHeroMoodVisual(score, mood) {
-  const style = getCurrentStyle();
-  const heroFaceImg = byId("heroFaceImg");
-  const heroMood = byId("heroMood");
-  const heroScore = byId("heroScore");
-
-  if (heroMood) {
-    heroMood.textContent = mood.name;
-    heroMood.className = `hero-mood mood-${mood.key}`;
-  }
-
-  if (heroScore) {
-    heroScore.textContent = score;
-  }
-
-  if (heroFaceImg) {
-    heroFaceImg.className = `hero-face-img ${mood.anim}`;
-    setImage(
-      heroFaceImg,
-      getHeroImagePath(style, mood.key),
-      getHeroImagePath("classic", mood.key)
-    );
-  }
-
-  updateHeartbeat(mood.key);
+async function fetchTopCoins() {
+  const url = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&price_change_percentage=1h,24h,7d&sparkline=false";
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Failed to fetch top coins");
+  return await res.json();
 }
 
-function updateEmotionBar(score, mood) {
-  const style = getCurrentStyle();
-  const pointer = byId("emotionPointer");
-  const pointerImg = byId("emotionPointerImg");
-
-  if (pointer) {
-    pointer.style.left = getPointerLeftFromScore(score);
+async function fetchCoinChart(coinId) {
+  if (state.coinChartData.has(coinId)) {
+    return state.coinChartData.get(coinId);
   }
 
-  if (pointerImg) {
-    setImage(
-      pointerImg,
-      getIconImagePath(style, mood.key),
-      getIconImagePath("classic", mood.key)
-    );
-  }
-
-  if (byId("emotionBarMood")) byId("emotionBarMood").textContent = mood.name;
-  if (byId("emotionBarScore")) byId("emotionBarScore").textContent = score;
-  if (byId("emotionBarRange")) byId("emotionBarRange").textContent = mood.range;
+  const res = await fetch(`https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=7`);
+  if (!res.ok) throw new Error(`Failed to fetch chart for ${coinId}`);
+  const json = await res.json();
+  state.coinChartData.set(coinId, json);
+  return json;
 }
 
-function updateSocialMoodFromScore(score) {
-  const style = getCurrentStyle();
-  const socialScore = clamp(score + 4, 0, 100);
-  const socialMood = getMoodByScore(socialScore);
+function getChangeForWindow(prices, minutes) {
+  if (!Array.isArray(prices) || prices.length < 2) return 0;
 
-  if (byId("socialMood")) byId("socialMood").textContent = socialMood.name;
-  if (byId("socialScore")) byId("socialScore").textContent = socialScore;
+  const last = prices[prices.length - 1];
+  const nowTs = last[0];
+  const targetTs = nowTs - minutes * 60 * 1000;
 
-  const socialIconImg = byId("socialIconImg");
-  if (socialIconImg) {
-    socialIconImg.className = `mood-icon-img ${socialMood.anim}`;
-    setImage(
-      socialIconImg,
-      getIconImagePath(style, socialMood.key),
-      getIconImagePath("classic", socialMood.key)
-    );
+  let reference = prices[0];
+  for (let i = prices.length - 1; i >= 0; i -= 1) {
+    if (prices[i][0] <= targetTs) {
+      reference = prices[i];
+      break;
+    }
   }
 
-  const positive = clamp(Math.round(50 + score / 2), 10, 95);
-  const negative = clamp(100 - positive - 8, 2, 80);
-  const mentions = `${(2 + score / 12).toFixed(1)}K`;
+  const oldPrice = reference[1];
+  const newPrice = last[1];
+  if (!oldPrice) return 0;
 
-  if (byId("socialPositive")) byId("socialPositive").textContent = `${positive}%`;
-  if (byId("socialNegative")) byId("socialNegative").textContent = `${negative}%`;
-  if (byId("socialMentions")) byId("socialMentions").textContent = mentions;
-
-  return socialMood;
+  return ((newPrice - oldPrice) / oldPrice) * 100;
 }
 
-function updateHeader(globalData) {
-  if (byId("btcDominance") && globalData.market_cap_percentage?.btc != null) {
-    byId("btcDominance").textContent = `${globalData.market_cap_percentage.btc.toFixed(1)}%`;
+function calculateMarketSentiment(coins, timeframeKey, macroKey) {
+  if (!coins.length) return 50;
+
+  const macro = macroDrivers[macroKey];
+  const values = coins.map((coin) => {
+    switch (timeframeKey) {
+      case "1h":
+        return coin.price_change_percentage_1h_in_currency ?? coin.price_change_percentage_24h ?? 0;
+      case "24h":
+        return coin.price_change_percentage_24h ?? 0;
+      case "7d":
+        return coin.price_change_percentage_7d_in_currency ?? coin.price_change_percentage_24h ?? 0;
+      case "4h":
+        return (coin.price_change_percentage_1h_in_currency ?? 0) * 1.9;
+      case "15m":
+        return (coin.price_change_percentage_1h_in_currency ?? 0) * 0.42;
+      case "5m":
+        return (coin.price_change_percentage_1h_in_currency ?? 0) * 0.18;
+      case "1m":
+        return (coin.price_change_percentage_1h_in_currency ?? 0) * 0.08;
+      default:
+        return coin.price_change_percentage_24h ?? 0;
+    }
+  });
+
+  const avg = values.reduce((sum, value) => sum + value, 0) / values.length;
+  const volatility = values.reduce((sum, value) => sum + Math.abs(value), 0) / values.length;
+
+  const rawScore = 50 + avg * 8 + volatility * 1.4 + macro.sentimentBias;
+  return clamp(rawScore, 0, 100);
+}
+
+function calculateSocialSentiment(globalScore, coins, macroKey) {
+  const macro = macroDrivers[macroKey];
+  const avg24h = coins.length
+    ? coins.reduce((sum, coin) => sum + (coin.price_change_percentage_24h ?? 0), 0) / coins.length
+    : 0;
+
+  const score = clamp(50 + avg24h * 5 + macro.socialBias + (globalScore - 50) * 0.35, 0, 100);
+  const positive = clamp(Math.round(score), 1, 99);
+  const negative = clamp(100 - positive, 1, 99);
+
+  let mentionsBase = 1200 + Math.abs(avg24h) * 2200 + Math.abs(macro.socialBias) * 180;
+  if (state.globalData?.total_volume?.usd) {
+    mentionsBase += state.globalData.total_volume.usd / 25_000_000_000;
   }
 
-  if (byId("headerMarketCap") && globalData.total_market_cap?.usd != null) {
-    byId("headerMarketCap").textContent = formatCurrencyCompact(globalData.total_market_cap.usd);
-  }
+  return {
+    score,
+    mood: getMood(score),
+    positive,
+    negative,
+    mentions: `${Math.round(mentionsBase).toLocaleString()}`
+  };
+}
 
-  if (byId("headerVolume") && globalData.total_volume?.usd != null) {
-    byId("headerVolume").textContent = formatCurrencyCompact(globalData.total_volume.usd);
+function setActiveButtons(containerId, value) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const buttons = container.querySelectorAll("button[data-timeframe]");
+  buttons.forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.timeframe === value);
+  });
+}
+
+function updateBodyStyle() {
+  document.body.classList.remove("style-classic", "style-3d", "style-anime", "style-minimal");
+  document.body.classList.add(`style-${state.style}`);
+}
+
+function applyMoodTheme(mood) {
+  document.documentElement.style.setProperty("--accent", mood.color);
+}
+
+function setHeroAnimations(mood) {
+  const heroImg = document.getElementById("heroFaceImg");
+  const socialIcon = document.getElementById("socialIconImg");
+  const coinIcon = document.getElementById("coinMoodIconImg");
+  const detailSocialIcon = document.getElementById("detailSocialIconImg");
+
+  [heroImg, socialIcon, coinIcon, detailSocialIcon].forEach((el) => {
+    if (!el) return;
+    el.classList.remove("anim-float", "anim-pulse", "anim-shake");
+  });
+
+  if (mood.key === "frustration" || mood.key === "concern") {
+    heroImg.classList.add("anim-shake");
+    socialIcon.classList.add("anim-shake");
+    coinIcon.classList.add("anim-shake");
+    detailSocialIcon.classList.add("anim-shake");
+  } else if (mood.key === "content" || mood.key === "euphoria") {
+    heroImg.classList.add("anim-pulse");
+    socialIcon.classList.add("anim-pulse");
+    coinIcon.classList.add("anim-pulse");
+    detailSocialIcon.classList.add("anim-pulse");
+  } else {
+    heroImg.classList.add("anim-float");
+    socialIcon.classList.add("anim-float");
+    coinIcon.classList.add("anim-float");
+    detailSocialIcon.classList.add("anim-float");
   }
 }
 
-function updateTickerBar() {
-  const ticker = byId("tickerBar");
-  if (!ticker) return;
+function updateHero(score, mood) {
+  state.globalScore = score;
+  state.globalMood = mood;
 
-  if (!topCoinsData.length) {
-    ticker.innerHTML = "<span>Loading market...</span>";
-    return;
-  }
+  const heroMood = document.getElementById("heroMood");
+  const heroScore = document.getElementById("heroScore");
+  const emotionBarMood = document.getElementById("emotionBarMood");
+  const emotionBarScore = document.getElementById("emotionBarScore");
+  const emotionBarRange = document.getElementById("emotionBarRange");
+  const sweatFx = document.getElementById("sweatFx");
 
-  ticker.innerHTML = topCoinsData.slice(0, 7).map(coin => {
-    return `<span>${coin.symbol.toUpperCase()} <strong>${formatCurrency(coin.current_price)}</strong></span>`;
-  }).join("");
+  heroScore.textContent = Math.round(score).toString();
+  heroMood.textContent = mood.name;
+  heroMood.className = `hero-mood ${getMoodClass(mood.key)}`;
+
+  emotionBarMood.textContent = mood.name;
+  emotionBarScore.textContent = Math.round(score).toString();
+  emotionBarRange.textContent = mood.range;
+
+  sweatFx.classList.toggle("hidden", !(mood.key === "frustration" || mood.key === "concern"));
+
+  safeSetImage(
+    document.getElementById("heroFaceImg"),
+    getAssetPath("hero", mood.key),
+    "assets/hero/classic/neutral.png"
+  );
+
+  safeSetImage(
+    document.getElementById("emotionPointerImg"),
+    getAssetPath("icons", mood.key),
+    "assets/icons/classic/neutral.png"
+  );
+
+  applyMoodTheme(mood);
+  setHeroAnimations(mood);
+  updatePointer(score);
+  updateHeartbeat(score, mood);
 }
 
-function renderScale() {
-  const grid = byId("scaleGrid");
-  if (!grid) return;
+function updatePointer(score) {
+  const pointer = document.getElementById("emotionPointer");
+  const clamped = clamp(score, 0, 100);
+  pointer.style.left = `${clamped}%`;
+}
 
-  const style = getCurrentStyle();
+function updateHeartbeat(score, mood) {
+  const path = document.getElementById("heartbeatPath");
+  const heart = document.getElementById("heartbeatHeart");
+
+  const amplitude = 8 + Math.abs(score - 50) * 0.35;
+  const base = 28;
+  const points = [
+    [0, base],
+    [20, base],
+    [32, base - 2],
+    [42, base - amplitude],
+    [52, base + amplitude * 0.75],
+    [68, base - amplitude * 1.5],
+    [82, base + amplitude],
+    [100, base],
+    [132, base],
+    [150, base - 3],
+    [165, base - amplitude * 0.8],
+    [178, base + amplitude * 0.55],
+    [194, base],
+    [220, base],
+    [260, base],
+    [320, base]
+  ];
+
+  const d = points.map((point, index) => `${index === 0 ? "M" : "L"} ${point[0]} ${point[1]}`).join(" ");
+  path.setAttribute("d", d);
+  path.style.stroke = mood.color;
+  heart.style.color = mood.color;
+}
+
+function updateDrivers(globalMood, socialMood, macroKey) {
+  const macro = macroDrivers[macroKey];
+  const technicalLabel = globalMood.name;
+  const socialLabel = socialMood.name;
+
+  let narrative = macro.narrativeNegative;
+  if (globalMood.key === "content" || globalMood.key === "euphoria" || globalMood.key === "optimism") {
+    narrative = macro.narrativePositive;
+  } else if (globalMood.key === "neutral") {
+    narrative = `Price action is balanced. ${macro.label} is shaping sentiment without a decisive breakout yet.`;
+  }
+
+  document.getElementById("driverTechnical").textContent = technicalLabel;
+  document.getElementById("driverSocial").textContent = socialLabel;
+  document.getElementById("driverMacro").textContent = macro.label;
+  document.getElementById("driverNarrative").textContent = narrative;
+}
+
+function updateSocialCard(social) {
+  state.social = social;
+
+  document.getElementById("socialMood").textContent = social.mood.name;
+  document.getElementById("socialScore").textContent = Math.round(social.score).toString();
+  document.getElementById("socialPositive").textContent = `${social.positive}%`;
+  document.getElementById("socialNegative").textContent = `${social.negative}%`;
+  document.getElementById("socialMentions").textContent = social.mentions;
+
+  safeSetImage(
+    document.getElementById("socialIconImg"),
+    getAssetPath("icons", social.mood.key),
+    "assets/icons/classic/neutral.png"
+  );
+}
+
+function renderTickerBar(coins) {
+  const tickerBar = document.getElementById("tickerBar");
+  const parts = coins.slice(0, 10).map((coin) => {
+    const change = coin.price_change_percentage_24h ?? 0;
+    const cls = change >= 0 ? "positive" : "negative";
+    return `<span class="${cls}">${coin.symbol.toUpperCase()} ${formatMoney(coin.current_price)} ${formatPercent(change)}</span>`;
+  });
+
+  tickerBar.innerHTML = parts.join("<span>•</span>");
+}
+
+function renderTopCoins(coins) {
+  const grid = document.getElementById("coinsGrid");
   grid.innerHTML = "";
 
-  [...moods].reverse().forEach(mood => {
-    const item = document.createElement("div");
-    item.className = "scale-item";
-    item.innerHTML = `
-      <div class="scale-face">
-        <img src="${getIconImagePath(style, mood.key)}" alt="${mood.name}">
-      </div>
-      <strong>${mood.name}</strong>
-    `;
-    grid.appendChild(item);
-  });
-}
-
-function setGlobalTimeframeButtons() {
-  document.querySelectorAll("#heroTimeframes button").forEach(btn => {
-    btn.classList.toggle("active", btn.dataset.timeframe === globalTimeframe);
-  });
-}
-
-function setChartTimeframeButtons() {
-  document.querySelectorAll("#chartTimeframes button").forEach(btn => {
-    btn.classList.toggle("active", btn.dataset.timeframe === chartTimeframe);
-  });
-}
-
-async function fetchJson(url) {
-  try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`Request failed: ${res.status}`);
-    return await res.json();
-  } catch (error) {
-    console.error("fetchJson error:", url, error);
-    return null;
-  }
-}
-
-async function loadGlobalMarket() {
-  const response = await fetchJson(`/api/global?timeframe=${encodeURIComponent(globalTimeframe)}`);
-  if (!response) return;
-
-  const globalData = response.data || response.global || response;
-  if (!globalData) return;
-
-  updateHeader(globalData);
-
-  const marketCapChange = globalData.market_cap_change_percentage_24h_usd ?? 0;
-  const baseScore = scoreFromChange(marketCapChange);
-
-  const selectedDriver = byId("macroDriver")?.value || "market_flow";
-  const driverImpact = driverImpactMap[selectedDriver] || 0;
-  const timeframeImpact = timeframeWeightMap[globalTimeframe] || 0;
-
-  const finalScore = clamp(baseScore + driverImpact + timeframeImpact, 0, 100);
-  const mood = getMoodByScore(finalScore);
-  currentGlobalMood = mood;
-
-  updateHeroMoodVisual(finalScore, mood);
-  updateEmotionBar(finalScore, mood);
-
-  const socialMood = updateSocialMoodFromScore(finalScore);
-
-  if (byId("driverTechnical")) byId("driverTechnical").textContent = mood.name;
-  if (byId("driverSocial")) byId("driverSocial").textContent = socialMood.name;
-  if (byId("driverMacro") && byId("macroDriver")) {
-    byId("driverMacro").textContent = byId("macroDriver").selectedOptions[0].textContent;
-  }
-  if (byId("driverNarrative")) {
-    byId("driverNarrative").textContent = macroNarratives[selectedDriver];
-  }
-
-  if (byId("globalMarketChange")) {
-    byId("globalMarketChange").textContent = formatPercent(marketCapChange);
-    byId("globalMarketChange").className = marketCapChange >= 0 ? "positive" : "negative";
-  }
-
-  if (byId("globalMarketVolume")) {
-    byId("globalMarketVolume").textContent =
-      globalData.total_volume?.usd != null
-        ? formatCurrencyCompact(globalData.total_volume.usd)
-        : "--";
-  }
-
-  if (byId("globalMarketTimeframe")) {
-    byId("globalMarketTimeframe").textContent = globalTimeframe;
-  }
-
-  refreshOutputs();
-}
-
-async function loadTopCoins() {
-  const data = await fetchJson("/api/top-coins");
-  if (!data) return;
-
-  const coins = data.coins || data.data || (Array.isArray(data) ? data : null);
-  if (!coins || !coins.length) return;
-
-  topCoinsData = coins;
-  renderTopCoins();
-  updateTickerBar();
-}
-
-function renderTopCoins() {
-  const grid = byId("coinsGrid");
-  if (!grid) return;
-
-  const style = getCurrentStyle();
-  grid.innerHTML = "";
-
-  topCoinsData.forEach(coin => {
-    const symbol = coin.symbol.toUpperCase();
-    const change = coin.price_change_percentage_24h_in_currency ?? 0;
-    const mood = getMoodFromChange(change);
-
+  coins.forEach((coin) => {
+    const change = coin.price_change_percentage_24h ?? 0;
     const card = document.createElement("button");
+    card.className = `coin-card ${state.selectedCoin?.id === coin.id ? "active" : ""}`;
     card.type = "button";
-    card.className = `coin-card coin-card-button ${activeCoinSymbol === symbol ? "active-coin-card" : ""}`;
 
     card.innerHTML = `
-      <div>
-        <div class="symbol">${symbol}</div>
-        <div class="price">${formatCurrency(coin.current_price)}</div>
-        <div class="change ${change >= 0 ? "positive" : "negative"}">${formatPercent(change)}</div>
+      <div class="coin-card-top">
+        <div class="coin-card-left">
+          <img class="coin-logo" src="${coin.image}" alt="${coin.name} logo">
+          <div class="coin-name-wrap">
+            <strong>${coin.name}</strong>
+            <span class="coin-symbol">${coin.symbol.toUpperCase()}</span>
+          </div>
+        </div>
+        <span class="coin-change ${getPillClass(change)}">${formatPercent(change)}</span>
       </div>
-      <div class="coin-emoji">
-        <img src="${getIconImagePath(style, mood.key)}" alt="${symbol} mood">
+      <div class="coin-card-bottom">
+        <div class="coin-price">${formatMoney(coin.current_price)}</div>
+        <div class="muted">MCap ${formatMoney(coin.market_cap)}</div>
       </div>
     `;
 
-    card.addEventListener("click", async () => {
-      activeCoinSymbol = symbol;
-      renderTopCoins();
-      await loadCoinDetails();
-      document.querySelector(".chart-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    card.addEventListener("click", () => {
+      state.selectedCoin = coin;
+      renderTopCoins(state.coins);
+      updateSelectedCoinPanel();
     });
 
     grid.appendChild(card);
   });
 }
 
-function getCoinBySymbol(symbol) {
-  return topCoinsData.find(coin => coin.symbol.toUpperCase() === symbol);
-}
+function drawChart(prices, mood) {
+  const svgPath = document.getElementById("coinChartPath");
+  const svgArea = document.getElementById("coinChartArea");
 
-function getCoinChangeForTimeframe(coin, timeframe) {
-  const h1 = coin.price_change_percentage_1h_in_currency ?? 0;
-  const h24 = coin.price_change_percentage_24h_in_currency ?? 0;
-  const d7 = coin.price_change_percentage_7d_in_currency ?? 0;
-
-  switch (timeframe) {
-    case "1m": return h1 / 60;
-    case "5m": return h1 / 12;
-    case "15m": return h1 / 4;
-    case "1h": return h1;
-    case "4h": return h24 / 6;
-    case "24h": return h24;
-    case "7d": return d7;
-    default: return h24;
+  if (!prices || prices.length < 2) {
+    svgPath.setAttribute("d", "");
+    svgArea.setAttribute("d", "");
+    return;
   }
+
+  const width = 900;
+  const height = 280;
+  const values = prices.map((point) => point[1]);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const span = max - min || 1;
+
+  let pathD = "";
+  prices.forEach((point, index) => {
+    const x = (index / (prices.length - 1)) * width;
+    const y = height - ((point[1] - min) / span) * (height - 18) - 9;
+    pathD += `${index === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)} `;
+  });
+
+  const areaD = `${pathD} L ${width} ${height} L 0 ${height} Z`;
+
+  svgPath.setAttribute("d", pathD.trim());
+  svgArea.setAttribute("d", areaD.trim());
+  svgPath.style.stroke = mood.color;
+  svgArea.style.fill = `${mood.color}22`;
 }
 
-function updateCoinIntervalBoxes(coin) {
-  const mapping = {
-    "1m": "perf1m",
-    "5m": "perf5m",
-    "15m": "perf15m",
-    "1h": "perf1h",
-    "4h": "perf4h",
-    "24h": "perf24h",
-    "7d": "perf7d"
+function updateIntervalBoxes(chartData) {
+  const prices = chartData?.prices || [];
+
+  const changes = {
+    "1m": getChangeForWindow(prices, timeframeConfig["1m"].minutes),
+    "5m": getChangeForWindow(prices, timeframeConfig["5m"].minutes),
+    "15m": getChangeForWindow(prices, timeframeConfig["15m"].minutes),
+    "1h": getChangeForWindow(prices, timeframeConfig["1h"].minutes),
+    "4h": getChangeForWindow(prices, timeframeConfig["4h"].minutes),
+    "24h": getChangeForWindow(prices, timeframeConfig["24h"].minutes),
+    "7d": getChangeForWindow(prices, timeframeConfig["7d"].minutes)
   };
 
-  Object.entries(mapping).forEach(([tf, id]) => {
-    const value = getCoinChangeForTimeframe(coin, tf);
-    const el = byId(id);
-    if (!el) return;
-    el.textContent = formatPercent(value);
-    el.className = value >= 0 ? "positive" : "negative";
-  });
+  document.getElementById("perf1m").textContent = formatPercent(changes["1m"]);
+  document.getElementById("perf5m").textContent = formatPercent(changes["5m"]);
+  document.getElementById("perf15m").textContent = formatPercent(changes["15m"]);
+  document.getElementById("perf1h").textContent = formatPercent(changes["1h"]);
+  document.getElementById("perf4h").textContent = formatPercent(changes["4h"]);
+  document.getElementById("perf24h").textContent = formatPercent(changes["24h"]);
+  document.getElementById("perf7d").textContent = formatPercent(changes["7d"]);
+
+  return changes;
 }
 
-async function loadCoinDetails() {
-  const coin = getCoinBySymbol(activeCoinSymbol);
-  if (!coin) return;
+async function updateSelectedCoinPanel() {
+  if (!state.selectedCoin) return;
 
-  const value = getCoinChangeForTimeframe(coin, chartTimeframe);
-  const score = scoreFromChange(value);
-  const mood = getMoodByScore(score);
-  const socialScore = clamp(score + 3, 0, 100);
-  const socialMood = getMoodByScore(socialScore);
-  const style = getCurrentStyle();
+  const coin = state.selectedCoin;
+  const chartData = await fetchCoinChart(coin.id);
+  const timeframeChanges = updateIntervalBoxes(chartData);
 
-  if (byId("chartTitle")) byId("chartTitle").textContent = `${activeCoinSymbol} / ${coin.name}`;
-  if (byId("coinMoodTitle")) byId("coinMoodTitle").textContent = `${activeCoinSymbol} Mood`;
-  if (byId("coinSocialMoodTitle")) byId("coinSocialMoodTitle").textContent = `${activeCoinSymbol} Social Mood`;
+  const selectedChange = timeframeChanges[state.selectedTimeframe] ?? 0;
+  const coinScore = clamp(50 + selectedChange * 9 + macroDrivers[state.selectedMacro].sentimentBias * 0.35, 0, 100);
+  const coinMood = getMood(coinScore);
 
-  if (byId("chartChangePill")) {
-    byId("chartChangePill").textContent = formatPercent(value);
-    byId("chartChangePill").className = `pill ${value >= 0 ? "positive" : "negative"}`;
-  }
+  document.getElementById("chartTitle").textContent = `${coin.symbol.toUpperCase()} / ${coin.name}`;
+  document.getElementById("chartCoinLogo").src = coin.image;
+  document.getElementById("chartCoinLogo").alt = `${coin.name} logo`;
+  document.getElementById("chartCoinName").textContent = coin.name;
+  document.getElementById("chartCoinPrice").textContent = formatMoney(chartData.prices?.[chartData.prices.length - 1]?.[1] ?? coin.current_price);
 
-  if (byId("selectedTimeframe")) {
-    byId("selectedTimeframe").textContent = chartTimeframe;
-  }
+  drawChart(chartData.prices, coinMood);
 
-  if (byId("selectedPerformance")) {
-    byId("selectedPerformance").textContent = formatPercent(value);
-    byId("selectedPerformance").className = value >= 0 ? "positive" : "negative";
-  }
+  const chartPill = document.getElementById("chartChangePill");
+  chartPill.className = `pill ${getPillClass(selectedChange)}`;
+  chartPill.textContent = `${state.selectedTimeframe} ${formatPercent(selectedChange)}`;
 
-  if (byId("coinMoodLabel")) byId("coinMoodLabel").textContent = mood.name;
-  if (byId("coinMoodScore")) byId("coinMoodScore").textContent = score;
-  if (byId("detailSocialLabel")) byId("detailSocialLabel").textContent = socialMood.name;
-  if (byId("detailSocialScore")) byId("detailSocialScore").textContent = socialScore;
+  document.getElementById("selectedTimeframe").textContent = state.selectedTimeframe;
+  document.getElementById("selectedPerformance").textContent = formatPercent(selectedChange);
 
-  const coinMoodIcon = byId("coinMoodIconImg");
-  if (coinMoodIcon) {
-    coinMoodIcon.className = `mood-icon-img ${mood.anim}`;
-    setImage(
-      coinMoodIcon,
-      getIconImagePath(style, mood.key),
-      getIconImagePath("classic", mood.key)
-    );
-  }
+  document.getElementById("coinMoodTitle").textContent = `${coin.symbol.toUpperCase()} Mood`;
+  document.getElementById("coinMoodLabel").textContent = coinMood.name;
+  document.getElementById("coinMoodScore").textContent = Math.round(coinScore).toString();
 
-  const socialIcon = byId("detailSocialIconImg");
-  if (socialIcon) {
-    socialIcon.className = `mood-icon-img ${socialMood.anim}`;
-    setImage(
-      socialIcon,
-      getIconImagePath(style, socialMood.key),
-      getIconImagePath("classic", socialMood.key)
-    );
-  }
-
-  updateCoinIntervalBoxes(coin);
-  setChartTimeframeButtons();
-
-  const chartData = await fetchJson(
-    `/api/coin-chart?coin=${encodeURIComponent(coin.id)}&timeframe=${encodeURIComponent(chartTimeframe)}`
+  safeSetImage(
+    document.getElementById("coinMoodIconImg"),
+    getAssetPath("icons", coinMood.key),
+    "assets/icons/classic/neutral.png"
   );
 
-  const prices = chartData?.prices || chartData?.data?.prices;
-  if (Array.isArray(prices) && prices.length > 1) {
-    drawChart(prices);
-  }
-}
+  const socialCoinScore = clamp(coinScore * 0.72 + state.social.score * 0.28, 0, 100);
+  const socialCoinMood = getMood(socialCoinScore);
 
-function drawChart(prices) {
-  try {
-    const path = byId("coinChartPath");
-    const area = byId("coinChartArea");
-
-    if (!path || !area || !prices || prices.length < 2) return;
-
-    const w = 900;
-    const h = 280;
-    const min = Math.min(...prices);
-    const max = Math.max(...prices);
-    const range = max - min || 1;
-
-    const points = prices.map((price, i) => {
-      const x = (i / (prices.length - 1)) * w;
-      const y = h - ((price - min) / range) * (h - 20);
-      return [x, y];
-    });
-
-    const line = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p[0]} ${p[1]}`).join(" ");
-    const areaPath = `${line} L ${w} ${h} L 0 ${h} Z`;
-
-    path.setAttribute("d", line);
-    area.setAttribute("d", areaPath);
-
-    const first = prices[0];
-    const last = prices[prices.length - 1];
-    const positive = last >= first;
-
-    path.style.stroke = positive ? "var(--green)" : "var(--red)";
-    area.style.fill = positive ? "rgba(77,255,136,.08)" : "rgba(255,59,77,.08)";
-  } catch (err) {
-    console.error("Chart error:", err);
-  }
-}
-
-function buildSentimentPost() {
-  return `🚨 WojakMeter Alert
-
-Market Mood: ${byId("heroMood")?.textContent || "Neutral"}
-Score: ${byId("heroScore")?.textContent || "50"}/100
-Global Market: ${byId("globalMarketChange")?.textContent || "--"}
-Volume: ${byId("globalMarketVolume")?.textContent || "--"}
-Selected Timeframe: ${globalTimeframe}
-
-#WojakMeter #Crypto`;
-}
-
-function buildMemePrompt() {
-  return `Create a crypto meme based on:
-- Global mood: ${byId("heroMood")?.textContent || "Neutral"}
-- Global timeframe: ${globalTimeframe}
-- Global market move: ${byId("globalMarketChange")?.textContent || "--"}
-- Global volume: ${byId("globalMarketVolume")?.textContent || "--"}
-- Coin chart selected: ${activeCoinSymbol}
-- Coin timeframe: ${chartTimeframe}
-- Market heartbeat style: ${currentGlobalMood?.name || "Neutral"}`;
-}
-
-function refreshOutputs() {
-  if (byId("tweetOutput")) byId("tweetOutput").value = buildSentimentPost();
-  if (byId("memePromptOutput")) byId("memePromptOutput").value = buildMemePrompt();
-}
-
-async function copyText(value) {
-  try {
-    await navigator.clipboard.writeText(value);
-  } catch (_) {}
-}
-
-function setupButtons() {
-  document.querySelectorAll("#heroTimeframes button").forEach(btn => {
-    btn.addEventListener("click", async () => {
-      globalTimeframe = btn.dataset.timeframe;
-      setGlobalTimeframeButtons();
-      await loadGlobalMarket();
-    });
-  });
-
-  document.querySelectorAll("#chartTimeframes button").forEach(btn => {
-    btn.addEventListener("click", async () => {
-      chartTimeframe = btn.dataset.timeframe;
-      setChartTimeframeButtons();
-      await loadCoinDetails();
-    });
-  });
-
-  byId("generateTweetBtn")?.addEventListener("click", refreshOutputs);
-  byId("generateMemeBtn")?.addEventListener("click", refreshOutputs);
-
-  byId("copyTweetBtn")?.addEventListener("click", () => {
-    copyText(byId("tweetOutput")?.value || "");
-  });
-
-  byId("copyMemeBtn")?.addEventListener("click", () => {
-    copyText(byId("memePromptOutput")?.value || "");
-  });
-
-  byId("macroDriver")?.addEventListener("change", async () => {
-    await loadGlobalMarket();
-  });
-
-  byId("styleSelector")?.addEventListener("change", async () => {
-    const value = byId("styleSelector").value;
-    document.body.className = `style-${value}`;
-    localStorage.setItem("wojakStyle", value);
-
-    renderScale();
-    renderTopCoins();
-
-    const score = Number(byId("heroScore")?.textContent || 50);
-    const mood = getMoodByScore(score);
-    updateHeroMoodVisual(score, mood);
-    updateEmotionBar(score, mood);
-
-    await loadCoinDetails();
-  });
-}
-
-async function loadAll() {
-  await Promise.all([loadTopCoins(), loadGlobalMarket()]);
-  await loadCoinDetails();
-  refreshOutputs();
-}
-
-function initStyle() {
-  const savedStyle = localStorage.getItem("wojakStyle") || "classic";
-  document.body.className = `style-${savedStyle}`;
-
-  if (byId("styleSelector")) {
-    byId("styleSelecto
+  document.getElementById("coinSocialMoodTitle").textContent = `${coin.symbol.toUpperCase()} Social Mood`;
+  document.getElementById("detailSocialLabel").textContent = socialCoinMood.name;
+  document.getElementById("detailSocialScore").textContent = Math.round(socialCoinSco

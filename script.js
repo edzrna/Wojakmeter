@@ -1,4 +1,4 @@
-const REFRESH_MS = 180000; // 3 min
+const REFRESH_MS = 180000;
 
 const moods = [
   { key: "euphoria", name: "Euphoria", min: 85, anim: "anim-pulse", range: "85–100" },
@@ -236,20 +236,27 @@ function updateDriverPanel(score, mood, socialMood) {
 }
 
 function updateHeader(globalData) {
-  if (byId("btcDominance")) {
+  if (byId("btcDominance") && globalData.market_cap_percentage?.btc != null) {
     byId("btcDominance").textContent = `${globalData.market_cap_percentage.btc.toFixed(1)}%`;
   }
-  if (byId("headerMarketCap")) {
+
+  if (byId("headerMarketCap") && globalData.total_market_cap?.usd != null) {
     byId("headerMarketCap").textContent = formatCurrencyCompact(globalData.total_market_cap.usd);
   }
-  if (byId("headerVolume")) {
+
+  if (byId("headerVolume") && globalData.total_volume?.usd != null) {
     byId("headerVolume").textContent = formatCurrencyCompact(globalData.total_volume.usd);
   }
 }
 
 function updateTickerBar() {
   const ticker = byId("tickerBar");
-  if (!ticker || !topCoinsData.length) return;
+  if (!ticker) return;
+
+  if (!topCoinsData.length) {
+    ticker.innerHTML = "<span>Loading market...</span>";
+    return;
+  }
 
   ticker.innerHTML = topCoinsData.slice(0, 7).map(coin => {
     return `<span>${coin.symbol.toUpperCase()} <strong>${formatCurrency(coin.current_price)}</strong></span>`;
@@ -324,7 +331,9 @@ async function loadGlobalMarket() {
   }
 
   if (byId("globalMarketVolume")) {
-    byId("globalMarketVolume").textContent = formatCurrencyCompact(globalData.total_volume.usd);
+    byId("globalMarketVolume").textContent = globalData.total_volume?.usd != null
+      ? formatCurrencyCompact(globalData.total_volume.usd)
+      : "--";
   }
 
   if (byId("globalMarketTimeframe")) {
@@ -336,7 +345,7 @@ async function loadGlobalMarket() {
 
 async function loadTopCoins() {
   const data = await fetchJson("/api/top-coins");
-  if (!data || !data.coins) return;
+  if (!data || !data.ok || !data.coins) return;
 
   topCoinsData = data.coins;
   renderTopCoins();
@@ -480,25 +489,20 @@ async function loadCoinDetails() {
   setChartTimeframeButtons();
 
   const chartData = await fetchJson(`/api/coin-chart?coin=${encodeURIComponent(coin.id)}&timeframe=${encodeURIComponent(chartTimeframe)}`);
-  if (chartData && chartData.prices) {
+  if (chartData && chartData.ok && Array.isArray(chartData.prices) && chartData.prices.length > 1) {
     drawChart(chartData.prices);
   }
 }
 
- 
-  function drawChart(prices) {
+function drawChart(prices) {
   try {
     const path = byId("coinChartPath");
     const area = byId("coinChartArea");
 
-    if (!path || !area || !prices || prices.length < 2) {
-      console.log("Chart missing elements or data");
-      return;
-    }
+    if (!path || !area || !prices || prices.length < 2) return;
 
     const w = 900;
     const h = 280;
-
     const min = Math.min(...prices);
     const max = Math.max(...prices);
     const range = max - min || 1;
@@ -509,15 +513,18 @@ async function loadCoinDetails() {
       return [x, y];
     });
 
-    const line = points.map((p, i) =>
-      `${i === 0 ? "M" : "L"} ${p[0]} ${p[1]}`
-    ).join(" ");
-
+    const line = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p[0]} ${p[1]}`).join(" ");
     const areaPath = `${line} L ${w} ${h} L 0 ${h} Z`;
 
     path.setAttribute("d", line);
     area.setAttribute("d", areaPath);
 
+    const first = prices[0];
+    const last = prices[prices.length - 1];
+    const positive = last >= first;
+
+    path.style.stroke = positive ? "var(--green)" : "var(--red)";
+    area.style.fill = positive ? "rgba(77,255,136,.08)" : "rgba(255,59,77,.08)";
   } catch (err) {
     console.error("Chart error:", err);
   }
@@ -620,22 +627,4 @@ function initStyle() {
   document.body.className = `style-${savedStyle}`;
 
   if (byId("styleSelector")) {
-    byId("styleSelector").value = savedStyle;
-  }
-}
-
-function init() {
-  initStyle();
-  renderScale();
-  setupButtons();
-  setGlobalTimeframeButtons();
-  setChartTimeframeButtons();
-  loadAll();
-
-  setInterval(async () => {
-    await Promise.all([loadTopCoins(), loadGlobalMarket()]);
-    refreshOutputs();
-  }, REFRESH_MS);
-}
-
-document.addEventListener("DOMContentLoaded", init);
+    byId("styleSelector")

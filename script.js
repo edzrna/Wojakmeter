@@ -1,21 +1,4 @@
-const COINGECKO_BASE = "https://api.coingecko.com/api/v3";
-const REFRESH_MS = 60000;
-
-const coinIdMap = {
-  BTC: "bitcoin",
-  ETH: "ethereum",
-  SOL: "solana",
-  XRP: "ripple",
-  BNB: "binancecoin",
-  ADA: "cardano",
-  DOGE: "dogecoin",
-  TON: "the-open-network",
-  AVAX: "avalanche-2",
-  TRX: "tron"
-};
-
-const defaultTopSymbols = Object.keys(coinIdMap);
-const defaultTopIds = defaultTopSymbols.map(symbol => coinIdMap[symbol]);
+const REFRESH_MS = 180000; // 3 min
 
 const moods = [
   { key: "euphoria", name: "Euphoria", min: 85, anim: "anim-pulse", range: "85–100" },
@@ -26,16 +9,6 @@ const moods = [
   { key: "concern", name: "Concern", min: 20, anim: "anim-shake", range: "20–34" },
   { key: "frustration", name: "Frustration", min: 0, anim: "anim-shake", range: "0–19" }
 ];
-
-const chartRanges = {
-  "1m": { minutes: 1, days: 0.03, points: 12 },
-  "5m": { minutes: 5, days: 0.03, points: 24 },
-  "15m": { minutes: 15, days: 0.2, points: 32 },
-  "1h": { minutes: 60, days: 1, points: 48 },
-  "4h": { minutes: 240, days: 7, points: 56 },
-  "24h": { minutes: 1440, days: 7, points: 84 },
-  "7d": { minutes: 10080, days: 30, points: 120 }
-};
 
 const macroDrivers = {
   market_flow: {
@@ -82,6 +55,10 @@ function byId(id) {
   return document.getElementById(id);
 }
 
+function clamp(num, min, max) {
+  return Math.max(min, Math.min(max, num));
+}
+
 function getCurrentStyle() {
   return (document.body.className || "style-classic").replace("style-", "");
 }
@@ -103,10 +80,6 @@ function setImage(el, path, fallback = "") {
       el.src = fallback;
     };
   }
-}
-
-function clamp(num, min, max) {
-  return Math.max(min, Math.min(max, num));
 }
 
 function formatCurrencyCompact(value) {
@@ -141,8 +114,7 @@ function getMoodByScore(score) {
 }
 
 function scoreFromChange(change) {
-  const scaled = 50 + (change * 10);
-  return Math.round(clamp(scaled, 0, 100));
+  return Math.round(clamp(50 + change * 10, 0, 100));
 }
 
 function getMoodFromChange(change) {
@@ -170,7 +142,6 @@ function updateHeartbeat(moodKey) {
   const wrap = byId("heartbeatWrap");
   const path = byId("heartbeatPath");
   if (!wrap || !path) return;
-
   wrap.className = `heartbeat-wrap heartbeat-${moodKey}`;
   path.setAttribute("d", buildHeartbeatPath(moodKey));
 }
@@ -305,21 +276,27 @@ function setChartTimeframeButtons() {
 }
 
 async function fetchJson(url) {
-  const response = await fetch(url, { headers: { accept: "application/json" } });
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-  return response.json();
+  try {
+    const response = await fetch(url, { headers: { accept: "application/json" } });
+    if (!response.ok) {
+      const text = await response.text().catch(() => "");
+      console.error("API error:", response.status, url, text);
+      return null;
+    }
+    return response.json();
+  } catch (error) {
+    console.error("Fetch error:", url, error);
+    return null;
+  }
 }
 
 async function loadGlobalMarket() {
-  const globalRes = await fetchJson(`${COINGECKO_BASE}/global`);
-  const globalData = globalRes.data;
-  updateHeader(globalData);
+  const data = await fetchJson(`/api/global?timeframe=${encodeURIComponent(globalTimeframe)}`);
+  if (!data) return;
 
-  const ids = ["bitcoin", "ethereum", "solana"];
-  const coins = await fetchJson(`${COINGECKO_BASE}/coins/markets?vs_currency=usd&ids=${ids.join(",")}&sparkline=false&price_change_percentage=1h,24h,7d`);
+  updateHeader(data.global);
 
-  const avgChange = getAverageChangeForTimeframe(coins, globalTimeframe);
-  const score = scoreFromChange(avgChange);
+  const score = data.score;
   const mood = getMoodByScore(score);
   currentGlobalMood = mood;
 
@@ -330,36 +307,21 @@ async function loadGlobalMarket() {
   updateDriverPanel(score, mood, socialMood);
 
   if (byId("globalMarketChange")) {
-    byId("globalMarketChange").textContent = formatPercent(avgChange);
-    byId("globalMarketChange").className = avgChange >= 0 ? "positive" : "negative";
+    byId("globalMarketChange").textContent = formatPercent(data.change);
+    byId("globalMarketChange").className = data.change >= 0 ? "positive" : "negative";
   }
 
-  if (byId("globalMarketVolume")) byId("globalMarketVolume").textContent = formatCurrencyCompact(globalData.total_volume.usd);
+  if (byId("globalMarketVolume")) byId("globalMarketVolume").textContent = formatCurrencyCompact(data.global.total_volume.usd);
   if (byId("globalMarketTimeframe")) byId("globalMarketTimeframe").textContent = globalTimeframe;
 
   refreshOutputs();
 }
 
-function getAverageChangeForTimeframe(coins, timeframe) {
-  const values = coins.map(coin => {
-    switch (timeframe) {
-      case "1m": return (coin.price_change_percentage_1h_in_currency ?? 0) / 60;
-      case "5m": return (coin.price_change_percentage_1h_in_currency ?? 0) / 12;
-      case "15m": return (coin.price_change_percentage_1h_in_currency ?? 0) / 4;
-      case "1h": return coin.price_change_percentage_1h_in_currency ?? 0;
-      case "4h": return (coin.price_change_percentage_24h_in_currency ?? 0) / 6;
-      case "24h": return coin.price_change_percentage_24h_in_currency ?? 0;
-      case "7d": return coin.price_change_percentage_7d_in_currency ?? 0;
-      default: return coin.price_change_percentage_24h_in_currency ?? 0;
-    }
-  });
-
-  const sum = values.reduce((acc, val) => acc + (Number.isFinite(val) ? val : 0), 0);
-  return sum / values.length;
-}
-
 async function loadTopCoins() {
-  topCoinsData = await fetchJson(`${COINGECKO_BASE}/coins/markets?vs_currency=usd&ids=${defaultTopIds.join(",")}&order=market_cap_desc&per_page=10&page=1&sparkline=false&price_change_percentage=1h,24h,7d`);
+  const data = await fetchJson("/api/top-coins");
+  if (!data || !data.coins) return;
+
+  topCoinsData = data.coins;
   renderTopCoins();
   updateTickerBar();
 }
@@ -390,10 +352,10 @@ function renderTopCoins() {
       </div>
     `;
 
-    card.addEventListener("click", () => {
+    card.addEventListener("click", async () => {
       activeCoinSymbol = symbol;
       renderTopCoins();
-      loadCoinDetails();
+      await loadCoinDetails();
       document.querySelector(".chart-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
 
@@ -488,17 +450,10 @@ async function loadCoinDetails() {
   updateCoinIntervalBoxes(coin);
   setChartTimeframeButtons();
 
-  await loadCoinChart(coin.id, chartTimeframe);
-}
-
-async function loadCoinChart(coinId, timeframe) {
-  const range = chartRanges[timeframe];
-  const url = `${COINGECKO_BASE}/coins/${coinId}/market_chart?vs_currency=usd&days=${range.days}&interval=${range.days <= 1 ? "minutely" : "hourly"}`;
-  const data = await fetchJson(url);
-
-  const prices = (data.prices || []).map(item => item[1]);
-  const sliced = prices.slice(-range.points);
-  drawChart(sliced);
+  const chartData = await fetchJson(`/api/coin-chart?coin=${encodeURIComponent(coin.id)}&timeframe=${encodeURIComponent(chartTimeframe)}`);
+  if (chartData && chartData.prices) {
+    drawChart(chartData.prices);
+  }
 }
 
 function drawChart(prices) {
@@ -551,7 +506,7 @@ function buildMemePrompt() {
 - Global volume: ${byId("globalMarketVolume")?.textContent || "--"}
 - Coin chart selected: ${activeCoinSymbol}
 - Coin timeframe: ${chartTimeframe}
-- Market heartbeat style: ${currentGlobalMood.name}`;
+- Market heartbeat style: ${currentGlobalMood?.name || "Neutral"}`;
 }
 
 function refreshOutputs() {
@@ -584,14 +539,8 @@ function setupButtons() {
 
   byId("generateTweetBtn")?.addEventListener("click", refreshOutputs);
   byId("generateMemeBtn")?.addEventListener("click", refreshOutputs);
-
-  byId("copyTweetBtn")?.addEventListener("click", () => {
-    copyText(byId("tweetOutput")?.value || "");
-  });
-
-  byId("copyMemeBtn")?.addEventListener("click", () => {
-    copyText(byId("memePromptOutput")?.value || "");
-  });
+  byId("copyTweetBtn")?.addEventListener("click", () => copyText(byId("tweetOutput")?.value || ""));
+  byId("copyMemeBtn")?.addEventListener("click", () => copyText(byId("memePromptOutput")?.value || ""));
 
   byId("macroDriver")?.addEventListener("change", () => {
     const score = Number(byId("heroScore")?.textContent || 50);
@@ -600,7 +549,7 @@ function setupButtons() {
     updateDriverPanel(score, mood, socialMood);
   });
 
-  byId("styleSelector")?.addEventListener("change", () => {
+  byId("styleSelector")?.addEventListener("change", async () => {
     const value = byId("styleSelector").value;
     document.body.className = `style-${value}`;
     localStorage.setItem("wojakStyle", value);
@@ -610,36 +559,23 @@ function setupButtons() {
 
     const score = Number(byId("heroScore")?.textContent || 50);
     const mood = getMoodByScore(score);
-
     updateHeroMoodVisual(score, mood);
     updateEmotionBar(score, mood);
 
-    loadCoinDetails();
+    await loadCoinDetails();
   });
 }
 
 async function loadAll() {
-  try {
-    await Promise.all([
-      loadTopCoins(),
-      loadGlobalMarket()
-    ]);
-
-    await loadCoinDetails();
-    refreshOutputs();
-
-  } catch (error) {
-    console.error("CoinGecko load error:", error);
-  }
+  await Promise.all([loadTopCoins(), loadGlobalMarket()]);
+  await loadCoinDetails();
+  refreshOutputs();
 }
 
 function initStyle() {
   const savedStyle = localStorage.getItem("wojakStyle") || "classic";
   document.body.className = `style-${savedStyle}`;
-
-  if (byId("styleSelector")) {
-    byId("styleSelector").value = savedStyle;
-  }
+  if (byId("styleSelector")) byId("styleSelector").value = savedStyle;
 }
 
 function init() {
@@ -650,7 +586,10 @@ function init() {
   setChartTimeframeButtons();
   loadAll();
 
-  setInterval(loadAll, REFRESH_MS);
+  setInterval(async () => {
+    await Promise.all([loadTopCoins(), loadGlobalMarket()]);
+    refreshOutputs();
+  }, REFRESH_MS);
 }
 
 document.addEventListener("DOMContentLoaded", init);

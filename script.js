@@ -74,6 +74,7 @@ function getIconImagePath(style, moodKey) {
 function setImage(el, path, fallback = "") {
   if (!el) return;
   el.src = path;
+
   if (fallback) {
     el.onerror = () => {
       el.onerror = null;
@@ -142,6 +143,7 @@ function updateHeartbeat(moodKey) {
   const wrap = byId("heartbeatWrap");
   const path = byId("heartbeatPath");
   if (!wrap || !path) return;
+
   wrap.className = `heartbeat-wrap heartbeat-${moodKey}`;
   path.setAttribute("d", buildHeartbeatPath(moodKey));
 }
@@ -157,7 +159,9 @@ function updateHeroMoodVisual(score, mood) {
     heroMood.className = `hero-mood mood-${mood.key}`;
   }
 
-  if (heroScore) heroScore.textContent = score;
+  if (heroScore) {
+    heroScore.textContent = score;
+  }
 
   if (heroFaceImg) {
     heroFaceImg.className = `hero-face-img ${mood.anim}`;
@@ -176,7 +180,9 @@ function updateEmotionBar(score, mood) {
   const pointer = byId("emotionPointer");
   const pointerImg = byId("emotionPointerImg");
 
-  if (pointer) pointer.style.left = getPointerLeftFromScore(score);
+  if (pointer) {
+    pointer.style.left = getPointerLeftFromScore(score);
+  }
 
   if (pointerImg) {
     setImage(
@@ -230,9 +236,15 @@ function updateDriverPanel(score, mood, socialMood) {
 }
 
 function updateHeader(globalData) {
-  if (byId("btcDominance")) byId("btcDominance").textContent = `${globalData.market_cap_percentage.btc.toFixed(1)}%`;
-  if (byId("headerMarketCap")) byId("headerMarketCap").textContent = formatCurrencyCompact(globalData.total_market_cap.usd);
-  if (byId("headerVolume")) byId("headerVolume").textContent = formatCurrencyCompact(globalData.total_volume.usd);
+  if (byId("btcDominance")) {
+    byId("btcDominance").textContent = `${globalData.market_cap_percentage.btc.toFixed(1)}%`;
+  }
+  if (byId("headerMarketCap")) {
+    byId("headerMarketCap").textContent = formatCurrencyCompact(globalData.total_market_cap.usd);
+  }
+  if (byId("headerVolume")) {
+    byId("headerVolume").textContent = formatCurrencyCompact(globalData.total_volume.usd);
+  }
 }
 
 function updateTickerBar() {
@@ -247,9 +259,10 @@ function updateTickerBar() {
 function renderScale() {
   const grid = byId("scaleGrid");
   if (!grid) return;
-  const style = getCurrentStyle();
 
+  const style = getCurrentStyle();
   grid.innerHTML = "";
+
   [...moods].reverse().forEach(mood => {
     const item = document.createElement("div");
     item.className = "scale-item";
@@ -276,19 +289,26 @@ function setChartTimeframeButtons() {
 }
 
 async function fetchJson(url) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error("Request failed");
-  return res.json();
-
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+    return await res.json();
+  } catch (error) {
+    console.error("fetchJson error:", url, error);
+    return null;
+  }
 }
 
 async function loadGlobalMarket() {
-  const data = await fetchJson(`/api/global?timeframe=${encodeURIComponent(globalTimeframe)}`);
-  if (!data) return;
+  const response = await fetchJson(`/api/global?timeframe=${encodeURIComponent(globalTimeframe)}`);
+  if (!response || !response.ok || !response.data) return;
 
-  updateHeader(data.global);
+  const globalData = response.data;
 
-  const score = data.score;
+  updateHeader(globalData);
+
+  const marketCapChange = globalData.market_cap_change_percentage_24h_usd ?? 0;
+  const score = scoreFromChange(marketCapChange);
   const mood = getMoodByScore(score);
   currentGlobalMood = mood;
 
@@ -299,12 +319,17 @@ async function loadGlobalMarket() {
   updateDriverPanel(score, mood, socialMood);
 
   if (byId("globalMarketChange")) {
-    byId("globalMarketChange").textContent = formatPercent(data.change);
-    byId("globalMarketChange").className = data.change >= 0 ? "positive" : "negative";
+    byId("globalMarketChange").textContent = formatPercent(marketCapChange);
+    byId("globalMarketChange").className = marketCapChange >= 0 ? "positive" : "negative";
   }
 
-  if (byId("globalMarketVolume")) byId("globalMarketVolume").textContent = formatCurrencyCompact(data.global.total_volume.usd);
-  if (byId("globalMarketTimeframe")) byId("globalMarketTimeframe").textContent = globalTimeframe;
+  if (byId("globalMarketVolume")) {
+    byId("globalMarketVolume").textContent = formatCurrencyCompact(globalData.total_volume.usd);
+  }
+
+  if (byId("globalMarketTimeframe")) {
+    byId("globalMarketTimeframe").textContent = globalTimeframe;
+  }
 
   refreshOutputs();
 }
@@ -321,6 +346,7 @@ async function loadTopCoins() {
 function renderTopCoins() {
   const grid = byId("coinsGrid");
   if (!grid) return;
+
   const style = getCurrentStyle();
   grid.innerHTML = "";
 
@@ -416,7 +442,10 @@ async function loadCoinDetails() {
     byId("chartChangePill").className = `pill ${value >= 0 ? "positive" : "negative"}`;
   }
 
-  if (byId("selectedTimeframe")) byId("selectedTimeframe").textContent = chartTimeframe;
+  if (byId("selectedTimeframe")) {
+    byId("selectedTimeframe").textContent = chartTimeframe;
+  }
+
   if (byId("selectedPerformance")) {
     byId("selectedPerformance").textContent = formatPercent(value);
     byId("selectedPerformance").className = value >= 0 ? "positive" : "negative";
@@ -430,13 +459,21 @@ async function loadCoinDetails() {
   const coinMoodIcon = byId("coinMoodIconImg");
   if (coinMoodIcon) {
     coinMoodIcon.className = `mood-icon-img ${mood.anim}`;
-    setImage(coinMoodIcon, getIconImagePath(style, mood.key), getIconImagePath("classic", mood.key));
+    setImage(
+      coinMoodIcon,
+      getIconImagePath(style, mood.key),
+      getIconImagePath("classic", mood.key)
+    );
   }
 
   const socialIcon = byId("detailSocialIconImg");
   if (socialIcon) {
     socialIcon.className = `mood-icon-img ${socialMood.anim}`;
-    setImage(socialIcon, getIconImagePath(style, socialMood.key), getIconImagePath("classic", socialMood.key));
+    setImage(
+      socialIcon,
+      getIconImagePath(style, socialMood.key),
+      getIconImagePath("classic", socialMood.key)
+    );
   }
 
   updateCoinIntervalBoxes(coin);
@@ -474,6 +511,7 @@ function drawChart(prices) {
   const first = prices[0];
   const last = prices[prices.length - 1];
   const positive = last >= first;
+
   path.style.stroke = positive ? "var(--green)" : "var(--red)";
   area.style.fill = positive ? "rgba(77,255,136,.08)" : "rgba(255,59,77,.08)";
 }
@@ -531,8 +569,14 @@ function setupButtons() {
 
   byId("generateTweetBtn")?.addEventListener("click", refreshOutputs);
   byId("generateMemeBtn")?.addEventListener("click", refreshOutputs);
-  byId("copyTweetBtn")?.addEventListener("click", () => copyText(byId("tweetOutput")?.value || ""));
-  byId("copyMemeBtn")?.addEventListener("click", () => copyText(byId("memePromptOutput")?.value || ""));
+
+  byId("copyTweetBtn")?.addEventListener("click", () => {
+    copyText(byId("tweetOutput")?.value || "");
+  });
+
+  byId("copyMemeBtn")?.addEventListener("click", () => {
+    copyText(byId("memePromptOutput")?.value || "");
+  });
 
   byId("macroDriver")?.addEventListener("change", () => {
     const score = Number(byId("heroScore")?.textContent || 50);
@@ -567,7 +611,10 @@ async function loadAll() {
 function initStyle() {
   const savedStyle = localStorage.getItem("wojakStyle") || "classic";
   document.body.className = `style-${savedStyle}`;
-  if (byId("styleSelector")) byId("styleSelector").value = savedStyle;
+
+  if (byId("styleSelector")) {
+    byId("styleSelector").value = savedStyle;
+  }
 }
 
 function init() {

@@ -582,4 +582,75 @@ function setupButtons() {
     });
   });
 
-  byId("gen
+  byId("generateTweetBtn")?.addEventListener("click", refreshOutputs);
+  byId("generateMemeBtn")?.addEventListener("click", refreshOutputs);
+
+  byId("copyTweetBtn")?.addEventListener("click", () => {
+    copyText(byId("tweetOutput")?.value || "");
+  });
+
+  byId("copyMemeBtn")?.addEventListener("click", () => {
+    copyText(byId("memePromptOutput")?.value || "");
+  });
+
+  byId("macroDriver")?.addEventListener("change", () => {
+    const score = Number(byId("heroScore")?.textContent || 50);
+    const mood = getMoodByScore(score);
+    const socialMood = getMoodByScore(clamp(score + 4, 0, 100));
+    updateDriverPanel(score, mood, socialMood);
+  });
+
+  byId("styleSelector")?.addEventListener("change", () => {
+    const value = byId("styleSelector").value;
+    document.body.className = `style-${value}`;
+    localStorage.setItem("wojakStyle", value);
+
+    renderScale();
+    renderTopCoins();
+
+    const score = Number(byId("heroScore")?.textContent || 50);
+    const mood = getMoodByScore(score);
+
+    updateHeroMoodVisual(score, mood);
+    updateEmotionBar(score, mood);
+
+    loadCoinDetails();
+  });
+}
+
+async function loadAll() {
+  try {
+    await Promise.all([
+      loadTopCoins(),
+      loadGlobalMarket()
+    ]);
+
+    await loadCoinDetails();
+    refreshOutputs();
+
+  } catch (error) {
+    console.error("CoinGecko load error:", error);
+  }
+}
+
+function initStyle() {
+  const savedStyle = localStorage.getItem("wojakStyle") || "classic";
+  document.body.className = `style-${savedStyle}`;
+
+  if (byId("styleSelector")) {
+    byId("styleSelector").value = savedStyle;
+  }
+}
+
+function init() {
+  initStyle();
+  renderScale();
+  setupButtons();
+  setGlobalTimeframeButtons();
+  setChartTimeframeButtons();
+  loadAll();
+
+  setInterval(loadAll, REFRESH_MS);
+}
+
+document.addEventListener("DOMContentLoaded", init);

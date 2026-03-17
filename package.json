@@ -1,1 +1,4 @@
-add package.json
+{
+  "name": "wojakmeter",
+  "version": "1.0.0"
+}

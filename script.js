@@ -485,35 +485,42 @@ async function loadCoinDetails() {
   }
 }
 
-function drawChart(prices) {
-  const path = byId("coinChartPath");
-  const area = byId("coinChartArea");
-  if (!path || !area || !prices.length) return;
+ 
+  function drawChart(prices) {
+  try {
+    const path = byId("coinChartPath");
+    const area = byId("coinChartArea");
 
-  const w = 900;
-  const h = 280;
-  const min = Math.min(...prices);
-  const max = Math.max(...prices);
-  const range = max - min || 1;
+    if (!path || !area || !prices || prices.length < 2) {
+      console.log("Chart missing elements or data");
+      return;
+    }
 
-  const points = prices.map((price, index) => {
-    const x = (index / (prices.length - 1 || 1)) * w;
-    const y = h - ((price - min) / range) * (h - 24) - 12;
-    return [x, y];
-  });
+    const w = 900;
+    const h = 280;
 
-  const lineD = points.map((point, i) => `${i === 0 ? "M" : "L"} ${point[0].toFixed(2)} ${point[1].toFixed(2)}`).join(" ");
-  const areaD = `${lineD} L ${w} ${h} L 0 ${h} Z`;
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    const range = max - min || 1;
 
-  path.setAttribute("d", lineD);
-  area.setAttribute("d", areaD);
+    const points = prices.map((price, i) => {
+      const x = (i / (prices.length - 1)) * w;
+      const y = h - ((price - min) / range) * (h - 20);
+      return [x, y];
+    });
 
-  const first = prices[0];
-  const last = prices[prices.length - 1];
-  const positive = last >= first;
+    const line = points.map((p, i) =>
+      `${i === 0 ? "M" : "L"} ${p[0]} ${p[1]}`
+    ).join(" ");
 
-  path.style.stroke = positive ? "var(--green)" : "var(--red)";
-  area.style.fill = positive ? "rgba(77,255,136,.08)" : "rgba(255,59,77,.08)";
+    const areaPath = `${line} L ${w} ${h} L 0 ${h} Z`;
+
+    path.setAttribute("d", line);
+    area.setAttribute("d", areaPath);
+
+  } catch (err) {
+    console.error("Chart error:", err);
+  }
 }
 
 function buildSentimentPost() {

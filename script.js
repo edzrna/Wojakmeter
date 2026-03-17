@@ -1,4 +1,4 @@
-const REFRESH_MS = 300000; // 5 minutos
+const REFRESH_MS = 180000;
 
 const moods = [
   { key: "euphoria", name: "Euphoria", min: 85, anim: "anim-pulse", range: "85–100" },
@@ -10,11 +10,43 @@ const moods = [
   { key: "frustration", name: "Frustration", min: 0, anim: "anim-shake", range: "0–19" }
 ];
 
+const driverImpactMap = {
+  market_flow: 0,
+  etf_adoption: 10,
+  rate_cut: 8,
+  rate_hike: -10,
+  regulation_crackdown: -15,
+  crypto_hack: -20,
+  war_escalation: -12,
+  neutral_macro: 0
+};
+
+const timeframeWeightMap = {
+  "1m": 5,
+  "5m": 3,
+  "15m": 2,
+  "1h": 0,
+  "4h": -2,
+  "24h": -4,
+  "7d": -6
+};
+
+const macroNarratives = {
+  market_flow: "Price action is driving the emotional state of the global crypto market.",
+  etf_adoption: "Institutional flows and ETF headlines are boosting confidence across crypto.",
+  rate_cut: "Liquidity expectations are improving market appetite for risk assets.",
+  rate_hike: "Macro tightening pressure is making crypto sentiment more defensive.",
+  regulation_crackdown: "Regulatory pressure is weighing on market confidence.",
+  crypto_hack: "Security fears and insolvency risk are dragging sentiment lower.",
+  war_escalation: "Geopolitical stress is creating uncertainty across the market.",
+  neutral_macro: "No dominant macro event is strongly shifting crypto sentiment."
+};
+
 let activeCoinSymbol = "BTC";
 let globalTimeframe = "1h";
 let chartTimeframe = "1h";
 let topCoinsData = [];
-let currentGlobalMood = getMoodByScore(50);
+let currentGlobalMood = moods.find(m => m.key === "neutral");
 
 function byId(id) {
   return document.getElementById(id);
@@ -22,6 +54,29 @@ function byId(id) {
 
 function clamp(num, min, max) {
   return Math.max(min, Math.min(max, num));
+}
+
+function getCurrentStyle() {
+  return (document.body.className || "style-classic").replace("style-", "");
+}
+
+function getHeroImagePath(style, moodKey) {
+  return `assets/hero/${style}/${moodKey}.png`;
+}
+
+function getIconImagePath(style, moodKey) {
+  return `assets/icons/${style}/${moodKey}.png`;
+}
+
+function setImage(el, path, fallback = "") {
+  if (!el) return;
+  el.src = path;
+  if (fallback) {
+    el.onerror = () => {
+      el.onerror = null;
+      el.src = fallback;
+    };
+  }
 }
 
 function formatCurrencyCompact(value) {
@@ -59,79 +114,40 @@ function scoreFromChange(change) {
   return Math.round(clamp(50 + change * 10, 0, 100));
 }
 
-function getCurrentStyle() {
-  return (document.body.className || "style-classic").replace("style-", "");
+function getMoodFromChange(change) {
+  return getMoodByScore(scoreFromChange(change));
 }
 
-function getHeroImagePath(style, moodKey) {
-  return `assets/hero/${style}/${moodKey}.png`;
+function getPointerLeftFromScore(score) {
+  return `${clamp(score, 0, 100)}%`;
 }
 
-function getIconImagePath(style, moodKey) {
-  return `assets/icons/${style}/${moodKey}.png`;
+function buildHeartbeatPath(moodKey) {
+  const paths = {
+    frustration: "M0 28 L28 28 L40 10 L56 46 L72 8 L86 50 L104 16 L126 28 L150 28 L170 12 L188 44 L206 8 L224 48 L244 20 L268 28 L320 28",
+    concern: "M0 28 L40 28 L56 18 L72 40 L88 14 L102 38 L124 28 L160 28 L176 18 L192 38 L208 16 L224 36 L248 28 L320 28",
+    doubt: "M0 28 L36 28 L52 22 L66 34 L82 20 L98 32 L120 28 L150 28 L168 22 L186 34 L202 24 L218 30 L250 28 L320 28",
+    neutral: "M0 28 L44 28 L56 24 L68 32 L82 24 L96 30 L120 28 L160 28 L180 26 L196 30 L214 26 L234 28 L320 28",
+    optimism: "M0 28 L36 28 L52 24 L66 20 L82 34 L98 16 L114 30 L138 28 L160 28 L178 22 L194 18 L210 30 L226 20 L246 28 L320 28",
+    content: "M0 28 L32 28 L46 20 L60 34 L74 12 L88 30 L104 18 L126 28 L150 28 L168 20 L184 34 L198 14 L214 28 L232 18 L254 28 L320 28",
+    euphoria: "M0 28 L28 28 L40 16 L52 40 L66 8 L78 46 L94 6 L108 42 L126 18 L148 28 L166 12 L182 44 L198 8 L214 42 L232 14 L252 28 L320 28"
+  };
+  return paths[moodKey] || paths.neutral;
 }
 
-function setImage(el, path, fallback = "") {
-  if (!el) return;
-  el.src = path;
-  if (fallback) {
-    el.onerror = () => {
-      el.onerror = null;
-      el.src = fallback;
-    };
-  }
+function updateHeartbeat(moodKey) {
+  const wrap = byId("heartbeatWrap");
+  const path = byId("heartbeatPath");
+  if (!wrap || !path) return;
+  wrap.className = `heartbeat-wrap heartbeat-${moodKey}`;
+  path.setAttribute("d", buildHeartbeatPath(moodKey));
 }
 
-function debugMessage(msg) {
-  console.log("[WojakMeter]", msg);
-  const ticker = byId("tickerBar");
-  if (ticker) {
-    ticker.innerHTML = `<span>${msg}</span>`;
-  }
-}
-
-function updateTickerBar() {
-  const ticker = byId("tickerBar");
-  if (!ticker || !topCoinsData.length) return;
-
-  ticker.innerHTML = topCoinsData
-    .slice(0, 7)
-    .map(coin => `<span>${coin.symbol.toUpperCase()} <strong>${formatCurrency(coin.current_price)}</strong></span>`)
-    .join("");
-}
-
-async function fetchJson(url) {
-  try {
-    const res = await fetch(url, { cache: "no-store" });
-    const text = await res.text();
-
-    if (!res.ok) {
-      throw new Error(`${url} -> ${res.status} ${text}`);
-    }
-
-    try {
-      return JSON.parse(text);
-    } catch (parseError) {
-      throw new Error(`${url} -> invalid JSON: ${text}`);
-    }
-  } catch (error) {
-    console.error("fetchJson error:", error);
-    throw error;
-  }
-}
-
-function updateHero(score, mood) {
+function updateHeroMoodVisual(score, mood) {
   const style = getCurrentStyle();
+  const heroFaceImg = byId("heroFaceImg");
   const heroMood = byId("heroMood");
   const heroScore = byId("heroScore");
-  const heroFaceImg = byId("heroFaceImg");
-  const emotionBarMood = byId("emotionBarMood");
-  const emotionBarScore = byId("emotionBarScore");
-  const emotionBarRange = byId("emotionBarRange");
-  const emotionPointer = byId("emotionPointer");
-  const emotionPointerImg = byId("emotionPointerImg");
-  const heartbeatWrap = byId("heartbeatWrap");
-  const heartbeatPath = byId("heartbeatPath");
 
   if (heroMood) {
     heroMood.textContent = mood.name;
@@ -151,47 +167,38 @@ function updateHero(score, mood) {
     );
   }
 
-  if (emotionBarMood) emotionBarMood.textContent = mood.name;
-  if (emotionBarScore) emotionBarScore.textContent = score;
-  if (emotionBarRange) emotionBarRange.textContent = mood.range;
+  updateHeartbeat(mood.key);
+}
 
-  if (emotionPointer) {
-    emotionPointer.style.left = `${clamp(score, 0, 100)}%`;
+function updateEmotionBar(score, mood) {
+  const style = getCurrentStyle();
+  const pointer = byId("emotionPointer");
+  const pointerImg = byId("emotionPointerImg");
+
+  if (pointer) {
+    pointer.style.left = getPointerLeftFromScore(score);
   }
 
-  if (emotionPointerImg) {
+  if (pointerImg) {
     setImage(
-      emotionPointerImg,
+      pointerImg,
       getIconImagePath(style, mood.key),
       getIconImagePath("classic", mood.key)
     );
   }
 
-  if (heartbeatWrap && heartbeatPath) {
-    heartbeatWrap.className = `heartbeat-wrap heartbeat-${mood.key}`;
-    const paths = {
-      frustration: "M0 28 L28 28 L40 10 L56 46 L72 8 L86 50 L104 16 L126 28 L150 28 L170 12 L188 44 L206 8 L224 48 L244 20 L268 28 L320 28",
-      concern: "M0 28 L40 28 L56 18 L72 40 L88 14 L102 38 L124 28 L160 28 L176 18 L192 38 L208 16 L224 36 L248 28 L320 28",
-      doubt: "M0 28 L36 28 L52 22 L66 34 L82 20 L98 32 L120 28 L150 28 L168 22 L186 34 L202 24 L218 30 L250 28 L320 28",
-      neutral: "M0 28 L44 28 L56 24 L68 32 L82 24 L96 30 L120 28 L160 28 L180 26 L196 30 L214 26 L234 28 L320 28",
-      optimism: "M0 28 L36 28 L52 24 L66 20 L82 34 L98 16 L114 30 L138 28 L160 28 L178 22 L194 18 L210 30 L226 20 L246 28 L320 28",
-      content: "M0 28 L32 28 L46 20 L60 34 L74 12 L88 30 L104 18 L126 28 L150 28 L168 20 L184 34 L198 14 L214 28 L232 18 L254 28 L320 28",
-      euphoria: "M0 28 L28 28 L40 16 L52 40 L66 8 L78 46 L94 6 L108 42 L126 18 L148 28 L166 12 L182 44 L198 8 L214 42 L232 14 L252 28 L320 28"
-    };
-    heartbeatPath.setAttribute("d", paths[mood.key] || paths.neutral);
-  }
+  if (byId("emotionBarMood")) byId("emotionBarMood").textContent = mood.name;
+  if (byId("emotionBarScore")) byId("emotionBarScore").textContent = score;
+  if (byId("emotionBarRange")) byId("emotionBarRange").textContent = mood.range;
 }
 
-function updateSocial(score) {
+function updateSocialMoodFromScore(score) {
   const style = getCurrentStyle();
   const socialScore = clamp(score + 4, 0, 100);
   const socialMood = getMoodByScore(socialScore);
 
   if (byId("socialMood")) byId("socialMood").textContent = socialMood.name;
   if (byId("socialScore")) byId("socialScore").textContent = socialScore;
-  if (byId("socialPositive")) byId("socialPositive").textContent = `${clamp(Math.round(50 + score / 2), 10, 95)}%`;
-  if (byId("socialNegative")) byId("socialNegative").textContent = `${clamp(100 - clamp(Math.round(50 + score / 2), 10, 95) - 8, 2, 80)}%`;
-  if (byId("socialMentions")) byId("socialMentions").textContent = `${(2 + score / 12).toFixed(1)}K`;
 
   const socialIconImg = byId("socialIconImg");
   if (socialIconImg) {
@@ -203,38 +210,121 @@ function updateSocial(score) {
     );
   }
 
-  if (byId("driverTechnical")) byId("driverTechnical").textContent = getMoodByScore(score).name;
-  if (byId("driverSocial")) byId("driverSocial").textContent = socialMood.name;
+  const positive = clamp(Math.round(50 + score / 2), 10, 95);
+  const negative = clamp(100 - positive - 8, 2, 80);
+  const mentions = `${(2 + score / 12).toFixed(1)}K`;
+
+  if (byId("socialPositive")) byId("socialPositive").textContent = `${positive}%`;
+  if (byId("socialNegative")) byId("socialNegative").textContent = `${negative}%`;
+  if (byId("socialMentions")) byId("socialMentions").textContent = mentions;
+
+  return socialMood;
 }
 
-async function loadGlobalMarket() {
-  const response = await fetchJson(`/api/global?timeframe=${encodeURIComponent(globalTimeframe)}`);
-  const globalData = response?.data || response?.global || response;
-
-  if (!globalData) {
-    throw new Error("Global API returned no usable data");
-  }
-
+function updateHeader(globalData) {
   if (byId("btcDominance") && globalData.market_cap_percentage?.btc != null) {
     byId("btcDominance").textContent = `${globalData.market_cap_percentage.btc.toFixed(1)}%`;
   }
 
-  if (byId("headerMarketCap")) {
-    byId("headerMarketCap").textContent = formatCurrencyCompact(globalData.total_market_cap?.usd);
+  if (byId("headerMarketCap") && globalData.total_market_cap?.usd != null) {
+    byId("headerMarketCap").textContent = formatCurrencyCompact(globalData.total_market_cap.usd);
   }
 
-  if (byId("headerVolume")) {
-    byId("headerVolume").textContent = formatCurrencyCompact(globalData.total_volume?.usd);
+  if (byId("headerVolume") && globalData.total_volume?.usd != null) {
+    byId("headerVolume").textContent = formatCurrencyCompact(globalData.total_volume.usd);
   }
+}
+
+function updateTickerBar() {
+  const ticker = byId("tickerBar");
+  if (!ticker) return;
+
+  if (!topCoinsData.length) {
+    ticker.innerHTML = "<span>Loading market...</span>";
+    return;
+  }
+
+  ticker.innerHTML = topCoinsData.slice(0, 7).map(coin => {
+    return `<span>${coin.symbol.toUpperCase()} <strong>${formatCurrency(coin.current_price)}</strong></span>`;
+  }).join("");
+}
+
+function renderScale() {
+  const grid = byId("scaleGrid");
+  if (!grid) return;
+
+  const style = getCurrentStyle();
+  grid.innerHTML = "";
+
+  [...moods].reverse().forEach(mood => {
+    const item = document.createElement("div");
+    item.className = "scale-item";
+    item.innerHTML = `
+      <div class="scale-face">
+        <img src="${getIconImagePath(style, mood.key)}" alt="${mood.name}">
+      </div>
+      <strong>${mood.name}</strong>
+    `;
+    grid.appendChild(item);
+  });
+}
+
+function setGlobalTimeframeButtons() {
+  document.querySelectorAll("#heroTimeframes button").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.timeframe === globalTimeframe);
+  });
+}
+
+function setChartTimeframeButtons() {
+  document.querySelectorAll("#chartTimeframes button").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.timeframe === chartTimeframe);
+  });
+}
+
+async function fetchJson(url) {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+    return await res.json();
+  } catch (error) {
+    console.error("fetchJson error:", url, error);
+    return null;
+  }
+}
+
+async function loadGlobalMarket() {
+  const response = await fetchJson(`/api/global?timeframe=${encodeURIComponent(globalTimeframe)}`);
+  if (!response) return;
+
+  const globalData = response.data || response.global || response;
+  if (!globalData) return;
+
+  updateHeader(globalData);
 
   const marketCapChange = globalData.market_cap_change_percentage_24h_usd ?? 0;
-  const score = scoreFromChange(marketCapChange);
-  const mood = getMoodByScore(score);
+  const baseScore = scoreFromChange(marketCapChange);
 
+  const selectedDriver = byId("macroDriver")?.value || "market_flow";
+  const driverImpact = driverImpactMap[selectedDriver] || 0;
+  const timeframeImpact = timeframeWeightMap[globalTimeframe] || 0;
+
+  const finalScore = clamp(baseScore + driverImpact + timeframeImpact, 0, 100);
+  const mood = getMoodByScore(finalScore);
   currentGlobalMood = mood;
 
-  updateHero(score, mood);
-  updateSocial(score);
+  updateHeroMoodVisual(finalScore, mood);
+  updateEmotionBar(finalScore, mood);
+
+  const socialMood = updateSocialMoodFromScore(finalScore);
+
+  if (byId("driverTechnical")) byId("driverTechnical").textContent = mood.name;
+  if (byId("driverSocial")) byId("driverSocial").textContent = socialMood.name;
+  if (byId("driverMacro") && byId("macroDriver")) {
+    byId("driverMacro").textContent = byId("macroDriver").selectedOptions[0].textContent;
+  }
+  if (byId("driverNarrative")) {
+    byId("driverNarrative").textContent = macroNarratives[selectedDriver];
+  }
 
   if (byId("globalMarketChange")) {
     byId("globalMarketChange").textContent = formatPercent(marketCapChange);
@@ -242,37 +332,32 @@ async function loadGlobalMarket() {
   }
 
   if (byId("globalMarketVolume")) {
-    byId("globalMarketVolume").textContent = formatCurrencyCompact(globalData.total_volume?.usd);
+    byId("globalMarketVolume").textContent =
+      globalData.total_volume?.usd != null
+        ? formatCurrencyCompact(globalData.total_volume.usd)
+        : "--";
   }
 
   if (byId("globalMarketTimeframe")) {
     byId("globalMarketTimeframe").textContent = globalTimeframe;
   }
+
+  refreshOutputs();
 }
 
 async function loadTopCoins() {
-  let response;
-try {
-  response = await fetchJson("/api/top-coins");
-} catch (error) {
-  console.warn("Top coins failed, using fallback");
-  return;
-}
-  const coins = response?.coins || response?.data || (Array.isArray(response) ? response : null);
+  const data = await fetchJson("/api/top-coins");
+  if (!data) return;
 
-  if (!coins || !coins.length) {
-    throw new Error("Top coins API returned no usable data");
-  }
+  const coins = data.coins || data.data || (Array.isArray(data) ? data : null);
+  if (!coins || !coins.length) return;
 
   topCoinsData = coins;
+  renderTopCoins();
+  updateTickerBar();
+}
 
-  const ticker = byId("tickerBar");
-  if (ticker) {
-    ticker.innerHTML = topCoinsData.slice(0, 7).map(coin => {
-      return `<span>${coin.symbol.toUpperCase()} <strong>${formatCurrency(coin.current_price)}</strong></span>`;
-    }).join("");
-  }
-
+function renderTopCoins() {
   const grid = byId("coinsGrid");
   if (!grid) return;
 
@@ -282,7 +367,7 @@ try {
   topCoinsData.forEach(coin => {
     const symbol = coin.symbol.toUpperCase();
     const change = coin.price_change_percentage_24h_in_currency ?? 0;
-    const mood = getMoodByScore(scoreFromChange(change));
+    const mood = getMoodFromChange(change);
 
     const card = document.createElement("button");
     card.type = "button";
@@ -301,7 +386,7 @@ try {
 
     card.addEventListener("click", async () => {
       activeCoinSymbol = symbol;
-      await loadTopCoins();
+      renderTopCoins();
       await loadCoinDetails();
       document.querySelector(".chart-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
@@ -331,45 +416,29 @@ function getCoinChangeForTimeframe(coin, timeframe) {
   }
 }
 
-function drawChart(prices) {
-  const path = byId("coinChartPath");
-  const area = byId("coinChartArea");
+function updateCoinIntervalBoxes(coin) {
+  const mapping = {
+    "1m": "perf1m",
+    "5m": "perf5m",
+    "15m": "perf15m",
+    "1h": "perf1h",
+    "4h": "perf4h",
+    "24h": "perf24h",
+    "7d": "perf7d"
+  };
 
-  if (!path || !area || !prices || prices.length < 2) {
-    throw new Error("Chart elements or prices missing");
-  }
-
-  const w = 900;
-  const h = 280;
-  const min = Math.min(...prices);
-  const max = Math.max(...prices);
-  const range = max - min || 1;
-
-  const points = prices.map((price, i) => {
-    const x = (i / (prices.length - 1)) * w;
-    const y = h - ((price - min) / range) * (h - 20);
-    return [x, y];
+  Object.entries(mapping).forEach(([tf, id]) => {
+    const value = getCoinChangeForTimeframe(coin, tf);
+    const el = byId(id);
+    if (!el) return;
+    el.textContent = formatPercent(value);
+    el.className = value >= 0 ? "positive" : "negative";
   });
-
-  const line = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p[0]} ${p[1]}`).join(" ");
-  const areaPath = `${line} L ${w} ${h} L 0 ${h} Z`;
-
-  path.setAttribute("d", line);
-  area.setAttribute("d", areaPath);
-
-  const first = prices[0];
-  const last = prices[prices.length - 1];
-  const positive = last >= first;
-
-  path.style.stroke = positive ? "var(--green)" : "var(--red)";
-  area.style.fill = positive ? "rgba(77,255,136,.08)" : "rgba(255,59,77,.08)";
 }
 
 async function loadCoinDetails() {
   const coin = getCoinBySymbol(activeCoinSymbol);
-  if (!coin) {
-    throw new Error("No active coin found");
-  }
+  if (!coin) return;
 
   const value = getCoinChangeForTimeframe(coin, chartTimeframe);
   const score = scoreFromChange(value);
@@ -387,7 +456,10 @@ async function loadCoinDetails() {
     byId("chartChangePill").className = `pill ${value >= 0 ? "positive" : "negative"}`;
   }
 
-  if (byId("selectedTimeframe")) byId("selectedTimeframe").textContent = chartTimeframe;
+  if (byId("selectedTimeframe")) {
+    byId("selectedTimeframe").textContent = chartTimeframe;
+  }
+
   if (byId("selectedPerformance")) {
     byId("selectedPerformance").textContent = formatPercent(value);
     byId("selectedPerformance").className = value >= 0 ? "positive" : "negative";
@@ -418,43 +490,57 @@ async function loadCoinDetails() {
     );
   }
 
-  const intervalIds = {
-    "1m": "perf1m",
-    "5m": "perf5m",
-    "15m": "perf15m",
-    "1h": "perf1h",
-    "4h": "perf4h",
-    "24h": "perf24h",
-    "7d": "perf7d"
-  };
+  updateCoinIntervalBoxes(coin);
+  setChartTimeframeButtons();
 
-  Object.entries(intervalIds).forEach(([tf, id]) => {
-    const el = byId(id);
-    if (!el) return;
-    const v = getCoinChangeForTimeframe(coin, tf);
-    el.textContent = formatPercent(v);
-    el.className = v >= 0 ? "positive" : "negative";
-  });
-
-  document.querySelectorAll("#chartTimeframes button").forEach(btn => {
-    btn.classList.toggle("active", btn.dataset.timeframe === chartTimeframe);
-  });
-
-  const chartResponse = await fetchJson(
+  const chartData = await fetchJson(
     `/api/coin-chart?coin=${encodeURIComponent(coin.id)}&timeframe=${encodeURIComponent(chartTimeframe)}`
   );
 
-  const prices = chartResponse?.prices || chartResponse?.data?.prices;
-  if (!Array.isArray(prices) || prices.length < 2) {
-    throw new Error("Chart API returned no usable prices");
+  const prices = chartData?.prices || chartData?.data?.prices;
+  if (Array.isArray(prices) && prices.length > 1) {
+    drawChart(prices);
   }
-
-  drawChart(prices);
 }
 
-function refreshOutputs() {
-  if (byId("tweetOutput")) {
-    byId("tweetOutput").value = `🚨 WojakMeter Alert
+function drawChart(prices) {
+  try {
+    const path = byId("coinChartPath");
+    const area = byId("coinChartArea");
+
+    if (!path || !area || !prices || prices.length < 2) return;
+
+    const w = 900;
+    const h = 280;
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    const range = max - min || 1;
+
+    const points = prices.map((price, i) => {
+      const x = (i / (prices.length - 1)) * w;
+      const y = h - ((price - min) / range) * (h - 20);
+      return [x, y];
+    });
+
+    const line = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p[0]} ${p[1]}`).join(" ");
+    const areaPath = `${line} L ${w} ${h} L 0 ${h} Z`;
+
+    path.setAttribute("d", line);
+    area.setAttribute("d", areaPath);
+
+    const first = prices[0];
+    const last = prices[prices.length - 1];
+    const positive = last >= first;
+
+    path.style.stroke = positive ? "var(--green)" : "var(--red)";
+    area.style.fill = positive ? "rgba(77,255,136,.08)" : "rgba(255,59,77,.08)";
+  } catch (err) {
+    console.error("Chart error:", err);
+  }
+}
+
+function buildSentimentPost() {
+  return `🚨 WojakMeter Alert
 
 Market Mood: ${byId("heroMood")?.textContent || "Neutral"}
 Score: ${byId("heroScore")?.textContent || "50"}/100
@@ -463,10 +549,10 @@ Volume: ${byId("globalMarketVolume")?.textContent || "--"}
 Selected Timeframe: ${globalTimeframe}
 
 #WojakMeter #Crypto`;
-  }
+}
 
-  if (byId("memePromptOutput")) {
-    byId("memePromptOutput").value = `Create a crypto meme based on:
+function buildMemePrompt() {
+  return `Create a crypto meme based on:
 - Global mood: ${byId("heroMood")?.textContent || "Neutral"}
 - Global timeframe: ${globalTimeframe}
 - Global market move: ${byId("globalMarketChange")?.textContent || "--"}
@@ -474,7 +560,11 @@ Selected Timeframe: ${globalTimeframe}
 - Coin chart selected: ${activeCoinSymbol}
 - Coin timeframe: ${chartTimeframe}
 - Market heartbeat style: ${currentGlobalMood?.name || "Neutral"}`;
-  }
+}
+
+function refreshOutputs() {
+  if (byId("tweetOutput")) byId("tweetOutput").value = buildSentimentPost();
+  if (byId("memePromptOutput")) byId("memePromptOutput").value = buildMemePrompt();
 }
 
 async function copyText(value) {
@@ -487,93 +577,60 @@ function setupButtons() {
   document.querySelectorAll("#heroTimeframes button").forEach(btn => {
     btn.addEventListener("click", async () => {
       globalTimeframe = btn.dataset.timeframe;
-      document.querySelectorAll("#heroTimeframes button").forEach(b => {
-        b.classList.toggle("active", b.dataset.timeframe === globalTimeframe);
-      });
+      setGlobalTimeframeButtons();
       await loadGlobalMarket();
-      refreshOutputs();
     });
   });
 
   document.querySelectorAll("#chartTimeframes button").forEach(btn => {
     btn.addEventListener("click", async () => {
       chartTimeframe = btn.dataset.timeframe;
+      setChartTimeframeButtons();
       await loadCoinDetails();
-      refreshOutputs();
     });
   });
 
   byId("generateTweetBtn")?.addEventListener("click", refreshOutputs);
   byId("generateMemeBtn")?.addEventListener("click", refreshOutputs);
-  byId("copyTweetBtn")?.addEventListener("click", () => copyText(byId("tweetOutput")?.value || ""));
-  byId("copyMemeBtn")?.addEventListener("click", () => copyText(byId("memePromptOutput")?.value || ""));
+
+  byId("copyTweetBtn")?.addEventListener("click", () => {
+    copyText(byId("tweetOutput")?.value || "");
+  });
+
+  byId("copyMemeBtn")?.addEventListener("click", () => {
+    copyText(byId("memePromptOutput")?.value || "");
+  });
+
+  byId("macroDriver")?.addEventListener("change", async () => {
+    await loadGlobalMarket();
+  });
 
   byId("styleSelector")?.addEventListener("change", async () => {
     const value = byId("styleSelector").value;
     document.body.className = `style-${value}`;
     localStorage.setItem("wojakStyle", value);
+
     renderScale();
-    await loadAll();
+    renderTopCoins();
+
+    const score = Number(byId("heroScore")?.textContent || 50);
+    const mood = getMoodByScore(score);
+    updateHeroMoodVisual(score, mood);
+    updateEmotionBar(score, mood);
+
+    await loadCoinDetails();
   });
 }
 
 async function loadAll() {
-  debugMessage("Loading live market data...");
-  await loadTopCoins();
-  await loadGlobalMarket();
+  await Promise.all([loadTopCoins(), loadGlobalMarket()]);
   await loadCoinDetails();
   refreshOutputs();
-
-  if (topCoinsData.length && typeof updateTickerBar === "function") {
-    updateTickerBar();
-  }
-}
-
-function renderScale() {
-  const grid = byId("scaleGrid");
-  if (!grid) return;
-
-  const style = getCurrentStyle();
-  grid.innerHTML = "";
-
-  [...moods].reverse().forEach(mood => {
-    const item = document.createElement("div");
-    item.className = "scale-item";
-    item.innerHTML = `
-      <div class="scale-face">
-        <img src="${getIconImagePath(style, mood.key)}" alt="${mood.name}">
-      </div>
-      <strong>${mood.name}</strong>
-    `;
-    grid.appendChild(item);
-  });
 }
 
 function initStyle() {
   const savedStyle = localStorage.getItem("wojakStyle") || "classic";
   document.body.className = `style-${savedStyle}`;
+
   if (byId("styleSelector")) {
-    byId("styleSelector").value = savedStyle;
-  }
-}
-
-async function boot() {
-  try {
-    initStyle();
-    renderScale();
-    setupButtons();
-    await loadAll();
-
-    setInterval(async () => {
-      try {
-        await loadAll();
-      } catch (error) {
-        debugMessage(`Refresh failed: ${error.message}`);
-      }
-    }, REFRESH_MS);
-  } catch (error) {
-    debugMessage(`Boot failed: ${error.message}`);
-  }
-}
-
-document.addEventListener("DOMContentLoaded", boot);
+    byId("styleSelecto

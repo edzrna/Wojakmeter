@@ -39,6 +39,7 @@ function getIconImagePath(style, moodKey) {
 function setImage(el, path, fallback = "") {
   if (!el) return;
   el.src = path;
+
   if (fallback) {
     el.onerror = () => {
       el.onerror = null;
@@ -100,6 +101,7 @@ function buildHeartbeatPath(moodKey) {
     content: "M0 28 L32 28 L46 20 L60 34 L74 12 L88 30 L104 18 L126 28 L150 28 L168 20 L184 34 L198 14 L214 28 L232 18 L254 28 L320 28",
     euphoria: "M0 28 L28 28 L40 16 L52 40 L66 8 L78 46 L94 6 L108 42 L126 18 L148 28 L166 12 L182 44 L198 8 L214 42 L232 14 L252 28 L320 28"
   };
+
   return paths[moodKey] || paths.neutral;
 }
 
@@ -107,6 +109,7 @@ function updateHeartbeat(moodKey) {
   const wrap = byId("heartbeatWrap");
   const path = byId("heartbeatPath");
   if (!wrap || !path) return;
+
   wrap.className = `heartbeat-wrap heartbeat-${moodKey}`;
   path.setAttribute("d", buildHeartbeatPath(moodKey));
 }
@@ -143,7 +146,9 @@ function updateEmotionBar(score, mood) {
   const pointer = byId("emotionPointer");
   const pointerImg = byId("emotionPointerImg");
 
-  if (pointer) pointer.style.left = getPointerLeftFromScore(score);
+  if (pointer) {
+    pointer.style.left = getPointerLeftFromScore(score);
+  }
 
   if (pointerImg) {
     setImage(
@@ -191,9 +196,11 @@ function updateHeader(globalData) {
   if (byId("btcDominance") && globalData.market_cap_percentage?.btc != null) {
     byId("btcDominance").textContent = `${globalData.market_cap_percentage.btc.toFixed(1)}%`;
   }
+
   if (byId("headerMarketCap") && globalData.total_market_cap?.usd != null) {
     byId("headerMarketCap").textContent = formatCurrencyCompact(globalData.total_market_cap.usd);
   }
+
   if (byId("headerVolume") && globalData.total_volume?.usd != null) {
     byId("headerVolume").textContent = formatCurrencyCompact(globalData.total_volume.usd);
   }
@@ -258,9 +265,10 @@ async function fetchJson(url) {
 
 async function loadGlobalMarket() {
   const response = await fetchJson(`/api/global?timeframe=${encodeURIComponent(globalTimeframe)}`);
-  if (!response || !response.ok || !response.data) return;
+  if (!response) return;
 
-  const globalData = response.data;
+  const globalData = response.data || response.global || response;
+  if (!globalData) return;
 
   updateHeader(globalData);
 
@@ -283,9 +291,10 @@ async function loadGlobalMarket() {
   }
 
   if (byId("globalMarketVolume")) {
-    byId("globalMarketVolume").textContent = globalData.total_volume?.usd != null
-      ? formatCurrencyCompact(globalData.total_volume.usd)
-      : "--";
+    byId("globalMarketVolume").textContent =
+      globalData.total_volume?.usd != null
+        ? formatCurrencyCompact(globalData.total_volume.usd)
+        : "--";
   }
 
   if (byId("globalMarketTimeframe")) {
@@ -297,9 +306,12 @@ async function loadGlobalMarket() {
 
 async function loadTopCoins() {
   const data = await fetchJson("/api/top-coins");
-  if (!data || !data.ok || !data.coins) return;
+  if (!data) return;
 
-  topCoinsData = data.coins;
+  const coins = data.coins || data.data || (Array.isArray(data) ? data : null);
+  if (!coins || !coins.length) return;
+
+  topCoinsData = coins;
   renderTopCoins();
   updateTickerBar();
 }
@@ -403,7 +415,9 @@ async function loadCoinDetails() {
     byId("chartChangePill").className = `pill ${value >= 0 ? "positive" : "negative"}`;
   }
 
-  if (byId("selectedTimeframe")) byId("selectedTimeframe").textContent = chartTimeframe;
+  if (byId("selectedTimeframe")) {
+    byId("selectedTimeframe").textContent = chartTimeframe;
+  }
 
   if (byId("selectedPerformance")) {
     byId("selectedPerformance").textContent = formatPercent(value);
@@ -418,21 +432,33 @@ async function loadCoinDetails() {
   const coinMoodIcon = byId("coinMoodIconImg");
   if (coinMoodIcon) {
     coinMoodIcon.className = `mood-icon-img ${mood.anim}`;
-    setImage(coinMoodIcon, getIconImagePath(style, mood.key), getIconImagePath("classic", mood.key));
+    setImage(
+      coinMoodIcon,
+      getIconImagePath(style, mood.key),
+      getIconImagePath("classic", mood.key)
+    );
   }
 
   const socialIcon = byId("detailSocialIconImg");
   if (socialIcon) {
     socialIcon.className = `mood-icon-img ${socialMood.anim}`;
-    setImage(socialIcon, getIconImagePath(style, socialMood.key), getIconImagePath("classic", socialMood.key));
+    setImage(
+      socialIcon,
+      getIconImagePath(style, socialMood.key),
+      getIconImagePath("classic", socialMood.key)
+    );
   }
 
   updateCoinIntervalBoxes(coin);
   setChartTimeframeButtons();
 
-  const chartData = await fetchJson(`/api/coin-chart?coin=${encodeURIComponent(coin.id)}&timeframe=${encodeURIComponent(chartTimeframe)}`);
-  if (chartData && chartData.ok && Array.isArray(chartData.prices) && chartData.prices.length > 1) {
-    drawChart(chartData.prices);
+  const chartData = await fetchJson(
+    `/api/coin-chart?coin=${encodeURIComponent(coin.id)}&timeframe=${encodeURIComponent(chartTimeframe)}`
+  );
+
+  const prices = chartData?.prices || chartData?.data?.prices;
+  if (Array.isArray(prices) && prices.length > 1) {
+    drawChart(prices);
   }
 }
 
@@ -526,8 +552,13 @@ function setupButtons() {
   byId("generateTweetBtn")?.addEventListener("click", refreshOutputs);
   byId("generateMemeBtn")?.addEventListener("click", refreshOutputs);
 
-  byId("copyTweetBtn")?.addEventListener("click", () => copyText(byId("tweetOutput")?.value || ""));
-  byId("copyMemeBtn")?.addEventListener("click", () => copyText(byId("memePromptOutput")?.value || ""));
+  byId("copyTweetBtn")?.addEventListener("click", () => {
+    copyText(byId("tweetOutput")?.value || "");
+  });
+
+  byId("copyMemeBtn")?.addEventListener("click", () => {
+    copyText(byId("memePromptOutput")?.value || "");
+  });
 
   byId("macroDriver")?.addEventListener("change", () => {
     const score = Number(byId("heroScore")?.textContent || 50);

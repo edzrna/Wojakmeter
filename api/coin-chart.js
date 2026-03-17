@@ -3,46 +3,69 @@ export default async function handler(req, res) {
     const { coin = "bitcoin", timeframe = "1h" } = req.query;
 
     let days = 1;
-    let interval = "hourly";
 
-    // 🔥 MAPEO CORRECTO PARA COINGECKO
     if (timeframe === "1m" || timeframe === "5m" || timeframe === "15m") {
       days = 1;
-      interval = "hourly";
-    } 
-    else if (timeframe === "1h" || timeframe === "4h") {
+    } else if (timeframe === "1h" || timeframe === "4h") {
       days = 1;
-      interval = "hourly";
-    } 
-    else if (timeframe === "24h") {
+    } else if (timeframe === "24h") {
       days = 1;
-      interval = "hourly";
-    } 
-    else if (timeframe === "7d") {
+    } else if (timeframe === "7d") {
       days = 7;
-      interval = "daily";
     }
 
-    const url = `https://api.coingecko.com/api/v3/coins/${coin}/market_chart?vs_currency=usd&days=${days}&interval=${interval}`;
+    const headers = {
+      accept: "application/json"
+    };
 
-    const response = await fetch(url);
-    const data = await response.json();
-
-    if (!data.prices) {
-      return res.status(500).json({ ok: false, error: "Invalid data from CoinGecko" });
+    if (process.env.CG_API_KEY) {
+      headers["x-cg-demo-api-key"] = process.env.CG_API_KEY;
     }
 
-    const prices = data.prices.map(p => p[1]);
+    const url = `https://api.coingecko.com/api/v3/coins/${coin}/market_chart?vs_currency=usd&days=${days}`;
 
-    res.status(200).json({
+    const response = await fetch(url, { headers });
+    const text = await response.text();
+
+    if (!response.ok) {
+      return res.status(response.status).json({
+        ok: false,
+        status: response.status,
+        error: text || "CoinGecko failed"
+      });
+    }
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      return res.status(500).json({
+        ok: false,
+        error: "CoinGecko returned invalid JSON",
+        raw: text
+      });
+    }
+
+    if (!data || !Array.isArray(data.prices)) {
+      return res.status(500).json({
+        ok: false,
+        error: "Invalid data from CoinGecko",
+        raw: data
+      });
+    }
+
+    const prices = data.prices.map(item => item[1]);
+
+    return res.status(200).json({
       ok: true,
+      coin,
+      timeframe,
       prices
     });
-
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       ok: false,
-      error: "CoinGecko failed"
+      error: error.message
     });
   }
 }

@@ -197,9 +197,7 @@ img{ display:block; max-width:100%; }
 }
 
 .hero,
-.share-card,
-.drivers-card,
-.emotion-bar{
+.share-card{
   padding:18px;
 }
 
@@ -220,15 +218,89 @@ img{ display:block; max-width:100%; }
   color:var(--title);
 }
 
-.hero-grid{
+.hero-unified{
   display:grid;
-  grid-template-columns:1.2fr .8fr .8fr;
-  gap:18px;
+  grid-template-columns:.95fr 1.25fr;
+  gap:20px;
   align-items:stretch;
 }
 
-.hero-main{
-  text-align:center;
+.hero-visual-side,
+.hero-control-side{
+  min-width:0;
+}
+
+.hero-visual-side{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+}
+
+.hero-control-side{
+  display:grid;
+  gap:16px;
+}
+
+.hero-controls-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+
+.hero-control-card{
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:var(--panel);
+  padding:14px;
+}
+
+.hero-control-title{
+  font-family:var(--font-ui);
+  color:var(--muted);
+  margin-bottom:10px;
+  font-weight:700;
+  letter-spacing:.04em;
+}
+
+.hero-driver-select{
+  width:100%;
+  background:#11172b;
+  border:1px solid rgba(255,255,255,0.1);
+  color:#fff;
+  padding:12px 12px;
+  border-radius:12px;
+}
+
+.hero-driver-summary{
+  display:block;
+}
+
+.hero-bar-wrap{
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:var(--panel);
+  padding:14px;
+}
+
+.hero-bar-head{
+  margin-bottom:8px;
+}
+
+.hero-social-card{
+  width:100%;
+  margin-top:14px;
+}
+
+.compact-driver-list{
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:var(--panel);
+  padding:0 14px;
+}
+
+.compact-driver-list .driver-item:first-child{
+  border-top:none;
 }
 
 .wojak-stage{
@@ -344,21 +416,13 @@ img{ display:block; max-width:100%; }
 .heartbeat-frustration #heartbeatPath,
 .heartbeat-frustration .heartbeat-heart{ color:#ff3b4d; stroke:#ff3b4d; }
 
-.heartbeat-euphoria .heartbeat-heart{ animation-duration:.75s; }
-.heartbeat-content .heartbeat-heart{ animation-duration:1s; }
-.heartbeat-optimism .heartbeat-heart{ animation-duration:1.15s; }
-.heartbeat-neutral .heartbeat-heart{ animation-duration:1.3s; }
-.heartbeat-doubt .heartbeat-heart{ animation-duration:1.45s; }
-.heartbeat-concern .heartbeat-heart{ animation-duration:1.1s; }
-.heartbeat-frustration .heartbeat-heart{ animation-duration:.68s; }
-
 .hero-market-stats,
 .emotion-meta{
   display:grid;
   grid-template-columns:repeat(3, minmax(0, 1fr));
   gap:10px;
-  max-width:620px;
-  margin:0 auto 16px;
+  max-width:100%;
+  margin:0;
 }
 
 .hero-stat-box,
@@ -540,26 +604,6 @@ img{ display:block; max-width:100%; }
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:14px;
-}
-
-.drivers-controls{
-  margin-bottom:14px;
-}
-
-.drivers-controls label{
-  display:block;
-  margin-bottom:8px;
-  color:var(--muted);
-  font-family:var(--font-ui);
-}
-
-.drivers-controls select{
-  width:100%;
-  background:#11172b;
-  border:1px solid rgba(255,255,255,0.1);
-  color:#fff;
-  padding:10px 12px;
-  border-radius:10px;
 }
 
 .driver-list{
@@ -924,7 +968,10 @@ body.style-minimal .logo-img{
 }
 
 @media (max-width:1100px){
-  .hero-grid{ grid-template-columns:1fr; }
+  .hero-unified{
+    grid-template-columns:1fr;
+  }
+
   .coins-grid{ grid-template-columns:repeat(3, 1fr); }
   .detail-grid{ grid-template-columns:1fr; }
   .scale-grid{ grid-template-columns:repeat(4, 1fr); }
@@ -973,6 +1020,10 @@ body.style-minimal .logo-img{
 @media (max-width:780px){
   .app-shell{
     width:min(100% - 14px, 1220px);
+  }
+
+  .hero-controls-grid{
+    grid-template-columns:1fr;
   }
 
   .coins-grid{ grid-template-columns:repeat(2, 1fr); }
@@ -1081,16 +1132,4 @@ body.style-minimal .logo-img{
   }
 
   .emotion-segment{
-    font-size:.52rem;
-    padding:12px 2px;
-  }
-
-  .emotion-pointer{
-    width:38px;
-  }
-
-  .emotion-pointer-face{
-    width:34px;
-    height:34px;
-  }
-}
+    font-s

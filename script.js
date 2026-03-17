@@ -1,4 +1,4 @@
-const REFRESH_MS = 180000;
+const REFRESH_MS = 300000; // 5 minutos
 
 const moods = [
   { key: "euphoria", name: "Euphoria", min: 85, anim: "anim-pulse", range: "85–100" },

@@ -276,18 +276,10 @@ function setChartTimeframeButtons() {
 }
 
 async function fetchJson(url) {
-  try {
-    const response = await fetch(url, { headers: { accept: "application/json" } });
-    if (!response.ok) {
-      const text = await response.text().catch(() => "");
-      console.error("API error:", response.status, url, text);
-      return null;
-    }
-    return response.json();
-  } catch (error) {
-    console.error("Fetch error:", url, error);
-    return null;
-  }
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Request failed");
+  return res.json();
+
 }
 
 async function loadGlobalMarket() {

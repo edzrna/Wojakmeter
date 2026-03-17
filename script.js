@@ -14,6 +14,7 @@ let activeCoinSymbol = "BTC";
 let globalTimeframe = "1h";
 let chartTimeframe = "1h";
 let topCoinsData = [];
+let currentGlobalMood = getMoodByScore(50);
 
 function byId(id) {
   return document.getElementById(id);
@@ -87,6 +88,16 @@ function debugMessage(msg) {
   if (ticker) {
     ticker.innerHTML = `<span>${msg}</span>`;
   }
+}
+
+function updateTickerBar() {
+  const ticker = byId("tickerBar");
+  if (!ticker || !topCoinsData.length) return;
+
+  ticker.innerHTML = topCoinsData
+    .slice(0, 7)
+    .map(coin => `<span>${coin.symbol.toUpperCase()} <strong>${formatCurrency(coin.current_price)}</strong></span>`)
+    .join("");
 }
 
 async function fetchJson(url) {
@@ -219,6 +230,8 @@ async function loadGlobalMarket() {
   const marketCapChange = globalData.market_cap_change_percentage_24h_usd ?? 0;
   const score = scoreFromChange(marketCapChange);
   const mood = getMoodByScore(score);
+
+  currentGlobalMood = mood;
 
   updateHero(score, mood);
   updateSocial(score);
@@ -493,6 +506,7 @@ function setupButtons() {
     const value = byId("styleSelector").value;
     document.body.className = `style-${value}`;
     localStorage.setItem("wojakStyle", value);
+    renderScale();
     await loadAll();
   });
 }
@@ -503,7 +517,8 @@ async function loadAll() {
   await loadGlobalMarket();
   await loadCoinDetails();
   refreshOutputs();
-  if (topCoinsData.length) {
+
+  if (topCoinsData.length && typeof updateTickerBar === "function") {
     updateTickerBar();
   }
 }

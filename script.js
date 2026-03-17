@@ -251,7 +251,13 @@ async function loadGlobalMarket() {
 }
 
 async function loadTopCoins() {
-  const response = await fetchJson("/api/top-coins");
+  let response;
+try {
+  response = await fetchJson("/api/top-coins");
+} catch (error) {
+  console.warn("Top coins failed, using fallback");
+  return;
+}
   const coins = response?.coins || response?.data || (Array.isArray(response) ? response : null);
 
   if (!coins || !coins.length) {

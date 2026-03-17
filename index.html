@@ -20,7 +20,7 @@
   <meta name="twitter:image" content="https://wojakmeter.com/assets/preview.jpg" />
 
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=11" />
+  <link rel="stylesheet" href="style.css?v=12" />
 </head>
 <body class="style-classic">
   <div class="app-shell">
@@ -58,7 +58,7 @@
 
         <div class="hero-unified">
           <div class="hero-visual-side">
-            <div class="wojak-stage">
+            <div class="wojak-stage" id="wojakStage">
               <div class="sweat hidden" id="sweatFx">💧</div>
               <img
                 id="heroFaceImg"
@@ -265,9 +265,19 @@
 
       <section class="detail-grid">
         <section class="chart-card card">
-          <div class="section-head">
-            <h3 id="chartTitle">BTC / Bitcoin</h3>
-            <span class="muted">Live chart preview</span>
+          <div class="section-head section-head-chart">
+            <div>
+              <h3 id="chartTitle">BTC / Bitcoin</h3>
+              <span class="muted">Live chart preview</span>
+            </div>
+
+            <div class="chart-coin-meta">
+              <img id="chartCoinLogo" class="chart-coin-logo" src="https://assets.coingecko.com/coins/images/1/large/bitcoin.png" alt="Selected coin logo">
+              <div class="chart-coin-copy">
+                <strong id="chartCoinName">Bitcoin</strong>
+                <span id="chartCoinPrice">$--</span>
+              </div>
+            </div>
           </div>
 
           <div class="chart-placeholder">
@@ -396,6 +406,6 @@
     </footer>
   </div>
 
-  <script src="script.js?v=11"></script>
+  <script src="script.js?v=12"></script>
 </body>
 </html>

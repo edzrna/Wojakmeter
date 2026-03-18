@@ -397,91 +397,104 @@ img{ display:block; max-width:100%; }
   justify-content:flex-start;
 }
 
-.emotion-track-wrap{
-  margin-top:10px;
+/* =========================
+   WOJAKMETER BAR CLEAN
+========================= */
+
+.emotion-track-wrap {
+  padding: 6px 4px 4px;
 }
 
-.emotion-track{
-  position:relative;
-  display:grid;
-  grid-template-columns:repeat(7, 1fr);
-  border-radius:16px;
-  overflow:visible;
-  border:1px solid rgba(255,255,255,.08);
-  min-height:60px;
-  background:#0e1723;
-  margin-top:18px;
-  box-shadow:inset 0 2px 8px rgba(0,0,0,.35);
+.emotion-track {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  height: 28px; /* MÁS DELGADA */
+  border-radius: 14px; /* SUAVE */
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.06);
+
+  /* EFECTO HUNDIDO */
+  background: rgba(255,255,255,0.03);
+  box-shadow:
+    inset 0 2px 6px rgba(0,0,0,0.45),
+    inset 0 -1px 2px rgba(255,255,255,0.04);
 }
 
-.emotion-segment{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:14px 6px;
-  font-family:var(--font-ui);
-  font-weight:700;
-  font-size:.75rem;
-  text-align:center;
-  border-right:1px solid rgba(0,0,0,.08);
-  letter-spacing:.04em;
+.emotion-segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.85;
+  transition: opacity 0.3s ease;
 }
 
-.emotion-segment:last-child{ border-right:none; }
+/* COLORES (igual que antes pero limpios) */
+.seg-frustration { background: #ff4d4d; }
+.seg-concern { background: #ff7a3d; }
+.seg-doubt { background: #ffb347; }
+.seg-neutral { background: #d7d96f; }
+.seg-optimism { background: #9be264; }
+.seg-content { background: #44d66f; }
+.seg-euphoria { background: #22e8c5; }
 
-.seg-frustration{ background:#ff3b4d; color:#ffffff; }
-.seg-concern{ background:#ff6c79; color:#ffffff; }
-.seg-doubt{ background:#ff9da6; color:#2b1114; }
-.seg-neutral{ background:#ffffff; color:#18212e; }
-.seg-optimism{ background:#a6ffc4; color:#10220d; }
-.seg-content{ background:#7cffaa; color:#10220d; }
-.seg-euphoria{ background:#4dff88; color:#10220d; }
+/* =========================
+   POINTER
+========================= */
 
-.emotion-pointer{
-  position:absolute;
-  top:-12px;
-  left:64%;
-  transform:translateX(-50%);
-  width:56px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:4px;
-  pointer-events:auto;
-  cursor:default;
-  user-select:none;
-  transition:left .22s ease;
-  z-index:20;
+.emotion-pointer {
+  position: absolute;
+  top: -26px; /* MÁS ARRIBA */
+  left: 50%;
+  transform: translateX(-50%);
+  transition: left 0.4s ease;
+  z-index: 5;
+
+  /* ANIMACIÓN SUAVE */
+  animation: floatPointer 2.4s ease-in-out infinite;
 }
 
-.emotion-pointer-arrow{
-  width:0;
-  height:0;
-  border-left:10px solid transparent;
-  border-right:10px solid transparent;
-  border-top:14px solid #ffffff;
-  filter:drop-shadow(0 2px 4px rgba(0,0,0,.25));
+.emotion-pointer-arrow {
+  width: 0;
+  height: 0;
+  margin: 0 auto 4px;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 10px solid #ffffff;
 }
 
-.emotion-pointer-face{
-  width:52px;
-  height:52px;
-  border-radius:50%;
-  background:#08111b;
-  border:3px solid rgba(255,255,255,.95);
-  box-shadow:0 6px 18px rgba(0,0,0,.35);
-  overflow:hidden;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+.emotion-pointer-face {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.3);
 }
 
-.emotion-pointer-face img{
-  width:100%;
-  height:100%;
-  object-fit:contain;
+.emotion-pointer-face img {
+  width: 24px;
+  height: 24px;
 }
 
+/* =========================
+   ANIMACIÓN
+========================= */
+
+@keyframes floatPointer {
+  0%, 100% {
+    transform: translateX(-50%) translateY(0px);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-6px);
+  }
+}
+
+  
 .mini-card,
 .top-coins,
 .chart-card,

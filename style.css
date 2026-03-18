@@ -397,76 +397,91 @@ img{ display:block; max-width:100%; }
   justify-content:flex-start;
 }
 
-/* =========================
-   WOJAKMETER BAR CLEAN
-========================= */
-
-   .emotion-track-wrap {
-  overflow: visible;
-  padding: 8px 4px 6px;
+.emotion-track-wrap{
+  margin-top:10px;
 }
 
-.emotion-track {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  height: 32px;
-  border-radius: 16px;
-  overflow: visible;
-  border: 1px solid rgba(255,255,255,0.06);
-  background: rgba(0,0,0,0.35);
-  box-shadow:
-    inset 0 3px 8px rgba(0,0,0,0.6),
-    inset 0 -1px 2px rgba(255,255,255,0.05);
-  padding: 2px;
+.emotion-track{
+  position:relative;
+  display:grid;
+  grid-template-columns:repeat(7, 1fr);
+  border-radius:16px;
+  overflow:visible;
+  border:1px solid rgba(255,255,255,.08);
+  min-height:60px;
+  background:#0e1723;
+  margin-top:18px;
+  box-shadow:inset 0 2px 8px rgba(0,0,0,.35);
 }
 
-.emotion-segment {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  border-radius: 12px;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+.emotion-segment{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:14px 6px;
+  font-family:var(--font-ui);
+  font-weight:700;
+  font-size:.75rem;
+  text-align:center;
+  border-right:1px solid rgba(0,0,0,.08);
+  letter-spacing:.04em;
 }
 
-.emotion-segment:last-child { border-right: none; }
-.seg-frustration { background:#ff3b4d; color:#ffffff; }
-.seg-concern { background:#ff6c79; color:#ffffff; }
-.seg-doubt { background:#ff9da6; color:#2b1114; }
-.seg-neutral { background:#ffffff; color:#18212e; }
-.seg-optimism { background:#a6ffc4; color:#10220d; }
-.seg-content { background:#7cffaa; color:#10220d; }
-.seg-euphoria { background:#4dff88; color:#10220d; }
+.emotion-segment:last-child{ border-right:none; }
 
-.emotion-pointer {
-  position: absolute;
-  left: 50%;
-  top: -12px;
-  width: 0;
-  height: 0;
-  transform: translateX(-50%);
-  transition: left 0.35s ease;
-  z-index: 20;
-  pointer-events: none;
+.seg-frustration{ background:#ff3b4d; color:#ffffff; }
+.seg-concern{ background:#ff6c79; color:#ffffff; }
+.seg-doubt{ background:#ff9da6; color:#2b1114; }
+.seg-neutral{ background:#ffffff; color:#18212e; }
+.seg-optimism{ background:#a6ffc4; color:#10220d; }
+.seg-content{ background:#7cffaa; color:#10220d; }
+.seg-euphoria{ background:#4dff88; color:#10220d; }
+
+.emotion-pointer{
+  position:absolute;
+  top:-12px;
+  left:64%;
+  transform:translateX(-50%);
+  width:56px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  pointer-events:auto;
+  cursor:default;
+  user-select:none;
+  transition:left .22s ease;
+  z-index:20;
 }
 
-.emotion-pointer-arrow {
-  width: 0;
-  height: 0;
-  display: block;
-  border-left: 9px solid transparent;
-  border-right: 9px solid transparent;
-  border-top: 14px solid #ffffff;
-  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.35));
+.emotion-pointer-arrow{
+  width:0;
+  height:0;
+  border-left:10px solid transparent;
+  border-right:10px solid transparent;
+  border-top:14px solid #ffffff;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.25));
 }
 
-.emotion-pointer-face {
-  display: none !important;
+.emotion-pointer-face{
+  width:52px;
+  height:52px;
+  border-radius:50%;
+  background:#08111b;
+  border:3px solid rgba(255,255,255,.95);
+  box-shadow:0 6px 18px rgba(0,0,0,.35);
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
-  
+
+.emotion-pointer-face img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+}
+
 .mini-card,
 .top-coins,
 .chart-card,

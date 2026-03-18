@@ -401,53 +401,24 @@ img{ display:block; max-width:100%; }
    WOJAKMETER BAR CLEAN
 ========================= */
 
- .emotion-track-wrap {
-  overflow: visible;
-  padding: 8px 4px 4px;
-}
-
-.emotion-track {
+  .emotion-track {
   position: relative;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  height: 26px;
-  border-radius: 13px;
+
+  height: 32px; /* MÁS GRUESA */
+  border-radius: 16px; /* MÁS REDONDEADA */
   overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: #0d1219;
-  isolation: isolate;
-}
 
-/* capa de profundidad */
-.emotion-track::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 3;
+  border: 1px solid rgba(255,255,255,0.06);
+
+  /* 👇 EFECTO HUNDIDO REAL */
+  background: rgba(0,0,0,0.25);
   box-shadow:
-    inset 0 3px 7px rgba(0,0,0,0.42),
-    inset 0 -1px 2px rgba(255,255,255,0.05);
+    inset 0 3px 8px rgba(0,0,0,0.55),
+    inset 0 -1px 2px rgba(255,255,255,0.04);
 }
-
-/* brillo superior sutil */
-.emotion-track::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 4;
-  background: linear-gradient(
-    180deg,
-    rgba(255,255,255,0.10) 0%,
-    rgba(255,255,255,0.03) 28%,
-    rgba(255,255,255,0.00) 45%,
-    rgba(0,0,0,0.10) 100%
-  );
-}
-
+    
 .emotion-segment {
   position: relative;
   z-index: 1;

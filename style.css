@@ -1094,3 +1094,26 @@ body.style-minimal .logo-img{
     height:34px;
   }
 }
+
+/* =========================
+   FIX MOBILE BORDER RADIUS
+========================= */
+
+@media (max-width: 768px) {
+
+  .emotion-track {
+    border-radius: 16px !important;
+    overflow: hidden !important;
+  }
+
+  .emotion-segment:first-child {
+    border-top-left-radius: 16px !important;
+    border-bottom-left-radius: 16px !important;
+  }
+
+  .emotion-segment:last-child {
+    border-top-right-radius: 16px !important;
+    border-bottom-right-radius: 16px !important;
+  }
+
+}

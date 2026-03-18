@@ -576,4 +576,10 @@ async function boot() {
   }
 }
 
+function updatePointer(score) {
+  const pointer = document.getElementById("emotionPointer");
+  const percent = Math.max(0, Math.min(100, score));
+  pointer.style.left = `${percent}%`;
+}
+
 document.addEventListener("DOMContentLoaded", boot);

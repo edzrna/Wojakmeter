@@ -431,14 +431,15 @@ img{ display:block; max-width:100%; }
   transition: opacity 0.3s ease;
 }
 
-/* COLORES (igual que antes pero limpios) */
-.seg-frustration { background: #ff4d4d; }
-.seg-concern { background: #ff7a3d; }
-.seg-doubt { background: #ffb347; }
-.seg-neutral { background: #d7d96f; }
-.seg-optimism { background: #9be264; }
-.seg-content { background: #44d66f; }
-.seg-euphoria { background: #22e8c5; }
+.emotion-segment:last-child{ border-right:none; }
+
+.seg-frustration{ background:#ff3b4d; color:#ffffff; }
+.seg-concern{ background:#ff6c79; color:#ffffff; }
+.seg-doubt{ background:#ff9da6; color:#2b1114; }
+.seg-neutral{ background:#ffffff; color:#18212e; }
+.seg-optimism{ background:#a6ffc4; color:#10220d; }
+.seg-content{ background:#7cffaa; color:#10220d; }
+.seg-euphoria{ background:#4dff88; color:#10220d; }
 
 /* =========================
    POINTER

@@ -401,47 +401,65 @@ img{ display:block; max-width:100%; }
    WOJAKMETER BAR CLEAN
 ========================= */
 
-  .emotion-track {
+   /* =========================
+   WOJAKMETER BAR FINAL
+========================= */
+
+.emotion-track-wrap {
+  overflow: visible;
+  padding: 8px 4px 6px;
+}
+
+.emotion-track {
   position: relative;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
 
   height: 32px; /* MÁS GRUESA */
-  border-radius: 16px; /* MÁS REDONDEADA */
+  border-radius: 16px;
   overflow: hidden;
 
   border: 1px solid rgba(255,255,255,0.06);
 
   /* 👇 EFECTO HUNDIDO REAL */
-  background: rgba(0,0,0,0.25);
+  background: rgba(0,0,0,0.35);
+
   box-shadow:
-    inset 0 3px 8px rgba(0,0,0,0.55),
-    inset 0 -1px 2px rgba(255,255,255,0.04);
+    inset 0 3px 8px rgba(0,0,0,0.6),
+    inset 0 -1px 2px rgba(255,255,255,0.05);
+
+  /* 👇 CLAVE para que se vea el fondo */
+  padding: 2px;
 }
-    
+
 .emotion-segment {
-  position: relative;
-  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.02em;
-  line-height: 1;
+
+  border-radius: 12px;
+
+  /* 👇 leve relieve */
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
 }
 
 .emotion-segment:last-child {
   border-right: none;
 }
 
-.seg-frustration { background:#ff3b4d; color:#ffffff; }
-.seg-concern { background:#ff6c79; color:#ffffff; }
-.seg-doubt { background:#ff9da6; color:#2b1114; }
-.seg-neutral { background:#ffffff; color:#18212e; }
-.seg-optimism { background:#a6ffc4; color:#10220d; }
-.seg-content { background:#7cffaa; color:#10220d; }
-.seg-euphoria { background:#4dff88; color:#10220d; }
+/* 👇 TUS COLORES EXACTOS */
+
+.seg-frustration{ background:#ff3b4d; color:#ffffff; }
+.seg-concern{ background:#ff6c79; color:#ffffff; }
+.seg-doubt{ background:#ff9da6; color:#2b1114; }
+.seg-neutral{ background:#ffffff; color:#18212e; }
+.seg-optimism{ background:#a6ffc4; color:#10220d; }
+.seg-content{ background:#7cffaa; color:#10220d; }
+.seg-euphoria{ background:#4dff88; color:#10220d; }
 
 /* =========================
    POINTER CLEAN (FINAL)

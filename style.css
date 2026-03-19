@@ -139,26 +139,105 @@ img{ display:block; max-width:100%; }
   border-radius:8px;
 }
 
-.ticker-bar{
-  display:flex;
-  gap:18px;
-  align-items:center;
-  overflow-x:auto;
-  white-space:nowrap;
-  padding:10px 24px;
-  background:rgba(10,14,28,0.92);
-  border-bottom:1px solid rgba(255,255,255,0.06);
-  font-family:var(--font-ui);
-  font-size:15px;
-  margin-bottom:14px;
+/* =========================
+   TOP MARKET TICKER
+   ========================= */
+
+.ticker-bar {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  background: rgba(255, 255, 255, 0.02);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.ticker-bar span{ color:rgba(255,255,255,.78); }
-.ticker-bar strong{
-  margin-left:6px;
-  color:#ffffff;
-  font-weight:700;
+.ticker-bar::-webkit-scrollbar {
+  display: none;
 }
+
+.ticker-track {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  width: max-content;
+  min-width: 100%;
+  padding: 10px 14px;
+}
+
+.ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  white-space: nowrap;
+  padding: 0 16px;
+  position: relative;
+  pointer-events: none;
+  user-select: none;
+}
+
+.ticker-item:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  width: 1px;
+  height: 18px;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.10);
+}
+
+.ticker-symbol {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #ffffff;
+}
+
+.ticker-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #d7deea;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .ticker-bar {
+    position: relative;
+    z-index: 4;
+  }
+
+  .ticker-track {
+    padding: 9px 10px;
+  }
+
+  .ticker-item {
+    padding: 0 14px;
+    gap: 7px;
+  }
+
+  .ticker-symbol,
+  .ticker-value {
+    font-size: 12px;
+  }
+
+  .ticker-item:not(:last-child)::after {
+    height: 16px;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .ticker-track {
+    justify-content: center;
+  }
+}
+
 
 .timeframes button,
 .action-btn{

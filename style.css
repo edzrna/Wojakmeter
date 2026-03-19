@@ -175,7 +175,7 @@ img{ display:block; max-width:100%; }
   flex-direction:column;
   justify-content:center;
   gap:4px;
-  min-width:132px;
+  min-width:112px;
   padding:0 16px;
   position:relative;
   flex:0 0 auto;

@@ -219,6 +219,15 @@ img{ display:block; max-width:100%; }
   .ticker-track {
     justify-content: center;
   }
+
+.ticker-logo {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  border-radius: 50%;
+  display: block;
+}
+
 }
 
 .timeframes button,

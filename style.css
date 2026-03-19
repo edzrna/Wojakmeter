@@ -139,103 +139,25 @@ img{ display:block; max-width:100%; }
   border-radius:8px;
 }
 
-/* =========================
-   TOP MARKET TICKER
-   ========================= */
-
 .ticker-bar{
-  width:100%;
-  overflow-x:auto;
-  overflow-y:hidden;
-  -webkit-overflow-scrolling:touch;
-  scrollbar-width:none;
-  -ms-overflow-style:none;
-  background:rgba(255,255,255,.02);
-  border-top:1px solid rgba(255,255,255,.05);
-  border-bottom:1px solid rgba(255,255,255,.06);
-  position:relative;
-  z-index:4;
-}
-
-.ticker-bar::-webkit-scrollbar{
-  display:none;
-}
-
-.ticker-track{
   display:flex;
+  gap:18px;
   align-items:center;
-  gap:0;
-  width:max-content;
-  min-width:100%;
-  padding:10px 0;
-}
-
-.ticker-item{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  flex:0 0 auto;
+  overflow-x:auto;
   white-space:nowrap;
-  padding:0 16px;
-  position:relative;
-  user-select:none;
+  padding:10px 24px;
+  background:rgba(10,14,28,0.92);
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  font-family:var(--font-ui);
+  font-size:15px;
+  margin-bottom:14px;
 }
 
-.ticker-item:not(:last-child)::after{
-  content:"";
-  position:absolute;
-  right:0;
-  top:50%;
-  width:1px;
-  height:18px;
-  transform:translateY(-50%);
-  background:rgba(255,255,255,.10);
-}
-
-.ticker-logo{
-  width:18px;
-  height:18px;
-  border-radius:50%;
-  object-fit:contain;
-  flex:0 0 auto;
-}
-
-.ticker-symbol{
-  font-size:13px;
-  font-weight:700;
-  letter-spacing:.02em;
+.ticker-bar span{ color:rgba(255,255,255,.78); }
+.ticker-bar strong{
+  margin-left:6px;
   color:#ffffff;
-}
-
-.ticker-value{
-  font-size:13px;
-  font-weight:600;
-  color:#d7deea;
-}
-
-@media (max-width:768px){
-  .ticker-track{
-    padding:9px 0;
-  }
-
-  .ticker-item{
-    padding:0 14px;
-    gap:7px;
-  }
-
-  .ticker-logo{
-    width:16px;
-    height:16px;
-  }
-
-  .ticker-symbol,
-  .ticker-value{
-    font-size:12px;
-  }
-
-  .ticker-item:not(:last-child)::after{
-    height:16px;
-  }
+  font-weight:700;
 }
 
 .timeframes button,
@@ -1148,7 +1070,8 @@ body.style-minimal .logo-img{
 
   .hero-face-img{ width:min(220px, 80%); }
 
-  .topbar{
+  .topbar,
+  .ticker-bar{
     padding-left:14px;
     padding-right:14px;
   }

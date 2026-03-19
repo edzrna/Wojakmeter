@@ -266,12 +266,37 @@ try {
 
   topCoinsData = coins;
 
-  const ticker = byId("tickerBar");
-  if (ticker) {
-    ticker.innerHTML = topCoinsData.slice(0, 7).map(coin => {
-      return `<span>${coin.symbol.toUpperCase()} <strong>${formatCurrency(coin.current_price)}</strong></span>`;
-    }).join("");
-  }
+  const tickerData = [
+  { symbol: "BTC", change: 2.1 },
+  { symbol: "ETH", change: 1.4 },
+  { symbol: "SOL", change: 3.8 },
+  { symbol: "XRP", change: -0.6 },
+  { symbol: "BNB", change: 0.9 },
+  { symbol: "DOGE", change: 5.2 },
+  { symbol: "ADA", change: -1.1 },
+  { symbol: "AVAX", change: 2.7 }
+];
+
+function renderTicker() {
+  const ticker = document.getElementById("tickerBar");
+  if (!ticker) return;
+
+  ticker.innerHTML = `
+    <div class="ticker-track">
+      ${tickerData.map(coin => {
+        const cls = coin.change > 0 ? "pos" : coin.change < 0 ? "neg" : "neu";
+        const sign = coin.change > 0 ? "+" : "";
+        return `
+          <div class="ticker-item">
+            ${coin.symbol} <span class="${cls}">${sign}${coin.change.toFixed(1)}%</span>
+          </div>
+        `;
+      }).join("")}
+    </div>
+  `;
+}
+
+renderTicker();
 
   const grid = byId("coinsGrid");
   if (!grid) return;

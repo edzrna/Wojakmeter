@@ -20,7 +20,7 @@
   <meta name="twitter:image" content="https://wojakmeter.com/assets/preview.jpg" />
 
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=7" />
+  <link rel="stylesheet" href="style.css?v=11" />
 </head>
 <body class="style-classic">
   <div class="app-shell">
@@ -56,10 +56,27 @@
       <section class="hero card">
         <h2>CRYPTO MARKET MOOD</h2>
 
-        <div class="hero-grid">
+        <div class="hero-grid hero-grid-single">
           <div class="hero-main">
             <div class="wojak-stage">
               <div class="sweat hidden" id="sweatFx">💧</div>
+
+              <div class="hero-social-badge" aria-label="Social sentiment">
+                <div class="hero-social-badge-label">𝕏</div>
+                <div class="hero-social-badge-icon">
+                  <img
+                    id="socialIconImg"
+                    class="mood-icon-img anim-float"
+                    src="assets/icons/classic/neutral.png"
+                    alt="Social mood icon"
+                  />
+                </div>
+                <div class="hero-social-badge-text">
+                  <span id="socialMoodMini">Neutral</span>
+                  <strong id="socialScoreMini">50</strong>
+                </div>
+              </div>
+
               <img
                 id="heroFaceImg"
                 class="hero-face-img anim-float"
@@ -70,7 +87,7 @@
 
             <div class="hero-mood mood-neutral" id="heroMood">Neutral</div>
 
-            <div class="hero-score">
+            <div class="hero-score" id="heroScoreWrap">
               Score: <span id="heroScore">50</span> / 100
             </div>
 
@@ -83,18 +100,64 @@
               </div>
             </div>
 
-            <div class="hero-market-stats">
-              <div class="hero-stat-box">
+            <section class="emotion-bar-inline" id="emotionBarSection">
+              <div class="section-head section-head-tight">
+                <h3>WOJAKMETER BAR</h3>
+              </div>
+
+              <div class="emotion-track-wrap">
+                <div class="emotion-track" id="emotionTrack">
+                  <div class="emotion-segment seg-frustration">Frustration</div>
+                  <div class="emotion-segment seg-concern">Concern</div>
+                  <div class="emotion-segment seg-doubt">Doubt</div>
+                  <div class="emotion-segment seg-neutral">Neutral</div>
+                  <div class="emotion-segment seg-optimism">Optimism</div>
+                  <div class="emotion-segment seg-content">Content</div>
+                  <div class="emotion-segment seg-euphoria">Euphoria</div>
+
+                  <div class="emotion-pointer" id="emotionPointer" aria-label="WojakMeter indicator">
+                    <div class="emotion-pointer-arrow"></div>
+                    <div class="emotion-pointer-face">
+                      <img
+                        id="emotionPointerImg"
+                        src="assets/icons/classic/neutral.png"
+                        alt="Current emotional state"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="emotion-meta">
+                <div class="emotion-meta-box">
+                  <span>Current Mood</span>
+                  <strong id="emotionBarMood">Neutral</strong>
+                </div>
+
+                <div class="emotion-meta-box">
+                  <span>Score</span>
+                  <strong id="emotionBarScore">50</strong>
+                </div>
+
+                <div class="emotion-meta-box">
+                  <span>Range</span>
+                  <strong id="emotionBarRange">45–59</strong>
+                </div>
+              </div>
+            </section>
+
+            <div class="hero-market-line">
+              <div class="hero-line-item">
                 <span>Market Change</span>
                 <strong id="globalMarketChange">--</strong>
               </div>
-
-              <div class="hero-stat-box">
+              <div class="hero-line-sep"></div>
+              <div class="hero-line-item">
                 <span>Volume</span>
-                <strong id="globalMarketVolume">--</strong>
+                <strong id="globalMarketVolume" class="header-accent">--</strong>
               </div>
-
-              <div class="hero-stat-box">
+              <div class="hero-line-sep"></div>
+              <div class="hero-line-item">
                 <span>Timeframe</span>
                 <strong id="globalMarketTimeframe">1h</strong>
               </div>
@@ -110,28 +173,6 @@
               <button data-timeframe="7d">7d</button>
             </div>
           </div>
-
-          <aside class="social-card mini-card">
-            <h3>𝕏 Social Sentiment</h3>
-            <div class="social-row">
-              <div class="social-icon">
-                <img
-                  id="socialIconImg"
-                  class="mood-icon-img anim-float"
-                  src="assets/icons/classic/neutral.png"
-                  alt="Social mood icon"
-                />
-              </div>
-
-              <div class="social-copy">
-                <div class="social-mood" id="socialMood">Neutral</div>
-                <div class="muted">Score: <span id="socialScore">50</span></div>
-                <div class="muted">Positive: <span id="socialPositive">--</span></div>
-                <div class="muted">Negative: <span id="socialNegative">--</span></div>
-                <div class="muted">Mentions: <span id="socialMentions">--</span></div>
-              </div>
-            </div>
-          </aside>
 
           <section class="drivers-card card">
             <div class="section-head">
@@ -154,16 +195,6 @@
 
             <div class="driver-list">
               <div class="driver-item">
-                <span>Technical Mood</span>
-                <strong id="driverTechnical">Neutral</strong>
-              </div>
-
-              <div class="driver-item">
-                <span>Social Mood</span>
-                <strong id="driverSocial">Neutral</strong>
-              </div>
-
-              <div class="driver-item">
                 <span>Macro Driver</span>
                 <strong id="driverMacro">Market flow / price action</strong>
               </div>
@@ -172,120 +203,159 @@
                 <span>Main Narrative</span>
                 <strong id="driverNarrative">Waiting for live market data.</strong>
               </div>
+
+              <div class="driver-item">
+                <span>Timeframe Reaction</span>
+                <strong id="driverTimeframeReaction">Balanced reaction</strong>
+              </div>
+
+              <div class="driver-item">
+                <span>Risk Tone</span>
+                <strong id="driverRiskTone">Neutral</strong>
+              </div>
             </div>
           </section>
         </div>
       </section>
 
-      <section class="emotion-bar card" id="emotionBarSection">
+      <section class="top-coins card" id="top-coins">
         <div class="section-head">
-          <h3>WOJAKMETER BAR</h3>
-          <span class="muted">Live emotional position of the crypto market</span>
+          <h3>MARKET SECTIONS</h3>
+          <span class="muted">Live market overview</span>
         </div>
 
-        <div class="emotion-track-wrap">
-          <div class="emotion-track" id="emotionTrack">
-            <div class="emotion-segment seg-frustration">Frustration</div>
-            <div class="emotion-segment seg-concern">Concern</div>
-            <div class="emotion-segment seg-doubt">Doubt</div>
-            <div class="emotion-segment seg-neutral">Neutral</div>
-            <div class="emotion-segment seg-optimism">Optimism</div>
-            <div class="emotion-segment seg-content">Content</div>
-            <div class="emotion-segment seg-euphoria">Euphoria</div>
+        <div class="tabs-row" id="marketTabs">
+          <button class="tab-btn active" data-tab="coins">Top 10 Coins</button>
+          <button class="tab-btn" data-tab="trending">Trending Coins 🔥</button>
+          <button class="tab-btn" data-tab="memes">Top 10 Memes</button>
+        </div>
 
-            <div class="emotion-pointer" id="emotionPointer" aria-label="WojakMeter indicator">
-              <div class="emotion-pointer-arrow"></div>
-              <div class="emotion-pointer-face">
-                <img
-                  id="emotionPointerImg"
-                  src="assets/icons/classic/neutral.png"
-                  alt="Current emotional state"
-                />
-              </div>
+        <div class="tab-panel active" id="tab-coins">
+          <div class="coins-grid" id="coinsGrid"></div>
+        </div>
+
+        <div class="tab-panel" id="tab-trending">
+          <div class="coins-grid" id="trendingGrid"></div>
+        </div>
+
+        <div class="tab-panel" id="tab-memes">
+          <div class="memes-grid" id="memesGrid">
+            <div class="meme-card">
+              <div class="meme-rank">#1</div>
+              <div class="meme-title">ETF Wojak</div>
+              <div class="meme-copy">Institutional money enters. Market starts acting premium.</div>
+            </div>
+            <div class="meme-card">
+              <div class="meme-rank">#2</div>
+              <div class="meme-title">Panic Candle</div>
+              <div class="meme-copy">One red candle and crypto Twitter loses composure.</div>
+            </div>
+            <div class="meme-card">
+              <div class="meme-rank">#3</div>
+              <div class="meme-title">Rate Cut Hopium</div>
+              <div class="meme-copy">Liquidity dreams return and sentiment gets greener.</div>
             </div>
           </div>
         </div>
-
-        <div class="emotion-meta">
-          <div class="emotion-meta-box">
-            <span>Current Mood</span>
-            <strong id="emotionBarMood">Neutral</strong>
-          </div>
-
-          <div class="emotion-meta-box">
-            <span>Score</span>
-            <strong id="emotionBarScore">50</strong>
-          </div>
-
-          <div class="emotion-meta-box">
-            <span>Range</span>
-            <strong id="emotionBarRange">45–59</strong>
-          </div>
-        </div>
       </section>
 
-      <section class="drivers-grid">
-        <section class="share-card card">
-          <div class="section-head">
-            <h3>SHARE MARKET SENTIMENT</h3>
-          </div>
-
-          <div class="action-buttons">
-            <button id="generateTweetBtn" class="action-btn primary">Generate Sentiment Post</button>
-            <button id="copyTweetBtn" class="action-btn">Copy Post</button>
-          </div>
-
-          <textarea id="tweetOutput" class="output-box" readonly></textarea>
-        </section>
-
-        <section class="share-card card">
-          <div class="section-head">
-            <h3>GENERATE MEME PROMPT</h3>
-          </div>
-
-          <div class="action-buttons">
-            <button id="generateMemeBtn" class="action-btn primary">Generate Meme Prompt</button>
-            <button id="copyMemeBtn" class="action-btn">Copy Prompt</button>
-          </div>
-
-          <textarea id="memePromptOutput" class="output-box" readonly></textarea>
-        </section>
-      </section>
-
-      <section class="top-coins card" id="top-coins">
-        <div class="section-head">
-          <h3>TOP 10 COINS</h3>
-          <span class="muted">Live CoinGecko market data</span>
-        </div>
-        <div class="coins-grid" id="coinsGrid"></div>
-      </section>
-
-      <section class="detail-grid">
+      <section class="detail-grid detail-grid-single">
         <section class="chart-card card">
-          <div class="section-head">
-            <h3 id="chartTitle">BTC / Bitcoin</h3>
-            <span class="muted">Live chart preview</span>
+          <div class="chart-topbar">
+            <div class="chart-coin-meta">
+              <div class="chart-coin-icon-wrap">
+                <img id="chartCoinIcon" class="chart-coin-icon" src="" alt="Coin icon">
+              </div>
+
+              <div class="chart-coin-copy">
+                <div class="chart-coin-title-line">
+                  <h3 id="chartTitle">BTC / Bitcoin</h3>
+                  <span class="muted" id="chartRenderMode">Line chart</span>
+                </div>
+
+                <div class="chart-coin-stats">
+                  <div class="chart-mini-stat">
+                    <span>Price</span>
+                    <strong id="chartCoinPrice">--</strong>
+                  </div>
+                  <div class="chart-mini-stat">
+                    <span>Volume</span>
+                    <strong id="chartCoinVolume">--</strong>
+                  </div>
+                  <div class="chart-mini-stat">
+                    <span>Market Cap</span>
+                    <strong id="chartCoinMarketCap">--</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="chart-toolbar">
+              <div class="timeframes compact" id="chartTimeframes">
+                <button data-timeframe="1m">1m</button>
+                <button data-timeframe="5m">5m</button>
+                <button data-timeframe="15m">15m</button>
+                <button data-timeframe="1h" class="active">1h</button>
+                <button data-timeframe="4h">4h</button>
+                <button data-timeframe="24h">24h</button>
+                <button data-timeframe="7d">7d</button>
+              </div>
+
+              <div class="chart-mode-switch" id="chartModeSwitch">
+                <button class="chart-mode-btn active" data-mode="line">Line</button>
+                <button class="chart-mode-btn" data-mode="candle">Candles</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-inline-moods">
+            <div class="chart-mood-chip">
+              <img
+                id="coinMoodIconImg"
+                class="chart-mood-chip-icon mood-icon-img anim-float"
+                src="assets/icons/classic/neutral.png"
+                alt="Technical mood icon"
+              />
+              <div>
+                <span>Technical</span>
+                <strong id="coinMoodLabel">Neutral</strong>
+              </div>
+            </div>
+
+            <div class="chart-mood-chip">
+              <img
+                id="detailSocialIconImg"
+                class="chart-mood-chip-icon mood-icon-img anim-float"
+                src="assets/icons/classic/neutral.png"
+                alt="Social mood icon"
+              />
+              <div>
+                <span>Social</span>
+                <strong id="detailSocialLabel">Neutral</strong>
+              </div>
+            </div>
+
+            <div class="chart-mood-chip chart-mood-chip-performance">
+              <div>
+                <span>Performance</span>
+                <strong id="selectedPerformance">--</strong>
+              </div>
+            </div>
           </div>
 
           <div class="chart-placeholder">
+            <div class="chart-time-label" id="chartTimeLabel">Viewing 1h structure</div>
+
             <svg id="coinChartSvg" viewBox="0 0 900 280" preserveAspectRatio="none" aria-hidden="true">
               <path id="coinChartArea" d=""></path>
               <path id="coinChartPath" d=""></path>
+              <g id="coinChartCandles"></g>
             </svg>
           </div>
 
           <div class="chart-footer">
-            <div class="timeframes compact" id="chartTimeframes">
-              <button data-timeframe="1m">1m</button>
-              <button data-timeframe="5m">5m</button>
-              <button data-timeframe="15m">15m</button>
-              <button data-timeframe="1h" class="active">1h</button>
-              <button data-timeframe="4h">4h</button>
-              <button data-timeframe="24h">24h</button>
-              <button data-timeframe="7d">7d</button>
-            </div>
-
             <div class="pill positive" id="chartChangePill">--</div>
+            <div class="muted">Selected timeframe: <span id="selectedTimeframe">1h</span></div>
           </div>
 
           <div class="market-intervals">
@@ -298,48 +368,6 @@
             <div class="interval-box"><span>7d</span><strong id="perf7d">--</strong></div>
           </div>
         </section>
-
-        <aside class="side-stack">
-          <section class="side-card card">
-            <h3 id="coinMoodTitle">BTC Mood</h3>
-            <div class="mood-row">
-              <div class="mood-icon">
-                <img
-                  id="coinMoodIconImg"
-                  class="mood-icon-img anim-float"
-                  src="assets/icons/classic/neutral.png"
-                  alt="Coin mood icon"
-                />
-              </div>
-
-              <div class="mood-copy">
-                <div class="big-label" id="coinMoodLabel">Neutral</div>
-                <div class="muted">Score: <span id="coinMoodScore">50</span></div>
-                <div class="muted">Selected timeframe: <span id="selectedTimeframe">1h</span></div>
-                <div class="muted">Performance: <span id="selectedPerformance">--</span></div>
-              </div>
-            </div>
-          </section>
-
-          <section class="side-card card">
-            <h3 id="coinSocialMoodTitle">BTC Social Mood</h3>
-            <div class="mood-row">
-              <div class="mood-icon">
-                <img
-                  id="detailSocialIconImg"
-                  class="mood-icon-img anim-float"
-                  src="assets/icons/classic/neutral.png"
-                  alt="Coin social mood icon"
-                />
-              </div>
-
-              <div class="mood-copy">
-                <div class="big-label" id="detailSocialLabel">Neutral</div>
-                <div class="muted">Score: <span id="detailSocialScore">50</span></div>
-              </div>
-            </div>
-          </section>
-        </aside>
       </section>
 
       <section class="scale-card card">
@@ -393,6 +421,6 @@
     </footer>
   </div>
 
-  <script src="script.js?v=10"></script>
+  <script src="script.js?v=11"></script>
 </body>
 </html>

@@ -84,20 +84,43 @@ function setImage(el, path, fallback = "") {
 
 function debugMessage(msg) {
   console.log("[WojakMeter]", msg);
-  const ticker = byId("tickerBar");
-  if (ticker) {
-    ticker.innerHTML = `<span>${msg}</span>`;
-  }
 }
 
-function updateTickerBar() {
+function renderTicker(coins) {
   const ticker = byId("tickerBar");
-  if (!ticker || !topCoinsData.length) return;
+  if (!ticker) return;
 
-  ticker.innerHTML = topCoinsData
-    .slice(0, 7)
-    .map(coin => `<span>${coin.symbol.toUpperCase()} <strong>${formatCurrency(coin.current_price)}</strong></span>`)
-    .join("");
+  if (!Array.isArray(coins) || !coins.length) {
+    ticker.innerHTML = `
+      <div class="ticker-track">
+        <div class="ticker-item">
+          <span class="ticker-symbol">Market</span>
+          <span class="neu">Unavailable</span>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  const items = coins.slice(0, 8).map((coin) => {
+    const symbol = coin.symbol?.toUpperCase?.() || "--";
+    const change = coin.price_change_percentage_24h_in_currency ?? 0;
+    const cls = change > 0 ? "pos" : change < 0 ? "neg" : "neu";
+    const sign = change > 0 ? "+" : "";
+
+    return `
+      <div class="ticker-item">
+        <span class="ticker-symbol">${symbol}</span>
+        <span class="${cls}">${sign}${change.toFixed(1)}%</span>
+      </div>
+    `;
+  }).join("");
+
+  ticker.innerHTML = `
+    <div class="ticker-track">
+      ${items}
+    </div>
+  `;
 }
 
 async function fetchJson(url) {
@@ -252,12 +275,15 @@ async function loadGlobalMarket() {
 
 async function loadTopCoins() {
   let response;
-try {
-  response = await fetchJson("/api/top-coins");
-} catch (error) {
-  console.warn("Top coins failed, using fallback");
-  return;
-}
+
+  try {
+    response = await fetchJson("/api/top-coins");
+  } catch (error) {
+    console.warn("Top coins failed, using fallback");
+    renderTicker([]);
+    return;
+  }
+
   const coins = response?.coins || response?.data || (Array.isArray(response) ? response : null);
 
   if (!coins || !coins.length) {
@@ -265,38 +291,7 @@ try {
   }
 
   topCoinsData = coins;
-
-  const tickerData = [
-  { symbol: "BTC", change: 2.1 },
-  { symbol: "ETH", change: 1.4 },
-  { symbol: "SOL", change: 3.8 },
-  { symbol: "XRP", change: -0.6 },
-  { symbol: "BNB", change: 0.9 },
-  { symbol: "DOGE", change: 5.2 },
-  { symbol: "ADA", change: -1.1 },
-  { symbol: "AVAX", change: 2.7 }
-];
-
-function renderTicker() {
-  const ticker = document.getElementById("tickerBar");
-  if (!ticker) return;
-
-  ticker.innerHTML = `
-    <div class="ticker-track">
-      ${tickerData.map(coin => {
-        const cls = coin.change > 0 ? "pos" : coin.change < 0 ? "neg" : "neu";
-        const sign = coin.change > 0 ? "+" : "";
-        return `
-          <div class="ticker-item">
-            ${coin.symbol} <span class="${cls}">${sign}${coin.change.toFixed(1)}%</span>
-          </div>
-        `;
-      }).join("")}
-    </div>
-  `;
-}
-
-renderTicker();
+  renderTicker(topCoinsData);
 
   const grid = byId("coinsGrid");
   if (!grid) return;
@@ -304,7 +299,7 @@ renderTicker();
   const style = getCurrentStyle();
   grid.innerHTML = "";
 
-  topCoinsData.forEach(coin => {
+  topCoinsData.forEach((coin) => {
     const symbol = coin.symbol.toUpperCase();
     const change = coin.price_change_percentage_24h_in_currency ?? 0;
     const mood = getMoodByScore(scoreFromChange(change));
@@ -336,7 +331,7 @@ renderTicker();
 }
 
 function getCoinBySymbol(symbol) {
-  return topCoinsData.find(coin => coin.symbol.toUpperCase() === symbol);
+  return topCoinsData.find((coin) => coin.symbol.toUpperCase() === symbol);
 }
 
 function getCoinChangeForTimeframe(coin, timeframe) {
@@ -461,7 +456,7 @@ async function loadCoinDetails() {
     el.className = v >= 0 ? "positive" : "negative";
   });
 
-  document.querySelectorAll("#chartTimeframes button").forEach(btn => {
+  document.querySelectorAll("#chartTimeframes button").forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.timeframe === chartTimeframe);
   });
 
@@ -509,10 +504,10 @@ async function copyText(value) {
 }
 
 function setupButtons() {
-  document.querySelectorAll("#heroTimeframes button").forEach(btn => {
+  document.querySelectorAll("#heroTimeframes button").forEach((btn) => {
     btn.addEventListener("click", async () => {
       globalTimeframe = btn.dataset.timeframe;
-      document.querySelectorAll("#heroTimeframes button").forEach(b => {
+      document.querySelectorAll("#heroTimeframes button").forEach((b) => {
         b.classList.toggle("active", b.dataset.timeframe === globalTimeframe);
       });
       await loadGlobalMarket();
@@ -520,7 +515,7 @@ function setupButtons() {
     });
   });
 
-  document.querySelectorAll("#chartTimeframes button").forEach(btn => {
+  document.querySelectorAll("#chartTimeframes button").forEach((btn) => {
     btn.addEventListener("click", async () => {
       chartTimeframe = btn.dataset.timeframe;
       await loadCoinDetails();
@@ -548,10 +543,6 @@ async function loadAll() {
   await loadGlobalMarket();
   await loadCoinDetails();
   refreshOutputs();
-
-  if (topCoinsData.length && typeof updateTickerBar === "function") {
-    updateTickerBar();
-  }
 }
 
 function renderScale() {
@@ -561,7 +552,7 @@ function renderScale() {
   const style = getCurrentStyle();
   grid.innerHTML = "";
 
-  [...moods].reverse().forEach(mood => {
+  [...moods].reverse().forEach((mood) => {
     const item = document.createElement("div");
     item.className = "scale-item";
     item.innerHTML = `
@@ -603,6 +594,7 @@ async function boot() {
 
 function updatePointer(score) {
   const pointer = document.getElementById("emotionPointer");
+  if (!pointer) return;
   const percent = Math.max(0, Math.min(100, score));
   pointer.style.left = `${percent}%`;
 }

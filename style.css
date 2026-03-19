@@ -139,26 +139,104 @@ img{ display:block; max-width:100%; }
   border-radius:8px;
 }
 
+/* =========================
+   TOP MARKET TICKER
+   ========================= */
+
 .ticker-bar{
-  display:flex;
-  gap:18px;
-  align-items:center;
+  width:100%;
   overflow-x:auto;
-  white-space:nowrap;
-  padding:10px 24px;
+  overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  -ms-overflow-style:none;
   background:rgba(10,14,28,0.92);
   border-bottom:1px solid rgba(255,255,255,0.06);
   font-family:var(--font-ui);
-  font-size:15px;
   margin-bottom:14px;
+  backdrop-filter:blur(8px);
 }
 
-.ticker-bar span{ color:rgba(255,255,255,.78); }
-.ticker-bar strong{
-  margin-left:6px;
-  color:#ffffff;
-  font-weight:700;
+.ticker-bar::-webkit-scrollbar{
+  display:none;
 }
+
+.ticker-track{
+  display:flex;
+  align-items:stretch;
+  gap:0;
+  width:max-content;
+  min-width:100%;
+  padding:10px 12px;
+}
+
+.ticker-item{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:4px;
+  min-width:132px;
+  padding:0 16px;
+  position:relative;
+  flex:0 0 auto;
+  white-space:nowrap;
+  pointer-events:none;
+  user-select:none;
+}
+
+.ticker-item:not(:last-child)::after{
+  content:"";
+  position:absolute;
+  right:0;
+  top:50%;
+  width:1px;
+  height:30px;
+  transform:translateY(-50%);
+  background:rgba(255,255,255,0.10);
+}
+
+.ticker-top,
+.ticker-bottom{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.ticker-logo{
+  width:18px;
+  height:18px;
+  object-fit:contain;
+  border-radius:50%;
+  display:block;
+  flex:0 0 auto;
+}
+
+.ticker-price{
+  font-size:13px;
+  font-weight:600;
+  color:#ffffff;
+  line-height:1.1;
+}
+
+.ticker-symbol{
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.03em;
+  color:#aeb8ca;
+  line-height:1.1;
+}
+
+.pos,
+.neg,
+.neu{
+  font-size:12px;
+  font-weight:700;
+  line-height:1.1;
+}
+
+.pos{ color:#4cd964; }
+.neg{ color:#ff4d4f; }
+.neu{ color:#aab4c5; }
 
 .timeframes button,
 .action-btn{
@@ -1035,62 +1113,4 @@ body.style-minimal .logo-img{
 
 @media (max-width:560px){
   .logo-img{
-    height:60px;
-    max-width:260px;
-  }
-
-  .market-stat{ font-size:13px; }
-  .style-label{ font-size:12px; }
-
-  #styleSelector{
-    padding:6px 8px;
-    font-size:13px;
-  }
-
-  .hero{ padding:16px; }
-  .hero h2{ font-size:1.45rem; }
-
-  .social-icon,
-  .mood-icon{
-    width:74px;
-    height:74px;
-    border-radius:16px;
-  }
-
-  .coin-emoji,
-  .scale-face{
-    width:54px;
-    height:54px;
-  }
-
-  .coins-grid{ grid-template-columns:1fr; }
-  .scale-grid{ grid-template-columns:repeat(2, 1fr); }
-  .timeframes{ justify-content:flex-start; }
-  .chart-placeholder{ height:220px; }
-
-  .hero-face-img{ width:min(220px, 80%); }
-
-  .topbar,
-  .ticker-bar{
-    padding-left:14px;
-    padding-right:14px;
-  }
-
-  .emotion-track{
-    min-height:50px;
-  }
-
-  .emotion-segment{
-    font-size:.52rem;
-    padding:12px 2px;
-  }
-
-  .emotion-pointer{
-    width:38px;
-  }
-
-  .emotion-pointer-face{
-    width:34px;
-    height:34px;
-  }
-}
+   

@@ -84,20 +84,56 @@ function setImage(el, path, fallback = "") {
 
 function debugMessage(msg) {
   console.log("[WojakMeter]", msg);
-  const ticker = byId("tickerBar");
-  if (ticker) {
-    ticker.innerHTML = `<span>${msg}</span>`;
-  }
 }
 
-function updateTickerBar() {
+function renderTicker(coins) {
   const ticker = byId("tickerBar");
-  if (!ticker || !topCoinsData.length) return;
+  if (!ticker) return;
 
-  ticker.innerHTML = topCoinsData
-    .slice(0, 7)
-    .map(coin => `<span>${coin.symbol.toUpperCase()} <strong>${formatCurrency(coin.current_price)}</strong></span>`)
-    .join("");
+  if (!Array.isArray(coins) || !coins.length) {
+    ticker.innerHTML = `
+      <div class="ticker-track">
+        <div class="ticker-item">
+          <div class="ticker-top">
+            <span class="ticker-price">Unavailable</span>
+          </div>
+          <div class="ticker-bottom">
+            <span class="ticker-symbol">Market</span>
+            <span class="neu">--</span>
+          </div>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  const items = coins.slice(0, 8).map((coin) => {
+    const symbol = coin.symbol?.toUpperCase?.() || "--";
+    const price = formatCurrency(coin.current_price);
+    const change = coin.price_change_percentage_24h_in_currency ?? 0;
+    const cls = change > 0 ? "pos" : change < 0 ? "neg" : "neu";
+    const sign = change > 0 ? "+" : "";
+    const logo = coin.image || "";
+
+    return `
+      <div class="ticker-item">
+        <div class="ticker-top">
+          <img class="ticker-logo" src="${logo}" alt="${symbol} logo">
+          <span class="ticker-price">${price}</span>
+        </div>
+        <div class="ticker-bottom">
+          <span class="ticker-symbol">${symbol}</span>
+          <span class="${cls}">${sign}${change.toFixed(1)}%</span>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  ticker.innerHTML = `
+    <div class="ticker-track">
+      ${items}
+    </div>
+  `;
 }
 
 async function fetchJson(url) {
@@ -252,12 +288,15 @@ async function loadGlobalMarket() {
 
 async function loadTopCoins() {
   let response;
-try {
-  response = await fetchJson("/api/top-coins");
-} catch (error) {
-  console.warn("Top coins failed, using fallback");
-  return;
-}
+
+  try {
+    response = await fetchJson("/api/top-coins");
+  } catch (error) {
+    console.warn("Top coins failed, using fallback");
+    renderTicker([]);
+    return;
+  }
+
   const coins = response?.coins || response?.data || (Array.isArray(response) ? response : null);
 
   if (!coins || !coins.length) {
@@ -265,13 +304,7 @@ try {
   }
 
   topCoinsData = coins;
-
-  const ticker = byId("tickerBar");
-  if (ticker) {
-    ticker.innerHTML = topCoinsData.slice(0, 7).map(coin => {
-      return `<span>${coin.symbol.toUpperCase()} <strong>${formatCurrency(coin.current_price)}</strong></span>`;
-    }).join("");
-  }
+  renderTicker(topCoinsData);
 
   const grid = byId("coinsGrid");
   if (!grid) return;
@@ -523,10 +556,6 @@ async function loadAll() {
   await loadGlobalMarket();
   await loadCoinDetails();
   refreshOutputs();
-
-  if (topCoinsData.length && typeof updateTickerBar === "function") {
-    updateTickerBar();
-  }
 }
 
 function renderScale() {

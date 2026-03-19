@@ -103,14 +103,15 @@ function renderTicker(coins) {
   }
 
   const items = coins.slice(0, 8).map((coin) => {
-    const symbol = coin.symbol?.toUpperCase?.() || "--";
     const change = coin.price_change_percentage_24h_in_currency ?? 0;
     const cls = change > 0 ? "pos" : change < 0 ? "neg" : "neu";
     const sign = change > 0 ? "+" : "";
 
+    const logo = coin.image || "";
+
     return `
       <div class="ticker-item">
-        <span class="ticker-symbol">${symbol}</span>
+        <img class="ticker-logo" src="${logo}" alt="${coin.symbol}" />
         <span class="${cls}">${sign}${change.toFixed(1)}%</span>
       </div>
     `;
@@ -121,26 +122,6 @@ function renderTicker(coins) {
       ${items}
     </div>
   `;
-}
-
-async function fetchJson(url) {
-  try {
-    const res = await fetch(url, { cache: "no-store" });
-    const text = await res.text();
-
-    if (!res.ok) {
-      throw new Error(`${url} -> ${res.status} ${text}`);
-    }
-
-    try {
-      return JSON.parse(text);
-    } catch (parseError) {
-      throw new Error(`${url} -> invalid JSON: ${text}`);
-    }
-  } catch (error) {
-    console.error("fetchJson error:", error);
-    throw error;
-  }
 }
 
 function updateHero(score, mood) {

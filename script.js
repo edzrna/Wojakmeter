@@ -1,4 +1,8 @@
-const REFRESH_MS = 300000; // 5 minutos
+const TOP_COINS_REFRESH_MS = 15000;     // 15 segundos
+const GLOBAL_REFRESH_MS = 30000;        // 30 segundos
+const COIN_DETAILS_REFRESH_MS = 20000;  // 20 segundos
+const TRENDING_REFRESH_MS = 45000;      // 45 segundos
+const MEMES_REFRESH_MS = 60000;         // 60 segundos
 
 const moods = [
   { key: "euphoria", name: "Euphoria", min: 85, anim: "anim-pulse", range: "85–100" },
@@ -66,10 +70,20 @@ let globalTimeframe = "1h";
 let chartTimeframe = "1h";
 let chartMode = "line";
 let activeMarketTab = "coins";
+
 let topCoinsData = [];
+let trendingCoinsData = [];
+let topMemesData = [];
+
 let currentGlobalMood = getMoodByScore(50);
 let baseGlobalScore = 50;
 let currentGlobalChange = 0;
+
+let isLoadingTopCoins = false;
+let isLoadingGlobal = false;
+let isLoadingCoinDetails = false;
+let isLoadingTrending = false;
+let isLoadingMemes = false;
 
 function byId(id) {
   return document.getElementById(id);
@@ -212,23 +226,70 @@ function renderTicker(coins) {
 }
 
 async function fetchJson(url) {
-  try {
-    const res = await fetch(url, { cache: "no-store" });
-    const text = await res.text();
+  const res = await fetch(url, { cache: "no-store" });
+  const text = await res.text();
 
-    if (!res.ok) {
-      throw new Error(`${url} -> ${res.status} ${text}`);
-    }
-
-    try {
-      return JSON.parse(text);
-    } catch {
-      throw new Error(`${url} -> invalid JSON: ${text}`);
-    }
-  } catch (error) {
-    console.error("fetchJson error:", error);
-    throw error;
+  if (!res.ok) {
+    throw new Error(`${url} -> ${res.status} ${text}`);
   }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error(`${url} -> invalid JSON: ${text}`);
+  }
+}
+
+function normalizeCoinMarketItem(item) {
+  if (!item) return null;
+
+  return {
+    id: item.id || item.coin_id || item.api_symbol || item.symbol?.toLowerCase?.() || "",
+    name: item.name || item.symbol?.toUpperCase?.() || "Unknown",
+    symbol: item.symbol || item.name || "--",
+    image: item.image || item.thumb || item.large || "",
+    current_price: item.current_price ?? item.price ?? null,
+    market_cap: item.market_cap ?? null,
+    total_volume: item.total_volume ?? null,
+    price_change_percentage_1h_in_currency: item.price_change_percentage_1h_in_currency ?? item.change_1h ?? 0,
+    price_change_percentage_24h_in_currency: item.price_change_percentage_24h_in_currency ?? item.data?.price_change_percentage_24h?.usd ?? item.change_24h ?? 0,
+    price_change_percentage_7d_in_currency: item.price_change_percentage_7d_in_currency ?? item.change_7d ?? 0
+  };
+}
+
+function normalizeTrendingItem(item) {
+  const coin = item?.item || item;
+  if (!coin) return null;
+
+  return {
+    id: coin.id || coin.coin_id || coin.api_symbol || coin.symbol?.toLowerCase?.() || "",
+    name: coin.name || coin.symbol?.toUpperCase?.() || "Unknown",
+    symbol: coin.symbol || coin.name || "--",
+    image: coin.large || coin.thumb || coin.small || coin.image || "",
+    current_price:
+      coin.data?.price ??
+      coin.current_price ??
+      coin.price ??
+      null,
+    market_cap: coin.market_cap_rank ?? null,
+    total_volume: null,
+    price_change_percentage_1h_in_currency: 0,
+    price_change_percentage_24h_in_currency:
+      coin.data?.price_change_percentage_24h?.usd ??
+      coin.price_change_percentage_24h_in_currency ??
+      0,
+    price_change_percentage_7d_in_currency: 0
+  };
+}
+
+function getSafeArray(response, keys = []) {
+  if (Array.isArray(response)) return response;
+
+  for (const key of keys) {
+    if (Array.isArray(response?.[key])) return response[key];
+  }
+
+  return [];
 }
 
 function applyMoodColors(mood) {
@@ -351,53 +412,62 @@ function updateDriverPanel() {
 }
 
 async function loadGlobalMarket() {
-  const response = await fetchJson(`/api/global?timeframe=${encodeURIComponent(globalTimeframe)}`);
-  const globalData = response?.data || response?.global || response;
+  if (isLoadingGlobal) return;
+  isLoadingGlobal = true;
 
-  if (!globalData) {
-    throw new Error("Global API returned no usable data");
-  }
+  try {
+    const response = await fetchJson(`/api/global?timeframe=${encodeURIComponent(globalTimeframe)}`);
+    const globalData = response?.data || response?.global || response;
 
-  if (byId("btcDominance") && globalData.market_cap_percentage?.btc != null) {
-    byId("btcDominance").textContent = `${globalData.market_cap_percentage.btc.toFixed(1)}%`;
-  }
+    if (!globalData) {
+      throw new Error("Global API returned no usable data");
+    }
 
-  if (byId("headerMarketCap")) {
-    byId("headerMarketCap").textContent = formatCurrencyCompact(globalData.total_market_cap?.usd);
-  }
+    if (byId("btcDominance") && globalData.market_cap_percentage?.btc != null) {
+      byId("btcDominance").textContent = `${globalData.market_cap_percentage.btc.toFixed(1)}%`;
+    }
 
-  if (byId("headerVolume")) {
-    byId("headerVolume").textContent = formatCurrencyCompact(globalData.total_volume?.usd);
-  }
+    if (byId("headerMarketCap")) {
+      byId("headerMarketCap").textContent = formatCurrencyCompact(globalData.total_market_cap?.usd);
+    }
 
-  currentGlobalChange = globalData.market_cap_change_percentage_24h_usd ?? 0;
-  baseGlobalScore = scoreFromChange(currentGlobalChange);
+    if (byId("headerVolume")) {
+      byId("headerVolume").textContent = formatCurrencyCompact(globalData.total_volume?.usd);
+    }
 
-  const adjustedScore = getAdjustedGlobalScore();
-  const mood = getMoodByScore(adjustedScore);
-  currentGlobalMood = mood;
+    currentGlobalChange = globalData.market_cap_change_percentage_24h_usd ?? 0;
+    baseGlobalScore = scoreFromChange(currentGlobalChange);
 
-  updateHero(adjustedScore, mood);
-  updateSocial(adjustedScore);
-  updateDriverPanel();
+    const adjustedScore = getAdjustedGlobalScore();
+    const mood = getMoodByScore(adjustedScore);
+    currentGlobalMood = mood;
 
-  if (byId("globalMarketChange")) {
-    byId("globalMarketChange").textContent = formatPercent(currentGlobalChange);
-    byId("globalMarketChange").className = currentGlobalChange >= 0 ? "positive" : "negative";
-  }
+    updateHero(adjustedScore, mood);
+    updateSocial(adjustedScore);
+    updateDriverPanel();
 
-  if (byId("globalMarketVolume")) {
-    byId("globalMarketVolume").textContent = formatCurrencyCompact(globalData.total_volume?.usd);
-  }
+    if (byId("globalMarketChange")) {
+      byId("globalMarketChange").textContent = formatPercent(currentGlobalChange);
+      byId("globalMarketChange").className = currentGlobalChange >= 0 ? "positive" : "negative";
+    }
 
-  if (byId("globalMarketTimeframe")) {
-    byId("globalMarketTimeframe").textContent = globalTimeframe;
+    if (byId("globalMarketVolume")) {
+      byId("globalMarketVolume").textContent = formatCurrencyCompact(globalData.total_volume?.usd);
+    }
+
+    if (byId("globalMarketTimeframe")) {
+      byId("globalMarketTimeframe").textContent = globalTimeframe;
+    }
+  } catch (error) {
+    debugMessage(`Global load failed: ${error.message}`);
+  } finally {
+    isLoadingGlobal = false;
   }
 }
 
 function createCoinCard(coin, isActive = false) {
   const style = getCurrentStyle();
-  const symbol = coin.symbol.toUpperCase();
+  const symbol = coin.symbol?.toUpperCase?.() || "--";
   const change = coin.price_change_percentage_24h_in_currency ?? 0;
   const mood = getMoodByScore(scoreFromChange(change));
 
@@ -408,7 +478,7 @@ function createCoinCard(coin, isActive = false) {
   card.innerHTML = `
     <div class="coin-card-top">
       <div class="coin-main">
-        <img class="coin-logo" src="${coin.image}" alt="${symbol} logo">
+        <img class="coin-logo" src="${coin.image || ""}" alt="${symbol} logo">
         <div class="price">${formatCurrency(coin.current_price)}</div>
       </div>
     </div>
@@ -422,7 +492,8 @@ function createCoinCard(coin, isActive = false) {
   `;
 
   card.addEventListener("click", async () => {
-    activeCoinSymbol = symbol;
+    if (!coin.symbol) return;
+    activeCoinSymbol = coin.symbol.toUpperCase();
     renderCoinSections();
     await loadCoinDetails();
     document.querySelector(".chart-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -431,55 +502,122 @@ function createCoinCard(coin, isActive = false) {
   return card;
 }
 
-function renderCoinSections() {
-  const coinsGrid = byId("coinsGrid");
-  const trendingGrid = byId("trendingGrid");
-
-  if (coinsGrid) {
-    coinsGrid.innerHTML = "";
-    topCoinsData.slice(0, 10).forEach((coin) => {
-      coinsGrid.appendChild(createCoinCard(coin, activeCoinSymbol === coin.symbol.toUpperCase()));
-    });
-  }
-
-  if (trendingGrid) {
-    trendingGrid.innerHTML = "";
-    [...topCoinsData]
-      .sort((a, b) =>
-        Math.abs(b.price_change_percentage_24h_in_currency ?? 0) -
-        Math.abs(a.price_change_percentage_24h_in_currency ?? 0)
-      )
-      .slice(0, 10)
-      .forEach((coin) => {
-        trendingGrid.appendChild(createCoinCard(coin, activeCoinSymbol === coin.symbol.toUpperCase()));
-      });
-  }
+function createFallbackCard(title = "Unavailable") {
+  const card = document.createElement("div");
+  card.className = "coin-card";
+  card.innerHTML = `
+    <div class="coin-card-top">
+      <div class="coin-main">
+        <div class="price">--</div>
+      </div>
+    </div>
+    <div class="coin-card-bottom">
+      <div class="symbol">${title}</div>
+      <div class="change neutral">--</div>
+    </div>
+  `;
+  return card;
 }
 
-async function loadTopCoins() {
-  let response;
+function renderGrid(targetId, data, emptyLabel = "Unavailable") {
+  const grid = byId(targetId);
+  if (!grid) return;
 
-  try {
-    response = await fetchJson("/api/top-coins");
-  } catch (error) {
-    console.warn("Top coins failed, using fallback");
-    renderTicker([]);
+  grid.innerHTML = "";
+
+  if (!Array.isArray(data) || !data.length) {
+    grid.appendChild(createFallbackCard(emptyLabel));
     return;
   }
 
-  const coins = response?.coins || response?.data || (Array.isArray(response) ? response : null);
+  data.slice(0, 10).forEach((coin) => {
+    const isActive = activeCoinSymbol === coin.symbol?.toUpperCase?.();
+    grid.appendChild(createCoinCard(coin, isActive));
+  });
+}
 
-  if (!coins || !coins.length) {
-    throw new Error("Top coins API returned no usable data");
+function renderCoinSections() {
+  renderGrid("coinsGrid", topCoinsData, "Top coins unavailable");
+  renderGrid("trendingGrid", trendingCoinsData, "Trending unavailable");
+  renderGrid("memesGrid", topMemesData, "Memes unavailable");
+}
+
+async function loadTopCoins() {
+  if (isLoadingTopCoins) return;
+  isLoadingTopCoins = true;
+
+  try {
+    const response = await fetchJson("/api/top-coins");
+    const coins = getSafeArray(response, ["coins", "data"]).map(normalizeCoinMarketItem).filter(Boolean);
+
+    if (!coins.length) {
+      throw new Error("Top coins API returned no usable data");
+    }
+
+    topCoinsData = coins;
+    renderTicker(topCoinsData);
+    renderCoinSections();
+
+    const activeExists = topCoinsData.some((coin) => coin.symbol?.toUpperCase?.() === activeCoinSymbol);
+    if (!activeExists && topCoinsData[0]?.symbol) {
+      activeCoinSymbol = topCoinsData[0].symbol.toUpperCase();
+    }
+  } catch (error) {
+    debugMessage(`Top coins load failed: ${error.message}`);
+    renderTicker([]);
+    renderCoinSections();
+  } finally {
+    isLoadingTopCoins = false;
   }
+}
 
-  topCoinsData = coins;
-  renderTicker(topCoinsData);
-  renderCoinSections();
+async function loadTrendingCoins() {
+  if (isLoadingTrending) return;
+  isLoadingTrending = true;
+
+  try {
+    const response = await fetchJson("/api/trending");
+    const coins = getSafeArray(response, ["coins", "data"]).map(normalizeTrendingItem).filter(Boolean);
+
+    trendingCoinsData = coins.slice(0, 10);
+    renderCoinSections();
+  } catch (error) {
+    debugMessage(`Trending load failed: ${error.message}`);
+    trendingCoinsData = [];
+    renderCoinSections();
+  } finally {
+    isLoadingTrending = false;
+  }
+}
+
+async function loadTopMemes() {
+  if (isLoadingMemes) return;
+  isLoadingMemes = true;
+
+  try {
+    const response = await fetchJson("/api/top-memes");
+    const coins = getSafeArray(response, ["coins", "data"]).map(normalizeCoinMarketItem).filter(Boolean);
+
+    topMemesData = coins.slice(0, 10);
+    renderCoinSections();
+  } catch (error) {
+    debugMessage(`Top memes load failed: ${error.message}`);
+    topMemesData = [];
+    renderCoinSections();
+  } finally {
+    isLoadingMemes = false;
+  }
 }
 
 function getCoinBySymbol(symbol) {
-  return topCoinsData.find((coin) => coin.symbol.toUpperCase() === symbol);
+  const normalized = String(symbol || "").toUpperCase();
+
+  return (
+    topCoinsData.find((coin) => coin.symbol?.toUpperCase?.() === normalized) ||
+    trendingCoinsData.find((coin) => coin.symbol?.toUpperCase?.() === normalized) ||
+    topMemesData.find((coin) => coin.symbol?.toUpperCase?.() === normalized) ||
+    null
+  );
 }
 
 function getCoinChangeForTimeframe(coin, timeframe) {
@@ -609,103 +747,126 @@ function drawChart(prices) {
 }
 
 async function loadCoinDetails() {
-  const coin = getCoinBySymbol(activeCoinSymbol);
-  if (!coin) {
-    throw new Error("No active coin found");
-  }
+  if (isLoadingCoinDetails) return;
+  isLoadingCoinDetails = true;
 
-  const value = getCoinChangeForTimeframe(coin, chartTimeframe);
-  const score = scoreFromChange(value);
-  const mood = getMoodByScore(score);
-  const socialScore = clamp(score + 3, 0, 100);
-  const socialMood = getMoodByScore(socialScore);
-  const style = getCurrentStyle();
+  try {
+    const coin = getCoinBySymbol(activeCoinSymbol);
 
-  if (byId("chartTitle")) byId("chartTitle").textContent = `${activeCoinSymbol} / ${coin.name}`;
-  if (byId("chartCoinPrice")) byId("chartCoinPrice").textContent = formatCurrency(coin.current_price);
-  if (byId("chartCoinVolume")) byId("chartCoinVolume").textContent = formatCurrencyCompact(coin.total_volume);
-  if (byId("chartCoinMarketCap")) byId("chartCoinMarketCap").textContent = formatCurrencyCompact(coin.market_cap);
-  if (byId("chartCoinIcon")) byId("chartCoinIcon").src = coin.image || "";
+    if (!coin || !coin.id) {
+      throw new Error("No active coin found");
+    }
 
-  if (byId("chartChangePill")) {
-    byId("chartChangePill").textContent = formatPercent(value);
-    byId("chartChangePill").className = `pill ${value >= 0 ? "positive" : "negative"}`;
-  }
+    const value = getCoinChangeForTimeframe(coin, chartTimeframe);
+    const score = scoreFromChange(value);
+    const mood = getMoodByScore(score);
+    const socialScore = clamp(score + 3, 0, 100);
+    const socialMood = getMoodByScore(socialScore);
+    const style = getCurrentStyle();
 
-  if (byId("selectedTimeframe")) byId("selectedTimeframe").textContent = chartTimeframe;
-  if (byId("selectedPerformance")) {
-    byId("selectedPerformance").textContent = formatPercent(value);
-    byId("selectedPerformance").className = value >= 0 ? "positive" : "negative";
-  }
+    if (byId("chartTitle")) byId("chartTitle").textContent = `${activeCoinSymbol} / ${coin.name}`;
+    if (byId("chartCoinPrice")) byId("chartCoinPrice").textContent = formatCurrency(coin.current_price);
+    if (byId("chartCoinVolume")) byId("chartCoinVolume").textContent = formatCurrencyCompact(coin.total_volume);
+    if (byId("chartCoinMarketCap")) byId("chartCoinMarketCap").textContent = formatCurrencyCompact(coin.market_cap);
+    if (byId("chartCoinIcon")) byId("chartCoinIcon").src = coin.image || "";
 
-  if (byId("coinMoodLabel")) byId("coinMoodLabel").textContent = mood.name;
-  if (byId("detailSocialLabel")) byId("detailSocialLabel").textContent = socialMood.name;
+    if (byId("chartChangePill")) {
+      byId("chartChangePill").textContent = formatPercent(value);
+      byId("chartChangePill").className = `pill ${value >= 0 ? "positive" : "negative"}`;
+    }
 
-  const coinMoodIcon = byId("coinMoodIconImg");
-  if (coinMoodIcon) {
-    coinMoodIcon.className = `chart-mood-chip-icon mood-icon-img ${mood.anim}`;
-    setImage(
-      coinMoodIcon,
-      getIconImagePath(style, mood.key),
-      getIconImagePath("classic", mood.key)
+    if (byId("selectedTimeframe")) byId("selectedTimeframe").textContent = chartTimeframe;
+
+    if (byId("selectedPerformance")) {
+      byId("selectedPerformance").textContent = formatPercent(value);
+      byId("selectedPerformance").className = value >= 0 ? "positive" : "negative";
+    }
+
+    if (byId("coinMoodLabel")) byId("coinMoodLabel").textContent = mood.name;
+    if (byId("detailSocialLabel")) byId("detailSocialLabel").textContent = socialMood.name;
+
+    const coinMoodIcon = byId("coinMoodIconImg");
+    if (coinMoodIcon) {
+      coinMoodIcon.className = `chart-mood-chip-icon mood-icon-img ${mood.anim}`;
+      setImage(
+        coinMoodIcon,
+        getIconImagePath(style, mood.key),
+        getIconImagePath("classic", mood.key)
+      );
+    }
+
+    const socialIcon = byId("detailSocialIconImg");
+    if (socialIcon) {
+      socialIcon.className = `chart-mood-chip-icon mood-icon-img ${socialMood.anim}`;
+      setImage(
+        socialIcon,
+        getIconImagePath(style, socialMood.key),
+        getIconImagePath("classic", socialMood.key)
+      );
+    }
+
+    const intervalIds = {
+      "1m": "perf1m",
+      "5m": "perf5m",
+      "15m": "perf15m",
+      "1h": "perf1h",
+      "4h": "perf4h",
+      "24h": "perf24h",
+      "7d": "perf7d"
+    };
+
+    Object.entries(intervalIds).forEach(([tf, id]) => {
+      const el = byId(id);
+      if (!el) return;
+      const v = getCoinChangeForTimeframe(coin, tf);
+      el.textContent = formatPercent(v);
+      el.className = v >= 0 ? "positive" : "negative";
+    });
+
+    document.querySelectorAll("#chartTimeframes button").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.timeframe === chartTimeframe);
+    });
+
+    document.querySelectorAll(".chart-mode-btn").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.mode === chartMode);
+    });
+
+    const chartResponse = await fetchJson(
+      `/api/coin-chart?coin=${encodeURIComponent(coin.id)}&timeframe=${encodeURIComponent(chartTimeframe)}`
     );
+
+    const rawPrices = chartResponse?.prices || chartResponse?.data?.prices;
+
+    if (!Array.isArray(rawPrices) || rawPrices.length < 2) {
+      throw new Error("Chart API returned no usable prices");
+    }
+
+    const prices = rawPrices.map((entry) => {
+      if (Array.isArray(entry)) return Number(entry[1]);
+      return Number(entry);
+    }).filter((n) => Number.isFinite(n));
+
+    if (prices.length < 2) {
+      throw new Error("Chart prices invalid");
+    }
+
+    drawChart(prices);
+  } catch (error) {
+    debugMessage(`Coin detail load failed: ${error.message}`);
+  } finally {
+    isLoadingCoinDetails = false;
   }
-
-  const socialIcon = byId("detailSocialIconImg");
-  if (socialIcon) {
-    socialIcon.className = `chart-mood-chip-icon mood-icon-img ${socialMood.anim}`;
-    setImage(
-      socialIcon,
-      getIconImagePath(style, socialMood.key),
-      getIconImagePath("classic", socialMood.key)
-    );
-  }
-
-  const intervalIds = {
-    "1m": "perf1m",
-    "5m": "perf5m",
-    "15m": "perf15m",
-    "1h": "perf1h",
-    "4h": "perf4h",
-    "24h": "perf24h",
-    "7d": "perf7d"
-  };
-
-  Object.entries(intervalIds).forEach(([tf, id]) => {
-    const el = byId(id);
-    if (!el) return;
-    const v = getCoinChangeForTimeframe(coin, tf);
-    el.textContent = formatPercent(v);
-    el.className = v >= 0 ? "positive" : "negative";
-  });
-
-  document.querySelectorAll("#chartTimeframes button").forEach((btn) => {
-    btn.classList.toggle("active", btn.dataset.timeframe === chartTimeframe);
-  });
-
-  document.querySelectorAll(".chart-mode-btn").forEach((btn) => {
-    btn.classList.toggle("active", btn.dataset.mode === chartMode);
-  });
-
-  const chartResponse = await fetchJson(
-    `/api/coin-chart?coin=${encodeURIComponent(coin.id)}&timeframe=${encodeURIComponent(chartTimeframe)}`
-  );
-
-  const prices = chartResponse?.prices || chartResponse?.data?.prices;
-  if (!Array.isArray(prices) || prices.length < 2) {
-    throw new Error("Chart API returned no usable prices");
-  }
-
-  drawChart(prices);
 }
 
 function setupButtons() {
   document.querySelectorAll("#heroTimeframes button").forEach((btn) => {
     btn.addEventListener("click", async () => {
       globalTimeframe = btn.dataset.timeframe;
+
       document.querySelectorAll("#heroTimeframes button").forEach((b) => {
         b.classList.toggle("active", b.dataset.timeframe === globalTimeframe);
       });
+
       await loadGlobalMarket();
     });
   });
@@ -747,14 +908,20 @@ function setupButtons() {
     document.body.className = `style-${value}`;
     localStorage.setItem("wojakStyle", value);
     renderScale();
-    await loadAll();
+    renderCoinSections();
+    await loadGlobalMarket();
+    await loadCoinDetails();
   });
 }
 
 async function loadAll() {
   debugMessage("Loading live market data...");
-  await loadTopCoins();
-  await loadGlobalMarket();
+  await Promise.all([
+    loadTopCoins(),
+    loadTrendingCoins(),
+    loadTopMemes(),
+    loadGlobalMarket()
+  ]);
   await loadCoinDetails();
 }
 
@@ -786,20 +953,56 @@ function initStyle() {
   }
 }
 
+function startAutoRefresh() {
+  setInterval(async () => {
+    try {
+      await loadTopCoins();
+      await loadCoinDetails();
+    } catch (error) {
+      debugMessage(`Top coins refresh failed: ${error.message}`);
+    }
+  }, TOP_COINS_REFRESH_MS);
+
+  setInterval(async () => {
+    try {
+      await loadGlobalMarket();
+    } catch (error) {
+      debugMessage(`Global refresh failed: ${error.message}`);
+    }
+  }, GLOBAL_REFRESH_MS);
+
+  setInterval(async () => {
+    try {
+      await loadCoinDetails();
+    } catch (error) {
+      debugMessage(`Coin detail refresh failed: ${error.message}`);
+    }
+  }, COIN_DETAILS_REFRESH_MS);
+
+  setInterval(async () => {
+    try {
+      await loadTrendingCoins();
+    } catch (error) {
+      debugMessage(`Trending refresh failed: ${error.message}`);
+    }
+  }, TRENDING_REFRESH_MS);
+
+  setInterval(async () => {
+    try {
+      await loadTopMemes();
+    } catch (error) {
+      debugMessage(`Top memes refresh failed: ${error.message}`);
+    }
+  }, MEMES_REFRESH_MS);
+}
+
 async function boot() {
   try {
     initStyle();
     renderScale();
     setupButtons();
     await loadAll();
-
-    setInterval(async () => {
-      try {
-        await loadAll();
-      } catch (error) {
-        debugMessage(`Refresh failed: ${error.message}`);
-      }
-    }, REFRESH_MS);
+    startAutoRefresh();
   } catch (error) {
     debugMessage(`Boot failed: ${error.message}`);
   }

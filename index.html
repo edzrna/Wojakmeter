@@ -20,7 +20,7 @@
   <meta name="twitter:image" content="https://wojakmeter.com/assets/preview.jpg" />
 
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=12" />
+  <link rel="stylesheet" href="style.css?v=16" />
 </head>
 <body class="style-classic">
   <div class="app-shell">
@@ -354,6 +354,92 @@
         </section>
       </section>
 
+      <section class="studio-card card" id="wojak-studio">
+        <div class="section-head">
+          <h3>WOJAK STUDIO</h3>
+          <span class="muted">Create content from live market sentiment</span>
+        </div>
+
+        <div class="tabs-row" id="studioTabs">
+          <button class="tab-btn active" data-studio-tab="meme">Meme Generator</button>
+          <button class="tab-btn" data-studio-tab="daily">Daily Market Meme</button>
+          <button class="tab-btn" data-studio-tab="xpost">X Post Generator</button>
+          <button class="tab-btn" data-studio-tab="story">Story Mode</button>
+        </div>
+
+        <div class="studio-panel active" id="studio-meme">
+          <div class="studio-grid">
+            <div class="studio-box">
+              <div class="studio-box-head">
+                <h4>Meme Prompt</h4>
+                <button class="action-btn studio-copy-btn" data-copy-target="memePromptOutput">Copy</button>
+              </div>
+              <pre class="studio-output" id="memePromptOutput">Loading...</pre>
+            </div>
+
+            <div class="studio-box">
+              <div class="studio-box-head">
+                <h4>Scene Summary</h4>
+                <button class="action-btn studio-copy-btn" data-copy-target="memeSceneOutput">Copy</button>
+              </div>
+              <div class="studio-output prose-output" id="memeSceneOutput">Loading...</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="studio-panel" id="studio-daily">
+          <div class="studio-grid studio-grid-single">
+            <div class="studio-box">
+              <div class="studio-box-head">
+                <h4>Daily Market Meme</h4>
+                <button class="action-btn studio-copy-btn" data-copy-target="dailyMemeOutput">Copy</button>
+              </div>
+              <div class="studio-output prose-output" id="dailyMemeOutput">Loading...</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="studio-panel" id="studio-xpost">
+          <div class="studio-grid">
+            <div class="studio-box">
+              <div class="studio-box-head">
+                <h4>X Caption</h4>
+                <button class="action-btn studio-copy-btn" data-copy-target="xPostCaptionOutput">Copy</button>
+              </div>
+              <div class="studio-output prose-output" id="xPostCaptionOutput">Loading...</div>
+            </div>
+
+            <div class="studio-box">
+              <div class="studio-box-head">
+                <h4>Alt Text</h4>
+                <button class="action-btn studio-copy-btn" data-copy-target="xPostAltOutput">Copy</button>
+              </div>
+              <div class="studio-output prose-output" id="xPostAltOutput">Loading...</div>
+            </div>
+
+            <div class="studio-box">
+              <div class="studio-box-head">
+                <h4>Hashtags</h4>
+                <button class="action-btn studio-copy-btn" data-copy-target="xPostTagsOutput">Copy</button>
+              </div>
+              <div class="studio-output prose-output" id="xPostTagsOutput">Loading...</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="studio-panel" id="studio-story">
+          <div class="studio-grid studio-grid-single">
+            <div class="studio-box">
+              <div class="studio-box-head">
+                <h4>Market Story</h4>
+                <button class="action-btn studio-copy-btn" data-copy-target="storyModeOutput">Copy</button>
+              </div>
+              <div class="studio-output prose-output" id="storyModeOutput">Loading...</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section class="scale-card card">
         <h3>EMOTIONAL SCALE</h3>
         <div class="scale-grid" id="scaleGrid"></div>
@@ -389,6 +475,7 @@
           <a href="#about">About</a>
           <a href="#top-coins">Top Coins</a>
           <a href="#market">Market Mood</a>
+          <a href="#wojak-studio">Wojak Studio</a>
           <a href="#">Terms</a>
         </div>
 
@@ -405,6 +492,6 @@
     </footer>
   </div>
 
-  <script src="script.js?v=12"></script>
+  <script src="script.js?v=16"></script>
 </body>
 </html>

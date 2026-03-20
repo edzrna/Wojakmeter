@@ -1,4 +1,5 @@
 const COINGECKO_BASE = "https://api.coingecko.com/api/v3";
+
 const IDS = [
   "bitcoin",
   "ethereum",
@@ -12,7 +13,7 @@ const IDS = [
   "tron"
 ];
 
-export default async function handler(req, res) {
+export async function GET() {
   try {
     const headers = {
       accept: "application/json"
@@ -25,26 +26,34 @@ export default async function handler(req, res) {
     const url = `${COINGECKO_BASE}/coins/markets?vs_currency=usd&ids=${IDS.join(",")}&order=market_cap_desc&per_page=10&page=1&sparkline=false&price_change_percentage=1h,24h,7d`;
 
     const response = await fetch(url, { headers });
-    const text = await response.text();
 
     if (!response.ok) {
-      return res.status(response.status).json({
-        ok: false,
-        status: response.status,
-        error: text || "CoinGecko failed"
-      });
+      const text = await response.text();
+      return new Response(
+        JSON.stringify({ error: `CoinGecko error: ${response.status} ${text}` }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" }
+        }
+      );
     }
 
-    const coins = JSON.parse(text);
+    const coins = await response.json();
 
-    return res.status(200).json({
-      ok: true,
-      coins
+    return new Response(JSON.stringify({ coins }), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json"
+      }
     });
+
   } catch (error) {
-    return res.status(500).json({
-      ok: false,
-      error: error.message
-    });
+    return new Response(
+      JSON.stringify({ error: error.message || "Unknown error" }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" }
+      }
+    );
   }
 }

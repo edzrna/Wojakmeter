@@ -3,6 +3,7 @@ const GLOBAL_REFRESH_MS = 30000;
 const COIN_DETAILS_REFRESH_MS = 20000;
 const TRENDING_REFRESH_MS = 45000;
 const MEMES_REFRESH_MS = 60000;
+const ACTIVE_COIN_STORAGE_KEY = "wojakActiveCoin";
 
 const moods = [
   { key: "euphoria", name: "Euphoria", min: 85, anim: "anim-pulse", range: "85–100" },
@@ -153,6 +154,16 @@ function setImage(el, path, fallback = "") {
 
 function debugMessage(msg) {
   console.log("[WojakMeter]", msg);
+}
+
+function saveActiveCoin(symbol) {
+  if (!symbol) return;
+  localStorage.setItem(ACTIVE_COIN_STORAGE_KEY, String(symbol).toUpperCase());
+}
+
+function loadSavedActiveCoin() {
+  const saved = localStorage.getItem(ACTIVE_COIN_STORAGE_KEY);
+  return saved ? saved.toUpperCase() : null;
 }
 
 function getTimeframeWeight(timeframe) {
@@ -490,6 +501,7 @@ function createCoinCard(coin, isActive = false) {
   card.addEventListener("click", async () => {
     if (!coin.symbol) return;
     activeCoinSymbol = coin.symbol.toUpperCase();
+    saveActiveCoin(activeCoinSymbol);
     renderCoinSections();
     await loadCoinDetails();
     document.querySelector(".chart-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -553,9 +565,18 @@ async function loadTopCoins() {
     topCoinsData = coins;
     renderTicker(topCoinsData);
 
-    const activeExists = topCoinsData.some((coin) => coin.symbol?.toUpperCase?.() === activeCoinSymbol);
-    if (!activeExists && topCoinsData[0]?.symbol) {
-      activeCoinSymbol = topCoinsData[0].symbol.toUpperCase();
+    const coinStillExists = getCoinBySymbol(activeCoinSymbol);
+
+    if (!coinStillExists) {
+      const savedCoin = loadSavedActiveCoin();
+      const savedStillExists = getCoinBySymbol(savedCoin);
+
+      if (savedStillExists) {
+        activeCoinSymbol = savedCoin;
+      } else if (topCoinsData[0]?.symbol) {
+        activeCoinSymbol = topCoinsData[0].symbol.toUpperCase();
+        saveActiveCoin(activeCoinSymbol);
+      }
     }
 
     renderCoinSections();
@@ -998,6 +1019,12 @@ function startAutoRefresh() {
 async function boot() {
   try {
     initStyle();
+
+    const savedCoin = loadSavedActiveCoin();
+    if (savedCoin) {
+      activeCoinSymbol = savedCoin;
+    }
+
     renderScale();
     setupButtons();
     await loadAll();

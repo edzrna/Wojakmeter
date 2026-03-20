@@ -1,40 +1,87 @@
-export default async function handler(req, res) {
+function getDaysFromTimeframe(timeframe) {
+  switch (timeframe) {
+    case "1m":
+    case "5m":
+    case "15m":
+    case "1h":
+      return 1;
+    case "4h":
+      return 7;
+    case "24h":
+      return 30;
+    case "7d":
+      return 90;
+    default:
+      return 1;
+  }
+}
+
+export async function GET(request) {
   try {
-    const { coin = "bitcoin", timeframe = "1h" } = req.query;
+    const { searchParams } = new URL(request.url);
 
-    let days = timeframe === "7d" ? 7 : 1;
+    const coin = searchParams.get("coin") || "bitcoin";
+    const timeframe = searchParams.get("timeframe") || "1h";
 
-    const url = `https://api.coingecko.com/api/v3/coins/${coin}/market_chart?vs_currency=usd&days=${days}`;
+    const days = getDaysFromTimeframe(timeframe);
+
+    const url = `https://api.coingecko.com/api/v3/coins/${encodeURIComponent(
+      coin
+    )}/market_chart?vs_currency=usd&days=${days}`;
 
     const response = await fetch(url, {
       headers: {
-        "accept": "application/json",
-        "user-agent": "Mozilla/5.0 (WojakMeter)"
+        accept: "application/json"
       }
     });
 
-    const data = await response.json();
-
-    // 🔥 DEBUG CLAVE
-    if (!data || !data.prices) {
-      return res.status(200).json({
-        ok: false,
-        debug: "NO_PRICES",
-        received: data
-      });
+    if (!response.ok) {
+      const text = await response.text();
+      return new Response(
+        JSON.stringify({
+          error: `CoinGecko error: ${response.status} ${text}`
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" }
+        }
+      );
     }
 
-    const prices = data.prices.map(p => p[1]);
+    const data = await response.json();
 
-    return res.status(200).json({
-      ok: true,
-      prices
-    });
+    if (!data || !Array.isArray(data.prices)) {
+      return new Response(
+        JSON.stringify({
+          error: "NO_PRICES",
+          received: data
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+    }
+
+    return new Response(
+      JSON.stringify({
+        prices: data.prices
+      }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" }
+      }
+    );
 
   } catch (error) {
-    return res.status(500).json({
-      ok: false,
-      error: error.message
-    });
+    return new Response(
+      JSON.stringify({
+        error: error.message || "Unknown error"
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" }
+      }
+    );
   }
 }

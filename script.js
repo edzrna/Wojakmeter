@@ -190,6 +190,10 @@ function getAdjustedGlobalScore() {
   return Math.round(clamp(baseGlobalScore + (macro.bias * weight), 0, 100));
 }
 
+function getMacroKeyLabel(key) {
+  return macroDrivers[key]?.label || "Market flow / price action";
+}
+
 function renderTicker(coins) {
   const ticker = byId("tickerBar");
   if (!ticker) return;
@@ -418,6 +422,140 @@ function updateDriverPanel() {
   if (byId("driverRiskTone")) byId("driverRiskTone").textContent = macro.risk;
 }
 
+function getMarketContext() {
+  const style = byId("styleSelector")?.value || "classic";
+  const macroKey = byId("macroDriver")?.value || "market_flow";
+  const activeCoin = getCoinBySymbol(activeCoinSymbol);
+
+  return {
+    style,
+    globalMood: currentGlobalMood?.name || "Neutral",
+    globalScore: Number(byId("heroScore")?.textContent || 50),
+    globalTimeframe,
+    globalChange: currentGlobalChange ?? 0,
+    globalVolume: byId("globalMarketVolume")?.textContent || "--",
+    activeCoin: activeCoinSymbol || "BTC",
+    activeCoinName: activeCoin?.name || activeCoinSymbol || "Bitcoin",
+    coinTimeframe: chartTimeframe,
+    coinPrice: byId("chartCoinPrice")?.textContent || "--",
+    coinPerformance: byId("selectedPerformance")?.textContent || "--",
+    technicalMood: byId("coinMoodLabel")?.textContent || "Neutral",
+    socialMood: byId("detailSocialLabel")?.textContent || byId("socialMoodMini")?.textContent || "Neutral",
+    macroKey,
+    macroLabel: getMacroKeyLabel(macroKey),
+    macroNarrative: byId("driverNarrative")?.textContent || ""
+  };
+}
+
+function buildMemePrompt(ctx) {
+  return [
+    "Create a high-quality crypto meme image based on the current market context.",
+    "",
+    `Selected visual style: ${ctx.style}`,
+    `Global mood: ${ctx.globalMood}`,
+    `Global timeframe: ${ctx.globalTimeframe}`,
+    `Global market move: ${formatPercent(ctx.globalChange)}`,
+    `Global volume: ${ctx.globalVolume}`,
+    `Coin focus: ${ctx.activeCoin}`,
+    `Coin timeframe: ${ctx.coinTimeframe}`,
+    `Technical mood: ${ctx.technicalMood}`,
+    `Social mood: ${ctx.socialMood}`,
+    `Macro driver: ${ctx.macroLabel}`,
+    `Macro narrative: ${ctx.macroNarrative}`,
+    "",
+    "Main scene:",
+    `- A large Wojak hero reacting in ${ctx.globalMood} mode`,
+    `- ${ctx.activeCoin} should be the main coin on screen`,
+    "- A crypto trading dashboard in the background",
+    `- Emotional expression must match ${ctx.globalMood}`,
+    `- Visual hints of ${ctx.macroLabel}`,
+    "- Composition should feel native to crypto Twitter / X",
+    "- Image should be dramatic, clean and shareable",
+    "",
+    "Branding:",
+    '- Add the website text: "wojakmeter.com"',
+    '- Add the X account text: "@WojakMeter"',
+    "- Put branding in the bottom-right corner"
+  ].join("\n");
+}
+
+function buildMemeScene(ctx) {
+  return `
+<strong>Scene:</strong> A ${ctx.style} Wojak hero reacts to a ${ctx.globalMood.toLowerCase()} market while ${ctx.activeCoin} leads the visual focus. The dashboard shows ${ctx.coinPerformance} on the ${ctx.coinTimeframe} chart, and the market atmosphere is influenced by ${ctx.macroLabel.toLowerCase()}.
+
+<strong>Visual tone:</strong> The image should feel premium, dramatic and native to crypto X, with clear emotional readability and a strong meme format.
+  `.trim();
+}
+
+function buildDailyMeme(ctx) {
+  return `
+<strong>Today's market setup:</strong> The crypto market is sitting in <strong>${ctx.globalMood}</strong> on the <strong>${ctx.globalTimeframe}</strong> view, with overall market performance at <strong>${formatPercent(ctx.globalChange)}</strong>.
+
+<strong>Daily meme angle:</strong> Focus on ${ctx.activeCoin} as the emotional anchor, use ${ctx.macroLabel.toLowerCase()} as the macro backdrop, and make the reaction feel instantly understandable for crypto traders scrolling X.
+
+<strong>Suggested headline:</strong> "${ctx.globalMood} market, ${ctx.activeCoin} decides the mood."
+  `.trim();
+}
+
+function buildXPost(ctx) {
+  const caption = `${ctx.activeCoin} market mood: ${ctx.globalMood}. ${ctx.macroLabel} is shaping sentiment while the market prints ${formatPercent(ctx.globalChange)} on the ${ctx.globalTimeframe} view. ${ctx.coinPerformance} on the selected chart keeps the reaction focused on ${ctx.activeCoin}.`;
+  const alt = `A ${ctx.style} Wojak-style crypto market meme showing ${ctx.globalMood} sentiment for ${ctx.activeCoin}, with a trading dashboard, emotional reaction, and market context tied to ${ctx.macroLabel.toLowerCase()}.`;
+  const hashtags = `#Crypto #Bitcoin #${ctx.activeCoin} #WojakMeter`;
+
+  return { caption, alt, hashtags };
+}
+
+function buildStoryMode(ctx) {
+  return `
+<div class="story-block"><strong>Market context</strong><br>The market is trading with <strong>${ctx.globalMood}</strong> on the <strong>${ctx.globalTimeframe}</strong> timeframe, while overall market performance sits at <strong>${formatPercent(ctx.globalChange)}</strong>.</div>
+
+<div class="story-block"><strong>Social mood</strong><br>Crypto social sentiment is leaning <strong>${ctx.socialMood}</strong>, which reinforces the broader emotional tone around the market.</div>
+
+<div class="story-block"><strong>Technical confirmation</strong><br>${ctx.activeCoin} is showing <strong>${ctx.technicalMood}</strong> conditions on the <strong>${ctx.coinTimeframe}</strong> structure, with current selected performance at <strong>${ctx.coinPerformance}</strong>.</div>
+
+<div class="story-block"><strong>Final reaction</strong><br>The combined reaction is a <strong>${ctx.globalMood}</strong> market shaped by <strong>${ctx.macroLabel}</strong>, with traders reacting through the lens of ${ctx.activeCoin}.</div>
+  `.trim();
+}
+
+function setStudioOutput(id, value) {
+  const el = byId(id);
+  if (!el) return;
+  el.innerHTML = value;
+}
+
+function setStudioText(id, value) {
+  const el = byId(id);
+  if (!el) return;
+  el.textContent = value;
+}
+
+function renderStudio() {
+  const ctx = getMarketContext();
+  const xPost = buildXPost(ctx);
+
+  setStudioText("memePromptOutput", buildMemePrompt(ctx));
+  setStudioOutput("memeSceneOutput", buildMemeScene(ctx));
+  setStudioOutput("dailyMemeOutput", buildDailyMeme(ctx));
+  setStudioOutput("xPostCaptionOutput", xPost.caption);
+  setStudioOutput("xPostAltOutput", xPost.alt);
+  setStudioOutput("xPostTagsOutput", xPost.hashtags);
+  setStudioOutput("storyModeOutput", buildStoryMode(ctx));
+}
+
+async function copyStudioTarget(targetId) {
+  const el = byId(targetId);
+  if (!el) return;
+
+  const text = el.innerText || el.textContent || "";
+  if (!text.trim()) return;
+
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (error) {
+    debugMessage(`Copy failed: ${error.message}`);
+  }
+}
+
 async function loadGlobalMarket() {
   if (isLoadingGlobal) return;
   isLoadingGlobal = true;
@@ -465,6 +603,8 @@ async function loadGlobalMarket() {
     if (byId("globalMarketTimeframe")) {
       byId("globalMarketTimeframe").textContent = globalTimeframe;
     }
+
+    renderStudio();
   } catch (error) {
     debugMessage(`Global load failed: ${error.message}`);
   } finally {
@@ -504,6 +644,7 @@ function createCoinCard(coin, isActive = false) {
     saveActiveCoin(activeCoinSymbol);
     renderCoinSections();
     await loadCoinDetails();
+    renderStudio();
     document.querySelector(".chart-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 
@@ -871,6 +1012,7 @@ async function loadCoinDetails() {
     }
 
     drawChart(prices);
+    renderStudio();
   } catch (error) {
     debugMessage(`Coin detail load failed: ${error.message}`);
   } finally {
@@ -905,11 +1047,11 @@ function setupButtons() {
     });
   });
 
-  document.querySelectorAll(".tab-btn").forEach((btn) => {
+  document.querySelectorAll(".tab-btn[data-tab]").forEach((btn) => {
     btn.addEventListener("click", () => {
       activeMarketTab = btn.dataset.tab;
 
-      document.querySelectorAll(".tab-btn").forEach((b) => {
+      document.querySelectorAll(".tab-btn[data-tab]").forEach((b) => {
         b.classList.toggle("active", b.dataset.tab === activeMarketTab);
       });
 
@@ -919,8 +1061,29 @@ function setupButtons() {
     });
   });
 
+  document.querySelectorAll("[data-studio-tab]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const tab = btn.dataset.studioTab;
+
+      document.querySelectorAll("[data-studio-tab]").forEach((b) => {
+        b.classList.toggle("active", b.dataset.studioTab === tab);
+      });
+
+      document.querySelectorAll(".studio-panel").forEach((panel) => {
+        panel.classList.toggle("active", panel.id === `studio-${tab}`);
+      });
+    });
+  });
+
+  document.querySelectorAll(".studio-copy-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      await copyStudioTarget(btn.dataset.copyTarget);
+    });
+  });
+
   byId("macroDriver")?.addEventListener("change", async () => {
     await loadGlobalMarket();
+    renderStudio();
   });
 
   byId("styleSelector")?.addEventListener("change", async () => {
@@ -931,6 +1094,7 @@ function setupButtons() {
     renderCoinSections();
     await loadGlobalMarket();
     await loadCoinDetails();
+    renderStudio();
   });
 }
 
@@ -943,6 +1107,7 @@ async function loadAll() {
     loadGlobalMarket()
   ]);
   await loadCoinDetails();
+  renderStudio();
 }
 
 function renderScale() {

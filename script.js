@@ -266,11 +266,7 @@ function normalizeTrendingItem(item) {
     name: coin.name || coin.symbol?.toUpperCase?.() || "Unknown",
     symbol: coin.symbol || coin.name || "--",
     image: coin.large || coin.thumb || coin.small || coin.image || "",
-    current_price:
-      coin.data?.price ??
-      coin.current_price ??
-      coin.price ??
-      null,
+    current_price: coin.data?.price ?? coin.current_price ?? coin.price ?? null,
     market_cap: coin.market_cap_rank ?? null,
     total_volume: null,
     price_change_percentage_1h_in_currency: 0,
@@ -580,10 +576,7 @@ async function loadTrendingCoins() {
     const response = await fetchJson("/api/trending");
     const rawCoins = getSafeArray(response, ["coins", "data"]);
     const coins = rawCoins
-      .map((item) => {
-        const normalized = normalizeCoinMarketItem(item) || normalizeTrendingItem(item);
-        return normalized;
-      })
+      .map((item) => normalizeCoinMarketItem(item) || normalizeTrendingItem(item))
       .filter(Boolean);
 
     trendingCoinsData = coins.slice(0, 10);
@@ -634,4 +627,384 @@ function getCoinChangeForTimeframe(coin, timeframe) {
 
   switch (timeframe) {
     case "1m": return h1 / 60;
-    case "5m": return h1 / 1
+    case "5m": return h1 / 12;
+    case "15m": return h1 / 4;
+    case "1h": return h1;
+    case "4h": return h24 / 6;
+    case "24h": return h24;
+    case "7d": return d7;
+    default: return h24;
+  }
+}
+
+function drawLineChart(prices) {
+  const path = byId("coinChartPath");
+  const area = byId("coinChartArea");
+  const candleGroup = byId("coinChartCandles");
+
+  if (!path || !area || !prices || prices.length < 2) {
+    throw new Error("Chart elements or prices missing");
+  }
+
+  if (candleGroup) candleGroup.innerHTML = "";
+
+  const w = 900;
+  const h = 280;
+  const min = Math.min(...prices);
+  const max = Math.max(...prices);
+  const range = max - min || 1;
+
+  const points = prices.map((price, i) => {
+    const x = (i / (prices.length - 1)) * w;
+    const y = h - ((price - min) / range) * (h - 20);
+    return [x, y];
+  });
+
+  const line = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p[0]} ${p[1]}`).join(" ");
+  const areaPath = `${line} L ${w} ${h} L 0 ${h} Z`;
+
+  path.setAttribute("d", line);
+  area.setAttribute("d", areaPath);
+
+  const first = prices[0];
+  const last = prices[prices.length - 1];
+  const positive = last >= first;
+
+  path.style.display = "";
+  area.style.display = "";
+  path.style.stroke = positive ? "var(--green)" : "var(--red)";
+  area.style.fill = positive ? "rgba(77,255,136,.08)" : "rgba(255,59,77,.08)";
+}
+
+function drawCandleChart(prices) {
+  const path = byId("coinChartPath");
+  const area = byId("coinChartArea");
+  const candleGroup = byId("coinChartCandles");
+
+  if (!candleGroup || !prices || prices.length < 2) {
+    throw new Error("Chart elements or prices missing");
+  }
+
+  path.setAttribute("d", "");
+  area.setAttribute("d", "");
+  path.style.display = "none";
+  area.style.display = "none";
+
+  const sample = prices.slice(-28);
+  const w = 900;
+  const h = 280;
+  const min = Math.min(...sample);
+  const max = Math.max(...sample);
+  const range = max - min || 1;
+  const step = w / sample.length;
+  const bodyWidth = Math.max(6, step * 0.42);
+
+  candleGroup.innerHTML = sample.map((price, i) => {
+    const prev = sample[Math.max(i - 1, 0)];
+    const next = sample[Math.min(i + 1, sample.length - 1)];
+    const open = prev;
+    const close = price;
+    const high = Math.max(open, close, next);
+    const low = Math.min(open, close, next);
+
+    const x = i * step + step / 2;
+    const yOpen = h - ((open - min) / range) * (h - 24);
+    const yClose = h - ((close - min) / range) * (h - 24);
+    const yHigh = h - ((high - min) / range) * (h - 24);
+    const yLow = h - ((low - min) / range) * (h - 24);
+
+    const color = close >= open ? "var(--green)" : "var(--red)";
+    const rectY = Math.min(yOpen, yClose);
+    const rectH = Math.max(Math.abs(yClose - yOpen), 4);
+
+    return `
+      <line x1="${x}" y1="${yHigh}" x2="${x}" y2="${yLow}" stroke="${color}"></line>
+      <rect x="${x - bodyWidth / 2}" y="${rectY}" width="${bodyWidth}" height="${rectH}" fill="${color}"></rect>
+    `;
+  }).join("");
+}
+
+function updateChartModeLabel() {
+  const label = byId("chartRenderMode");
+  if (!label) return;
+  label.textContent = chartMode === "candle" ? "Candle chart" : "Line chart";
+}
+
+function updateChartTimeLabel() {
+  const label = byId("chartTimeLabel");
+  if (!label) return;
+  label.textContent = `Viewing ${chartTimeframe} structure`;
+}
+
+function drawChart(prices) {
+  if (chartMode === "candle") {
+    drawCandleChart(prices);
+  } else {
+    drawLineChart(prices);
+  }
+  updateChartModeLabel();
+  updateChartTimeLabel();
+}
+
+async function loadCoinDetails() {
+  if (isLoadingCoinDetails) return;
+  isLoadingCoinDetails = true;
+
+  try {
+    const coin = getCoinBySymbol(activeCoinSymbol);
+
+    if (!coin || !coin.id) {
+      throw new Error("No active coin found");
+    }
+
+    const value = getCoinChangeForTimeframe(coin, chartTimeframe);
+    const score = scoreFromChange(value);
+    const mood = getMoodByScore(score);
+    const socialScore = clamp(score + 3, 0, 100);
+    const socialMood = getMoodByScore(socialScore);
+    const style = getCurrentStyle();
+
+    if (byId("chartTitle")) byId("chartTitle").textContent = `${activeCoinSymbol} / ${coin.name}`;
+    if (byId("chartCoinPrice")) byId("chartCoinPrice").textContent = formatCurrency(coin.current_price);
+    if (byId("chartCoinVolume")) byId("chartCoinVolume").textContent = formatCurrencyCompact(coin.total_volume);
+    if (byId("chartCoinMarketCap")) byId("chartCoinMarketCap").textContent = formatCurrencyCompact(coin.market_cap);
+    if (byId("chartCoinIcon")) byId("chartCoinIcon").src = coin.image || "";
+
+    if (byId("chartChangePill")) {
+      byId("chartChangePill").textContent = formatPercent(value);
+      byId("chartChangePill").className = `pill ${value >= 0 ? "positive" : "negative"}`;
+    }
+
+    if (byId("selectedTimeframe")) byId("selectedTimeframe").textContent = chartTimeframe;
+
+    if (byId("selectedPerformance")) {
+      byId("selectedPerformance").textContent = formatPercent(value);
+      byId("selectedPerformance").className = value >= 0 ? "positive" : "negative";
+    }
+
+    if (byId("coinMoodLabel")) byId("coinMoodLabel").textContent = mood.name;
+    if (byId("detailSocialLabel")) byId("detailSocialLabel").textContent = socialMood.name;
+
+    const coinMoodIcon = byId("coinMoodIconImg");
+    if (coinMoodIcon) {
+      coinMoodIcon.className = `chart-mood-chip-icon mood-icon-img ${mood.anim}`;
+      setImage(
+        coinMoodIcon,
+        getIconImagePath(style, mood.key),
+        getIconImagePath("classic", mood.key)
+      );
+    }
+
+    const socialIcon = byId("detailSocialIconImg");
+    if (socialIcon) {
+      socialIcon.className = `chart-mood-chip-icon mood-icon-img ${socialMood.anim}`;
+      setImage(
+        socialIcon,
+        getIconImagePath(style, socialMood.key),
+        getIconImagePath("classic", socialMood.key)
+      );
+    }
+
+    const intervalIds = {
+      "1m": "perf1m",
+      "5m": "perf5m",
+      "15m": "perf15m",
+      "1h": "perf1h",
+      "4h": "perf4h",
+      "24h": "perf24h",
+      "7d": "perf7d"
+    };
+
+    Object.entries(intervalIds).forEach(([tf, id]) => {
+      const el = byId(id);
+      if (!el) return;
+      const v = getCoinChangeForTimeframe(coin, tf);
+      el.textContent = formatPercent(v);
+      el.className = v >= 0 ? "positive" : "negative";
+    });
+
+    document.querySelectorAll("#chartTimeframes button").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.timeframe === chartTimeframe);
+    });
+
+    document.querySelectorAll(".chart-mode-btn").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.mode === chartMode);
+    });
+
+    const chartResponse = await fetchJson(
+      `/api/coin-chart?coin=${encodeURIComponent(coin.id)}&timeframe=${encodeURIComponent(chartTimeframe)}`
+    );
+
+    const rawPrices = chartResponse?.prices || chartResponse?.data?.prices;
+
+    if (!Array.isArray(rawPrices) || rawPrices.length < 2) {
+      throw new Error("Chart API returned no usable prices");
+    }
+
+    const prices = rawPrices
+      .map((entry) => Array.isArray(entry) ? Number(entry[1]) : Number(entry))
+      .filter((n) => Number.isFinite(n));
+
+    if (prices.length < 2) {
+      throw new Error("Chart prices invalid");
+    }
+
+    drawChart(prices);
+  } catch (error) {
+    debugMessage(`Coin detail load failed: ${error.message}`);
+  } finally {
+    isLoadingCoinDetails = false;
+  }
+}
+
+function setupButtons() {
+  document.querySelectorAll("#heroTimeframes button").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      globalTimeframe = btn.dataset.timeframe;
+
+      document.querySelectorAll("#heroTimeframes button").forEach((b) => {
+        b.classList.toggle("active", b.dataset.timeframe === globalTimeframe);
+      });
+
+      await loadGlobalMarket();
+    });
+  });
+
+  document.querySelectorAll("#chartTimeframes button").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      chartTimeframe = btn.dataset.timeframe;
+      await loadCoinDetails();
+    });
+  });
+
+  document.querySelectorAll(".chart-mode-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      chartMode = btn.dataset.mode;
+      await loadCoinDetails();
+    });
+  });
+
+  document.querySelectorAll(".tab-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      activeMarketTab = btn.dataset.tab;
+
+      document.querySelectorAll(".tab-btn").forEach((b) => {
+        b.classList.toggle("active", b.dataset.tab === activeMarketTab);
+      });
+
+      document.querySelectorAll(".tab-panel").forEach((panel) => {
+        panel.classList.toggle("active", panel.id === `tab-${activeMarketTab}`);
+      });
+    });
+  });
+
+  byId("macroDriver")?.addEventListener("change", async () => {
+    await loadGlobalMarket();
+  });
+
+  byId("styleSelector")?.addEventListener("change", async () => {
+    const value = byId("styleSelector").value;
+    document.body.className = `style-${value}`;
+    localStorage.setItem("wojakStyle", value);
+    renderScale();
+    renderCoinSections();
+    await loadGlobalMarket();
+    await loadCoinDetails();
+  });
+}
+
+async function loadAll() {
+  debugMessage("Loading live market data...");
+  await Promise.all([
+    loadTopCoins(),
+    loadTrendingCoins(),
+    loadTopMemes(),
+    loadGlobalMarket()
+  ]);
+  await loadCoinDetails();
+}
+
+function renderScale() {
+  const grid = byId("scaleGrid");
+  if (!grid) return;
+
+  const style = getCurrentStyle();
+  grid.innerHTML = "";
+
+  [...moods].reverse().forEach((mood) => {
+    const item = document.createElement("div");
+    item.className = "scale-item";
+    item.innerHTML = `
+      <div class="scale-face">
+        <img src="${getIconImagePath(style, mood.key)}" alt="${mood.name}">
+      </div>
+      <strong>${mood.name}</strong>
+    `;
+    grid.appendChild(item);
+  });
+}
+
+function initStyle() {
+  const savedStyle = localStorage.getItem("wojakStyle") || "classic";
+  document.body.className = `style-${savedStyle}`;
+  if (byId("styleSelector")) {
+    byId("styleSelector").value = savedStyle;
+  }
+}
+
+function startAutoRefresh() {
+  setInterval(async () => {
+    try {
+      await loadTopCoins();
+      await loadCoinDetails();
+    } catch (error) {
+      debugMessage(`Top coins refresh failed: ${error.message}`);
+    }
+  }, TOP_COINS_REFRESH_MS);
+
+  setInterval(async () => {
+    try {
+      await loadGlobalMarket();
+    } catch (error) {
+      debugMessage(`Global refresh failed: ${error.message}`);
+    }
+  }, GLOBAL_REFRESH_MS);
+
+  setInterval(async () => {
+    try {
+      await loadCoinDetails();
+    } catch (error) {
+      debugMessage(`Coin detail refresh failed: ${error.message}`);
+    }
+  }, COIN_DETAILS_REFRESH_MS);
+
+  setInterval(async () => {
+    try {
+      await loadTrendingCoins();
+    } catch (error) {
+      debugMessage(`Trending refresh failed: ${error.message}`);
+    }
+  }, TRENDING_REFRESH_MS);
+
+  setInterval(async () => {
+    try {
+      await loadTopMemes();
+    } catch (error) {
+      debugMessage(`Top memes refresh failed: ${error.message}`);
+    }
+  }, MEMES_REFRESH_MS);
+}
+
+async function boot() {
+  try {
+    initStyle();
+    renderScale();
+    setupButtons();
+    await loadAll();
+    startAutoRefresh();
+  } catch (error) {
+    debugMessage(`Boot failed: ${error.message}`);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", boot);

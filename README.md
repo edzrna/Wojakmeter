@@ -9,3 +9,4 @@ Features:
 • Top coins mood
 • Meme prompt generator
 • Tweet generator
+

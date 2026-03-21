@@ -1561,4 +1561,15 @@ body.style-minimal .logo-img{
   .chart-mood-chip-performance{
     margin-left:0;
   }
+
+.hero-share-row{
+  display:flex;
+  justify-content:center;
+  margin:0 auto 16px;
+}
+
+.share-x-btn{
+  min-width:190px;
+}
+
 }

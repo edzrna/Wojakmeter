@@ -517,6 +517,33 @@ function buildStoryMode(ctx) {
   `.trim();
 }
 
+function buildShareMoodText() {
+  const mood = currentGlobalMood?.name || byId("heroMood")?.textContent || "Neutral";
+  const score = byId("heroScore")?.textContent || "50";
+  const change = byId("globalMarketChange")?.textContent || formatPercent(currentGlobalChange);
+  const timeframe = globalTimeframe || byId("globalMarketTimeframe")?.textContent || "1h";
+  const macroLabel = byId("driverMacro")?.textContent || "Market flow / price action";
+  const volume = byId("globalMarketVolume")?.textContent || "--";
+
+  return `Current crypto market mood: ${mood} (${score}/100)
+
+Timeframe: ${timeframe}
+Market move: ${change}
+Volume: ${volume}
+Driver: ${macroLabel}
+
+Track the market mood on WojakMeter
+https://wojakmeter.com
+
+#Crypto #Bitcoin #WojakMeter`;
+}
+
+function shareMoodOnX() {
+  const text = buildShareMoodText();
+  const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
 function setStudioOutput(id, value) {
   const el = byId(id);
   if (!el) return;
@@ -1095,6 +1122,10 @@ function setupButtons() {
     await loadGlobalMarket();
     await loadCoinDetails();
     renderStudio();
+  });
+
+  byId("shareMoodBtn")?.addEventListener("click", () => {
+    shareMoodOnX();
   });
 }
 

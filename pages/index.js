@@ -231,4 +231,297 @@ const htmlContent = `
     <section class="detail-grid detail-grid-single">
       <section class="chart-card card">
         <div class="chart-topbar">
-          <div class="
+          <div class="chart-coin-meta">
+            <div class="chart-coin-icon-wrap">
+              <img id="chartCoinIcon" class="chart-coin-icon" src="" alt="Coin icon">
+            </div>
+
+            <div class="chart-coin-copy">
+              <div class="chart-coin-title-line">
+                <h3 id="chartTitle">BTC / Bitcoin</h3>
+                <span class="muted" id="chartRenderMode">Line chart</span>
+              </div>
+
+              <div class="chart-coin-stats">
+                <div class="chart-mini-stat">
+                  <span>Price</span>
+                  <strong id="chartCoinPrice">--</strong>
+                </div>
+                <div class="chart-mini-stat">
+                  <span>Volume</span>
+                  <strong id="chartCoinVolume">--</strong>
+                </div>
+                <div class="chart-mini-stat">
+                  <span>Market Cap</span>
+                  <strong id="chartCoinMarketCap">--</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-toolbar">
+            <div class="timeframes compact" id="chartTimeframes">
+              <button data-timeframe="1m">1m</button>
+              <button data-timeframe="5m">5m</button>
+              <button data-timeframe="15m">15m</button>
+              <button data-timeframe="1h" class="active">1h</button>
+              <button data-timeframe="4h">4h</button>
+              <button data-timeframe="24h">24h</button>
+              <button data-timeframe="7d">7d</button>
+            </div>
+
+            <div class="chart-mode-switch" id="chartModeSwitch">
+              <button class="chart-mode-btn active" data-mode="line">Line</button>
+              <button class="chart-mode-btn" data-mode="candle">Candles</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-inline-moods">
+          <div class="chart-mood-chip">
+            <img
+              id="coinMoodIconImg"
+              class="chart-mood-chip-icon mood-icon-img anim-float"
+              src="/assets/icons/classic/neutral.png"
+              alt="Technical mood icon"
+            />
+            <div>
+              <span>Technical</span>
+              <strong id="coinMoodLabel">Neutral</strong>
+            </div>
+          </div>
+
+          <div class="chart-mood-chip">
+            <img
+              id="detailSocialIconImg"
+              class="chart-mood-chip-icon mood-icon-img anim-float"
+              src="/assets/icons/classic/neutral.png"
+              alt="Social mood icon"
+            />
+            <div>
+              <span>Social</span>
+              <strong id="detailSocialLabel">Neutral</strong>
+            </div>
+          </div>
+
+          <div class="chart-mood-chip chart-mood-chip-performance">
+            <div>
+              <span>Performance</span>
+              <strong id="selectedPerformance">--</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-placeholder">
+          <div class="chart-time-label" id="chartTimeLabel">Viewing 1h structure</div>
+
+          <svg id="coinChartSvg" viewBox="0 0 900 280" preserveAspectRatio="none" aria-hidden="true">
+            <path id="coinChartArea" d=""></path>
+            <path id="coinChartPath" d=""></path>
+            <g id="coinChartCandles"></g>
+          </svg>
+        </div>
+
+        <div class="chart-footer">
+          <div class="pill positive" id="chartChangePill">--</div>
+          <div class="muted">Selected timeframe: <span id="selectedTimeframe">1h</span></div>
+        </div>
+
+        <div class="market-intervals">
+          <div class="interval-box"><span>1m</span><strong id="perf1m">--</strong></div>
+          <div class="interval-box"><span>5m</span><strong id="perf5m">--</strong></div>
+          <div class="interval-box"><span>15m</span><strong id="perf15m">--</strong></div>
+          <div class="interval-box"><span>1h</span><strong id="perf1h">--</strong></div>
+          <div class="interval-box"><span>4h</span><strong id="perf4h">--</strong></div>
+          <div class="interval-box"><span>24h</span><strong id="perf24h">--</strong></div>
+          <div class="interval-box"><span>7d</span><strong id="perf7d">--</strong></div>
+        </div>
+      </section>
+    </section>
+
+    <section class="studio-card card" id="wojak-studio">
+      <div class="section-head">
+        <h3>WOJAK STUDIO</h3>
+        <span class="muted">Create content from live market sentiment</span>
+      </div>
+
+      <div class="tabs-row" id="studioTabs">
+        <button class="tab-btn active" data-studio-tab="meme">Meme Generator</button>
+        <button class="tab-btn" data-studio-tab="daily">Daily Market Meme</button>
+        <button class="tab-btn" data-studio-tab="xpost">X Post Generator</button>
+        <button class="tab-btn" data-studio-tab="story">Story Mode</button>
+      </div>
+
+      <div class="studio-panel active" id="studio-meme">
+        <div class="studio-grid">
+          <div class="studio-box">
+            <div class="studio-box-head">
+              <h4>Meme Prompt</h4>
+              <button class="action-btn studio-copy-btn" data-copy-target="memePromptOutput">Copy</button>
+            </div>
+            <pre class="studio-output" id="memePromptOutput">Loading...</pre>
+          </div>
+
+          <div class="studio-box">
+            <div class="studio-box-head">
+              <h4>Scene Summary</h4>
+              <button class="action-btn studio-copy-btn" data-copy-target="memeSceneOutput">Copy</button>
+            </div>
+            <div class="studio-output prose-output" id="memeSceneOutput">Loading...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="studio-panel" id="studio-daily">
+        <div class="studio-grid studio-grid-single">
+          <div class="studio-box">
+            <div class="studio-box-head">
+              <h4>Daily Market Meme</h4>
+              <button class="action-btn studio-copy-btn" data-copy-target="dailyMemeOutput">Copy</button>
+            </div>
+            <div class="studio-output prose-output" id="dailyMemeOutput">Loading...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="studio-panel" id="studio-xpost">
+        <div class="studio-grid">
+          <div class="studio-box">
+            <div class="studio-box-head">
+              <h4>X Caption</h4>
+              <button class="action-btn studio-copy-btn" data-copy-target="xPostCaptionOutput">Copy</button>
+            </div>
+            <div class="studio-output prose-output" id="xPostCaptionOutput">Loading...</div>
+          </div>
+
+          <div class="studio-box">
+            <div class="studio-box-head">
+              <h4>Alt Text</h4>
+              <button class="action-btn studio-copy-btn" data-copy-target="xPostAltOutput">Copy</button>
+            </div>
+            <div class="studio-output prose-output" id="xPostAltOutput">Loading...</div>
+          </div>
+
+          <div class="studio-box">
+            <div class="studio-box-head">
+              <h4>Hashtags</h4>
+              <button class="action-btn studio-copy-btn" data-copy-target="xPostTagsOutput">Copy</button>
+            </div>
+            <div class="studio-output prose-output" id="xPostTagsOutput">Loading...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="studio-panel" id="studio-story">
+        <div class="studio-grid studio-grid-single">
+          <div class="studio-box">
+            <div class="studio-box-head">
+              <h4>Market Story</h4>
+              <button class="action-btn studio-copy-btn" data-copy-target="storyModeOutput">Copy</button>
+            </div>
+            <div class="studio-output prose-output" id="storyModeOutput">Loading...</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="scale-card card">
+      <h3>EMOTIONAL SCALE</h3>
+      <div class="scale-grid" id="scaleGrid"></div>
+    </section>
+
+    <section id="about" class="about-section">
+      <h2>About WojakMeter</h2>
+      <p>
+        WojakMeter is a crypto market sentiment index designed to measure the emotional state of the cryptocurrency market in real time.
+        The platform analyzes price momentum, social sentiment and macroeconomic drivers to identify the prevailing mood across the crypto ecosystem.
+      </p>
+      <p>
+        Financial markets are strongly influenced by psychology. Fear, uncertainty, optimism and euphoria often drive market cycles more than fundamentals.
+        WojakMeter translates these complex behavioral patterns into a simple visual indicator that helps traders quickly understand the emotional dynamics of the market.
+      </p>
+      <p>
+        The index represents market emotions through seven emotional stages ranging from Frustration to Euphoria, helping traders interpret the emotional behavior that often drives crypto market cycles.
+      </p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <img src="/assets/logo/wojakmeter_logo.png" class="footer-logo" alt="WojakMeter Logo">
+        <p>
+          WojakMeter is a crypto market sentiment index that visualizes the emotional state of the cryptocurrency market using price momentum, social sentiment and macro drivers.
+        </p>
+      </div>
+
+      <div class="footer-links">
+        <h4>Navigation</h4>
+        <a href="#about">About</a>
+        <a href="#top-coins">Top Coins</a>
+        <a href="#market">Market Mood</a>
+        <a href="#wojak-studio">Wojak Studio</a>
+        <a href="#">Terms</a>
+      </div>
+
+      <div class="footer-links">
+        <h4>Community</h4>
+        <a href="https://x.com/WojakMeter" target="_blank" rel="noopener">X / Twitter</a>
+        <a href="#">Telegram</a>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>© 2026 WojakMeter. All rights reserved.</p>
+    </div>
+  </footer>
+</div>
+`;
+
+export default function Home() {
+  return (
+    <>
+      <Head>
+        <title>WojakMeter | Crypto Market Sentiment & Emotion Index</title>
+        <meta
+          name="description"
+          content="WojakMeter tracks the emotional state of the crypto market using price momentum, social sentiment and macro events."
+        />
+        <meta
+          name="keywords"
+          content="crypto sentiment, bitcoin sentiment, crypto emotion index, crypto market mood, fear and greed crypto, wojakmeter"
+        />
+
+        <meta property="og:title" content="WojakMeter | The Crypto Emotion Index" />
+        <meta
+          property="og:description"
+          content="Track the emotional state of the crypto market using price momentum, social sentiment and macro events."
+        />
+        <meta property="og:image" content="https://wojakmeter.com/assets/preview.jpg" />
+        <meta property="og:url" content="https://wojakmeter.com" />
+        <meta property="og:type" content="website" />
+
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="WojakMeter | Crypto Emotion Index" />
+        <meta
+          name="twitter:description"
+          content="Track the emotional state of the crypto market with WojakMeter."
+        />
+        <meta name="twitter:image" content="https://wojakmeter.com/assets/preview.jpg" />
+
+        <link
+          href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap"
+          rel="stylesheet"
+        />
+        <link rel="stylesheet" href="/style.css?v=17" />
+      </Head>
+
+      <div
+        className="style-classic"
+        dangerouslySetInnerHTML={{ __html: htmlContent }}
+      />
+
+      <Script src="/script.js?v=18" strategy="afterInteractive" />
+    </>
+  );
+}
